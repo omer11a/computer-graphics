@@ -3,3 +3,13 @@
 ################################################################################
 
 /.vs
+/[Rr]elease
+/[Dd]ebug
+/CG_skel_w_MFC/[Rr]elease
+/CG_skel_w_MFC/[Rr]elease
+/freeglut/[Rr]elease
+/freeglut/[Dd]ebug
+/glew/[Rr]elease
+/glew/[Dd]ebug
+/glew/lib
+/freeglut/lib
