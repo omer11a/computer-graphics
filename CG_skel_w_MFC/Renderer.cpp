@@ -124,7 +124,36 @@ void Renderer::DrawLineShape2(const vec3 p1, const vec3 p2, const vec3 color) {
 	}
 }
 void Renderer::DrawLineShape3(const vec3 p1, const vec3 p2, const vec3 color) {
+	vec3 start, end;
 	cout << "shape3 - TODO" << endl;
+	if (p1.y > p2.y) {
+		start = p2;
+		end = p1;
+	}
+	else {
+		start = p1;
+		end = p2;
+	}
+
+	int x = start.x;
+	int dx = -1 * (end.x - start.x);
+	int dy = end.y - start.y;
+	int de = 2 * dx;
+	int d = 2 * dx - dy;
+	int dne = 2 * dx - 2 * dy;
+
+	PlotPixel(x, start.y, color);
+
+	for (int y = start.y; y < end.y; ++y) {
+		if (d < 0) {
+			d += de;
+		}
+		else {
+			--x;
+			d += dne;
+		}
+		PlotPixel(x, y, color);
+	}
 }
 void Renderer::DrawLineShape4(const vec3 p1, const vec3 p2, const vec3 color) {
 	vec3 start, end;
@@ -140,8 +169,7 @@ void Renderer::DrawLineShape4(const vec3 p1, const vec3 p2, const vec3 color) {
 
 	int y = start.y;
 	int dx = end.x - start.x;
-	int dy = end.y - start.y;
-	//int y_change = (dy > 1) ? 1 : -1;
+	int dy = -1 * (end.y - start.y);
 	int de = 2 * dy;
 	int d = 2 * dy - dx;
 	int dne = 2 * dy - 2 * dx;
@@ -150,11 +178,11 @@ void Renderer::DrawLineShape4(const vec3 p1, const vec3 p2, const vec3 color) {
 
 	for (int x = start.x; x < end.x; ++x) {
 		if (d < 0) {
-			d -= de;
+			d += de;
 		}
 		else {
 			--y;
-			d -= dne;
+			d += dne;
 		}
 		PlotPixel(x, y, color);
 	}
