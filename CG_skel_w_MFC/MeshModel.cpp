@@ -121,114 +121,92 @@ void MeshModel::loadFile(string fileName)
 	{
 		for (int i = 0; i < 3; i++)
 		{
-			vertex_positions->push_back(getVecByIndex(vertices, it->v[i]));
-			vertex_positions->push_back(getVecByIndex(normals, it->vn[i]));
+			vertexPositions.push_back(getVecByIndex(vertices, it->v[i]));
+			vertexPositions.push_back(getVecByIndex(normals, it->vn[i]));
 		}
 	}
 }
 
-void MeshModel::applyTransformToNormals(const mat4 & transform) {
+mat3 MeshModel::convertToNormalTransform(const mat4 & transform) const {
 	mat3 transform_in_3d = convert4dTo3d(transform);
 	if (!transform_in_3d.isInvertible()) {
 		throw invalid_argument("Can't apply matrix to normals");
 	}
 
-	normal_transform = normal_transform * transpose(inverse(transform_in_3d));
+	return transpose(inverse(transform_in_3d));
 }
 
 void MeshModel::computeFaceNormals() {
-	if ((vertex_positions == NULL) || (face_normals != NULL)) {
-		return;
-	}
-
-	for (unsigned int i = 0; i < vertex_positions->size(); i += 3) {
-		vec3 v1 = vertex_positions->at(i + 1) - vertex_positions->at(i);
-		vec3 v2 = vertex_positions->at(i + 2) - vertex_positions->at(i);
-		face_normals->push_back(normalize(cross(v1, v2)));
+	for (unsigned int i = 0; i < vertexPositions.size(); i += 3) {
+		vec3 v1 = vertexPositions.at(i + 1) - vertexPositions.at(i);
+		vec3 v2 = vertexPositions.at(i + 2) - vertexPositions.at(i);
+		faceNormals.push_back(normalize(cross(v1, v2)));
 	}
 }
 
 void MeshModel::computeBoundingBox() {
-	if ((vertex_positions == NULL) || (vertex_positions->empty())) {
-		return;
-	}
+	minValues = maxValues = vertexPositions.at(0);
+	for (unsigned int i = 1; i < vertexPositions.size(); ++i) {
+		vec3 vertex = vertexPositions.at(i);
 
-	min_values = max_values = vertex_positions->at(0);
-	for (unsigned int i = 1; i < vertex_positions->size(); ++i) {
-		vec3 vertex = vertex_positions->at(i);
+		minValues.x = min(minValues.x, vertex.x);
+		minValues.y = min(minValues.y, vertex.y);
+		minValues.z = min(minValues.z, vertex.z);
 
-		min_values.x = min(min_values.x, vertex.x);
-		min_values.y = min(min_values.y, vertex.y);
-		min_values.z = min(min_values.z, vertex.z);
-
-		max_values.x = max(max_values.x, vertex.x);
-		max_values.y = max(max_values.y, vertex.y);
-		max_values.z = max(max_values.z, vertex.z);
+		maxValues.x = max(maxValues.x, vertex.x);
+		maxValues.y = max(maxValues.y, vertex.y);
+		maxValues.z = max(maxValues.z, vertex.z);
 	}
 }
 
-MeshModel::MeshModel() :
-	vertex_positions(NULL), vertex_normals(NULL), face_normals(NULL),
-	world_transform(), model_transform(), normal_transform(),
-	allow_vertex_normals(false), allow_face_normals(false)
-{}
-
-MeshModel::MeshModel(string fileName) : MeshModel()
+MeshModel::MeshModel(string fileName) :
+	vertexPositions(), vertexNormals(), faceNormals(),
+	worldTransform(), modelTransform(), normalModelTransform(), normalWorldTransform(),
+	allowVertexNormals(false), allowFaceNormals(false)
 {
-	try {
-		vertex_positions = new vector<vec3>();
-		vertex_normals = new vector<vec3>();
-		loadFile(fileName);
-	} catch (...) {
-		this->~MeshModel();
-		throw;
-	}
-}
-
-MeshModel::~MeshModel(void)
-{
-	if (face_normals != NULL) {
-		delete face_normals;
-	}
-
-	if (vertex_normals != NULL) {
-		delete vertex_normals;
-	}
-
-	if (vertex_positions != NULL) {
-		delete vertex_positions;
-	}
+	loadFile(fileName);
 }
 
 void MeshModel::transformInModel(const mat4 & transform) {
-	applyTransformToNormals(transform);
-	model_transform = model_transform * transform;
+	normalModelTransform = normalModelTransform * convertToNormalTransform(transform);
+	modelTransform = modelTransform * transform;
 }
 
 void MeshModel::transformInWorld(const mat4 & transform) {
-	applyTransformToNormals(transform);
-	world_transform = world_transform * transform;
+	normalWorldTransform = normalWorldTransform * convertToNormalTransform(transform);
+	worldTransform = worldTransform * transform;
 }
 
 void MeshModel::setVertexNormalsVisibility(bool should_be_visible) {
-	allow_vertex_normals = should_be_visible;
+	allowVertexNormals = should_be_visible;
 }
 
 void MeshModel::setFaceNormalsVisibility(bool should_be_visible) {
-	allow_face_normals = should_be_visible;
-	if ((face_normals == NULL) && (allow_face_normals)) {
+	allowFaceNormals = should_be_visible;
+	if (allowFaceNormals) {
 		computeFaceNormals();
 	}
 }
 
 void MeshModel::setBoundingBoxVisibility(bool should_be_visible) {
-	allow_bounding_box = should_be_visible;
-	if (allow_bounding_box) {
+	allowBoundingBox = should_be_visible;
+	if (allowBoundingBox) {
 		computeBoundingBox();
 	}
 }
 
-void MeshModel::draw()
-{
-	
+void MeshModel::draw(Renderer * renderer) const {
+	if (renderer == NULL) {
+		throw invalid_argument("Renderer is null");
+	}
+
+	renderer->SetObjectMatrices(worldTransform * modelTransform, normalWorldTransform * normalModelTransform);
+
+	const vector<vec3> * vertexNormalsToRenderer = allowVertexNormals ? &vertexNormals : NULL;
+	const vector<vec3> * faceNormalsToRenderer = allowFaceNormals ? &faceNormals : NULL;
+	renderer->DrawTriangles(&vertexPositions, vertexNormalsToRenderer, faceNormalsToRenderer);
+
+	if (allowBoundingBox) {
+		renderer->DrawBox(minValues, maxValues);
+	}
 }
