@@ -46,6 +46,11 @@ void Renderer::DestroyBuffers()
 	}
 }
 
+vec3 Renderer::PointToScreen(const vec3 p) const
+{
+	return vec3(round(0.5 * m_width * (p.x + 1)), round(0.5 * m_height * (p.y + 1)), p.z);
+}
+
 void Renderer::PlotPixel(const int x, const int y, const vec3 color)
 {
 	if ((x >= m_width) || (x < 0) || (y >= m_height) || (y < 0)) {
@@ -58,7 +63,6 @@ void Renderer::PlotPixel(const int x, const int y, const vec3 color)
 }
 
 vec3 Renderer::GetCenterMass(const vec3 p1, const vec3 p2, const vec3 p3) const {
-	//vec3 result;
 	return vec3((p1.x + p2.x + p3.x) / 3, (p1.y + p2.y + p3.y) / 3, (p1.z + p2.z + p3.z) / 3);
 }
 
@@ -141,9 +145,9 @@ void Renderer::DrawTriangles(const vector<vec3>* vertices, const vector<vec3>* n
 	// assuming that vertices size is a multiplication of 3
 	auto i = vertices->begin();
 	while (i != vertices->end()) {
-		vec3 a = *(i++);
-		vec3 b = *(i++);
-		vec3 c = *(i++);
+		vec3 a = PointToScreen(*(i++));
+		vec3 b = PointToScreen(*(i++));
+		vec3 c = PointToScreen(*(i++));
 
 		this->DrawLine(a, b, white);
 		this->DrawLine(b, c, white);
@@ -165,17 +169,21 @@ void Renderer::SetDemoBuffer()
 	for (int i = 50; i <= 150; i += 10) {
 		DrawLine(vec3(100, 100, 0), vec3(50, i, 0), vec3(1, 1, 1));
 	}
+	
+	for (float i = -1.0; i <= 1; i += 0.1) {
+		DrawLine(PointToScreen(vec3(0, 0, 0)), PointToScreen(vec3(i, 1, 0)), vec3(0, abs(i), abs(i*i)));
+	}
 
 	vector<vec3> vertices;
-	vertices.push_back(vec3(200, 200, 20));
-	vertices.push_back(vec3(300, 200, 30));
-	vertices.push_back(vec3(400, 300, 0));
-	vertices.push_back(vec3(50, 400, 0));
-	vertices.push_back(vec3(150, 400, 0));
-	vertices.push_back(vec3(100, 300, 0));
-	vertices.push_back(vec3(50, 320, 0));
-	vertices.push_back(vec3(150, 320, 0));
-	vertices.push_back(vec3(100, 420, 0));
+	vertices.push_back(vec3(0.2, 0.2, 20));
+	vertices.push_back(vec3(0.5, 0.6, 30));
+	vertices.push_back(vec3(0.8, 0.7, 0));
+	vertices.push_back(vec3(-0.05, -0.4, 0));
+	vertices.push_back(vec3(-0.15, -0.4, 0));
+	vertices.push_back(vec3(-0.1, -0.3, 0));
+	vertices.push_back(vec3(-0.05, -0.32, 0));
+	vertices.push_back(vec3(-0.15, -0.32, 0));
+	vertices.push_back(vec3(-0.1, -0.42, 0));
 	this->DrawTriangles(&vertices);
 
 

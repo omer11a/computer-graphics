@@ -16,6 +16,7 @@ class Renderer
 	void CreateLocalBuffer();
 	void DestroyBuffers();
 
+	vec3 PointToScreen(const vec3 p) const;
 	void PlotPixel(const int x, const int y, const vec3 color);
 	vec3 GetCenterMass(const vec3 p1, const vec3 p2, const vec3 p3) const;
 	void DrawLine(const vec3 p1, const vec3 p2, const vec3 color);
