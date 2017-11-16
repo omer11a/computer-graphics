@@ -647,7 +647,7 @@ vec4 mvmult( const mat4& a, const vec4& b )
 inline
 mat4 RotateX( const GLfloat theta )
 {
-    GLfloat angle = (M_PI/180.0) * theta;
+    GLfloat angle = (M_PI/180.0f) * theta;
 
     mat4 c;
     c[2][2] = c[1][1] = cos(angle);

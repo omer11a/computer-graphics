@@ -27,11 +27,12 @@ public:
 	Renderer();
 	Renderer(int width, int height);
 	~Renderer(void);
-	void Init();
-	void DrawTriangles(const vector<vec3>* vertices, const vector<vec3>* normals=NULL);
+	void DrawTriangles(const vector<vec3>* vertices, const vector<vec3>* vertexNormals=NULL, const vector<vec3>* faceNormals=NULL);
+	void DrawBox(const vec3 & minValues, const vec3 & maxValues);
+	void DrawCamera();
 	void SetCameraTransform(const mat4& cTransform);
 	void SetProjection(const mat4& projection);
-	void SetObjectMatrices(const mat4& oTransform, const mat3& nTransform);
+	void SetObjectMatrices(const mat4& oTransform, const mat3& nTransform = mat3());
 	void SwapBuffers();
 	void ClearColorBuffer();
 	void ClearDepthBuffer();
