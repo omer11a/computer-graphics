@@ -22,8 +22,6 @@ Renderer::~Renderer(void)
 	DestroyBuffers();
 }
 
-
-
 void Renderer::CreateBuffers(int width, int height)
 {
 	m_width = width;
@@ -262,6 +260,13 @@ void Renderer::CreateOpenGLBuffer()
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB8, m_width, m_height, 0, GL_RGB, GL_FLOAT, NULL);
 	glViewport(0, 0, m_width, m_height);
 }
+
+void Renderer::DrawTriangles(const vector<vec3>* vertices, const vector<vec3>* vertexNormals, const vector<vec3>* faceNormals) {}
+void Renderer::DrawBox(const vec3 & minValues, const vec3 & maxValues) {}
+void Renderer::DrawCamera() {}
+void Renderer::SetCameraTransform(const mat4& cTransform) {}
+void Renderer::SetProjection(const mat4& projection) {}
+void Renderer::SetObjectMatrices(const mat4& oTransform, const mat3& nTransform) {}
 
 void Renderer::SwapBuffers()
 {
