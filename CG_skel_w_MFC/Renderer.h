@@ -14,13 +14,11 @@ class Renderer
 
 	void CreateBuffers(int width, int height);
 	void CreateLocalBuffer();
+	void DestroyBuffers();
 
 	void PlotPixel(const int x, const int y, const vec3 color);
+	vec3 GetCenterMass(const vec3 p1, const vec3 p2, const vec3 p3) const;
 	void DrawLine(const vec3 p1, const vec3 p2, const vec3 color);
-	void DrawLineShape1(const vec3 p1, const vec3 p2, const vec3 color);
-	void DrawLineShape2(const vec3 p1, const vec3 p2, const vec3 color);
-	void DrawLineShape3(const vec3 p1, const vec3 p2, const vec3 color);
-	void DrawLineShape4(const vec3 p1, const vec3 p2, const vec3 color);
 	void DrawSteepLine(const vec3 p1, const vec3 p2, const vec3 color);
 	void DrawModerateLine(const vec3 p1, const vec3 p2, const vec3 color);
 
@@ -41,6 +39,7 @@ public:
 	void SetCameraTransform(const mat4& cTransform);
 	void SetProjection(const mat4& projection);
 	void SetObjectMatrices(const mat4& oTransform, const mat3& nTransform);
+	void UpdateBuffers(int width, int height);
 	void SwapBuffers();
 	void ClearColorBuffer();
 	void ClearDepthBuffer();

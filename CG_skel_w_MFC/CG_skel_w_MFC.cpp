@@ -37,24 +37,31 @@ bool lb_down,rb_down,mb_down;
 //----------------------------------------------------------------------------
 // Callbacks
 
-void display( void )
+void display(void)
 {
 //Call the scene and ask it to draw itself
 	//scene->drawDemo();
 }
 
-void reshape( int width, int height )
+void reshape(int width, int height)
 {
-//update the renderer's buffers
-	//renderer->SwapBuffers();
+	//update the renderer's buffers
+	renderer->UpdateBuffers(width, height);
+	// TODO: draw actual objects
+	scene->drawDemo();
 }
 
-void keyboard( unsigned char key, int x, int y )
+void keyboard(unsigned char key, int x, int y)
 {
 	switch ( key ) {
 	case 033:
 		exit( EXIT_SUCCESS );
 		break;
+	case 'c':
+		// clear screen
+		renderer->ClearColorBuffer();
+		renderer->ClearDepthBuffer();
+		renderer->SwapBuffers();
 	}
 }
 

@@ -6,12 +6,12 @@
 
 #define INDEX(width,x,y,c) (x+y*width)*3+c
 
-Renderer::Renderer() :m_width(512), m_height(512)
+Renderer::Renderer() :m_width(512), m_height(512), m_zbuffer(NULL)
 {
 	InitOpenGLRendering();
 	CreateBuffers(512, 512);
 }
-Renderer::Renderer(int width, int height) : m_width(width), m_height(height)
+Renderer::Renderer(int width, int height) : m_width(width), m_height(height), m_zbuffer(NULL)
 {
 	InitOpenGLRendering();
 	CreateBuffers(width, height);
@@ -19,7 +19,7 @@ Renderer::Renderer(int width, int height) : m_width(width), m_height(height)
 
 Renderer::~Renderer(void)
 {
-	delete[] m_outBuffer;
+	DestroyBuffers();
 }
 
 
@@ -32,193 +32,71 @@ void Renderer::CreateBuffers(int width, int height)
 	m_outBuffer = new float[3 * m_width*m_height];
 }
 
+void Renderer::UpdateBuffers(int width, int height)
+{
+	DestroyBuffers();
+	CreateBuffers(width, height);
+}
+
+void Renderer::DestroyBuffers()
+{
+	delete[] m_outBuffer;
+	if (m_zbuffer != NULL) {
+		delete[] m_zbuffer;
+	}
+}
+
 void Renderer::PlotPixel(const int x, const int y, const vec3 color)
 {
+	if ((x >= m_width) || (x < 0) || (y >= m_height) || (y < 0)) {
+		return;
+	}
+
 	m_outBuffer[INDEX(m_width, x, y, 0)] = color.x;
 	m_outBuffer[INDEX(m_width, x, y, 1)] = color.y;
 	m_outBuffer[INDEX(m_width, x, y, 2)] = color.z;
 }
+
+vec3 Renderer::GetCenterMass(const vec3 p1, const vec3 p2, const vec3 p3) const {
+	//vec3 result;
+	return vec3((p1.x + p2.x + p3.x) / 3, (p1.y + p2.y + p3.y) / 3, (p1.z + p2.z + p3.z) / 3);
+}
+
 void Renderer::DrawLine(const vec3 p1, const vec3 p2, const vec3 color)
 {
-	float dx = p1.x - p2.x;
-	float dy = p1.y - p2.y;
-	float m = dy / dx;
-
-	if ((m >= 0) && (m <= 1)) {
-		this->DrawLineShape1(p1, p2, color);
-	}
-	else if (m > 1) {
-		this->DrawLineShape2(p1, p2, color);
-	}
-	else if (m < -1) {
-		this->DrawLineShape3(p1, p2, color);
-	}
-	else {
-		this->DrawLineShape4(p1, p2, color);
-	}
-}
-
-void Renderer::DrawLineShape1(const vec3 p1, const vec3 p2, const vec3 color) {
-	vec3 start, end;
-	cout << "shape1" << endl;
-	if (p1.x > p2.x) {
-		start = p2;
-		end = p1;
-	}
-	else {
-		start = p1;
-		end = p2;
-	}
-
-	int y = start.y;
-	int dx = end.x - start.x;
-	int dy = end.y - start.y;
-	//int y_change = (dy > 1) ? 1 : -1;
-	int de = 2 * dy;
-	int d = 2 * dy - dx;
-	int dne = 2 * dy - 2 * dx;
-
-	PlotPixel(start.x, y, color);
-
-	for (int x = start.x; x < end.x; ++x) {
-		if (d < 0) {
-			d += de;
-		}
-		else {
-			++y;
-			d += dne;
-		}
-		PlotPixel(x, y, color);
-	}
-}
-void Renderer::DrawLineShape2(const vec3 p1, const vec3 p2, const vec3 color) {
-	vec3 start, end;
-	cout << "shape2" << endl;
-	if (p1.y > p2.y) {
-		start = p2;
-		end = p1;
-	}
-	else {
-		start = p1;
-		end = p2;
-	}
-
-	int x = start.x;
-	int dx = end.x - start.x;
-	int dy = end.y - start.y;
-	int de = 2 * dx;
-	int d = 2 * dx - dy;
-	int dne = 2 * dx - 2 * dy;
-
-	PlotPixel(x, start.y, color);
-
-	for (int y = start.y; y < end.y; ++y) {
-		if (d < 0) {
-			d += de;
-		}
-		else {
-			++x;
-			d += dne;
-		}
-		PlotPixel(x, y, color);
-	}
-}
-void Renderer::DrawLineShape3(const vec3 p1, const vec3 p2, const vec3 color) {
-	vec3 start, end;
-	cout << "shape3 - TODO" << endl;
-	if (p1.y > p2.y) {
-		start = p2;
-		end = p1;
-	}
-	else {
-		start = p1;
-		end = p2;
-	}
-
-	int x = start.x;
-	int dx = -1 * (end.x - start.x);
-	int dy = end.y - start.y;
-	int de = 2 * dx;
-	int d = 2 * dx - dy;
-	int dne = 2 * dx - 2 * dy;
-
-	PlotPixel(x, start.y, color);
-
-	for (int y = start.y; y < end.y; ++y) {
-		if (d < 0) {
-			d += de;
-		}
-		else {
-			--x;
-			d += dne;
-		}
-		PlotPixel(x, y, color);
-	}
-}
-void Renderer::DrawLineShape4(const vec3 p1, const vec3 p2, const vec3 color) {
-	vec3 start, end;
-	cout << "shape4 - TODO repair" << endl;
-	if (p1.x > p2.x) {
-		start = p2;
-		end = p1;
-	}
-	else {
-		start = p1;
-		end = p2;
-	}
-
-	int y = start.y;
-	int dx = end.x - start.x;
-	int dy = -1 * (end.y - start.y);
-	int de = 2 * dy;
-	int d = 2 * dy - dx;
-	int dne = 2 * dy - 2 * dx;
-
-	PlotPixel(start.x, y, color);
-
-	for (int x = start.x; x < end.x; ++x) {
-		if (d < 0) {
-			d += de;
-		}
-		else {
-			--y;
-			d += dne;
-		}
-		PlotPixel(x, y, color);
+	if (abs(p1.y - p2.y) > abs(p1.x - p2.x)) {
+		this->DrawSteepLine(p1, p2, color);
+	} else {
+		this->DrawModerateLine(p1, p2, color);
 	}
 }
 
 void Renderer::DrawSteepLine(const vec3 p1, const vec3 p2, const vec3 color) {
 	vec3 start, end;
-	cout << "steep" << endl;
+
 	if (p1.y > p2.y) {
 		start = p2;
 		end = p1;
-	}
-	else {
+	} else {
 		start = p1;
 		end = p2;
 	}
 
 	int x = start.x;
-	int dx = end.x - start.x;
+	int dx = abs(end.x - start.x);
 	int dy = end.y - start.y;
-	//int x_change = (dx > 1) ? 1 : -1;
-	/*int de = 2 * dx;
+	int de = 2 * dx;
 	int d = 2 * dx - dy;
-	int dne = 2 * dx - 2 * dy;*/
-	int de = abs(2 * dx);
-	int d = abs(2 * dx - dy);
-	int dne = abs(2 * dx - 2 * dy);
+	int dne = 2 * dx - 2 * dy;
+	int x_change = (end.x > start.x) ? 1 : -1;
 
 	PlotPixel(x, start.y, color);
-
 	for (int y = start.y; y < end.y; ++y) {
 		if (d < 0) {
 			d += de;
 		}
 		else {
-			x += 1;
+			x += x_change;
 			d += dne;
 		}
 		PlotPixel(x, y, color);
@@ -227,7 +105,6 @@ void Renderer::DrawSteepLine(const vec3 p1, const vec3 p2, const vec3 color) {
 
 void Renderer::DrawModerateLine(const vec3 p1, const vec3 p2, const vec3 color) {
 	vec3 start, end;
-	cout << "moderate" << endl;
 	if (p1.x > p2.x) {
 		start = p2;
 		end = p1;
@@ -239,22 +116,38 @@ void Renderer::DrawModerateLine(const vec3 p1, const vec3 p2, const vec3 color) 
 
 	int y = start.y;
 	int dx = end.x - start.x;
-	int dy = end.y - start.y;
-	int y_change = (dy > 1) ? 1 : -1;
+	int dy = abs(end.y - start.y);
 	int de = 2 * dy;
 	int d = 2 * dy - dx;
 	int dne = 2 * dy - 2 * dx;
+	int y_change = (end.y > start.y) ? 1 : -1;
 
 	PlotPixel(start.x, y, color);
-	
 	for (int x = start.x; x < end.x; ++x) {
 		if (d < 0) {
 			d += de;
-		} else {
+		}
+		else {
 			y += y_change;
 			d += dne;
 		}
 		PlotPixel(x, y, color);
+	}
+}
+
+void Renderer::DrawTriangles(const vector<vec3>* vertices, const vector<vec3>* normals) {
+	vec3 white(1, 1, 1);
+	
+	// assuming that vertices size is a multiplication of 3
+	auto i = vertices->begin();
+	while (i != vertices->end()) {
+		vec3 a = *(i++);
+		vec3 b = *(i++);
+		vec3 c = *(i++);
+
+		this->DrawLine(a, b, white);
+		this->DrawLine(b, c, white);
+		this->DrawLine(c, a, white);
 	}
 }
 
@@ -266,15 +159,35 @@ void Renderer::SetDemoBuffer()
 	for (int i = 50; i <= 150; i += 10) {
 		DrawLine(vec3(100, 100, 0), vec3(150, i, 0), vec3(0, 1, 0));
 	}
+	for (int i = 50; i <= 150; i += 10) {
+		DrawLine(vec3(100, 100, 0), vec3(i, 50, 0), vec3(0, 0, 1));
+	}
+	for (int i = 50; i <= 150; i += 10) {
+		DrawLine(vec3(100, 100, 0), vec3(50, i, 0), vec3(1, 1, 1));
+	}
+
+	vector<vec3> vertices;
+	vertices.push_back(vec3(200, 200, 20));
+	vertices.push_back(vec3(300, 200, 30));
+	vertices.push_back(vec3(400, 300, 0));
+	vertices.push_back(vec3(50, 400, 0));
+	vertices.push_back(vec3(150, 400, 0));
+	vertices.push_back(vec3(100, 300, 0));
+	vertices.push_back(vec3(50, 320, 0));
+	vertices.push_back(vec3(150, 320, 0));
+	vertices.push_back(vec3(100, 420, 0));
+	this->DrawTriangles(&vertices);
+
+
 	//vertical line
-	for(int i=0; i<m_width; i++)
-	{
-	m_outBuffer[INDEX(m_width,256,i,0)]=1;
-	m_outBuffer[INDEX(m_width,256,i,1)]=0;
-	m_outBuffer[INDEX(m_width,256,i,2)]=0;
+	for (int i = 0; i < m_height; i++) {
+
+		m_outBuffer[INDEX(m_width, m_width / 2, i, 0)] = 1;
+		m_outBuffer[INDEX(m_width, m_width / 2, i, 1)] = 0;
+		m_outBuffer[INDEX(m_width, m_width / 2, i, 2)] = 0;
 	}
 	//horizontal line
-	for (int i = 0; i<m_width; i++) {
+	for (int i = 0; i < m_width; i++) {
 		m_outBuffer[INDEX(m_width, i, 256, 0)] = 1;
 		m_outBuffer[INDEX(m_width, i, 256, 1)] = 0;
 		m_outBuffer[INDEX(m_width, i, 256, 2)] = 1;
@@ -360,4 +273,26 @@ void Renderer::SwapBuffers()
 	a = glGetError();
 	glutSwapBuffers();
 	a = glGetError();
+}
+
+void Renderer::ClearColorBuffer()
+{
+	vec3 black(0);
+
+	for (int x = 0; x < m_width; ++x) {
+		for (int y = 0; y < m_height; ++y) {
+			PlotPixel(x, y, black);
+		}
+	}
+}
+
+void Renderer::ClearDepthBuffer()
+{
+	if (m_zbuffer != NULL) {
+		for (int x = 0; x < m_width; ++x) {
+			for (int y = 0; y < m_height; ++y) {
+				m_zbuffer[m_width * y + x] = -INFINITY;
+			}
+		}
+	}
 }
