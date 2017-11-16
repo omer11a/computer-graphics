@@ -519,7 +519,6 @@ void Renderer::DrawTriangles(const vector<vec3>* vertices, const vector<vec3>* n
 		per p, do:
 		projection * cTrans * oTrans{/nTrans} * p;
 		*/
-		// fuck this shit! im going home
 
 		this->DrawLine(a, b, white);
 		this->DrawLine(b, c, white);
