@@ -14,6 +14,14 @@ class Renderer
 
 	void CreateBuffers(int width, int height);
 	void CreateLocalBuffer();
+	void DestroyBuffers();
+
+	vec3 PointToScreen(const vec3 p) const;
+	void PlotPixel(const int x, const int y, const vec3 color);
+	vec3 GetCenterMass(const vec3 p1, const vec3 p2, const vec3 p3) const;
+	void DrawLine(const vec3 p1, const vec3 p2, const vec3 color);
+	void DrawSteepLine(const vec3 p1, const vec3 p2, const vec3 color);
+	void DrawModerateLine(const vec3 p1, const vec3 p2, const vec3 color);
 
 	//////////////////////////////
 	// openGL stuff. Don't touch.
@@ -33,6 +41,7 @@ public:
 	void SetCameraTransform(const mat4& cTransform);
 	void SetProjection(const mat4& projection);
 	void SetObjectMatrices(const mat4& oTransform, const mat3& nTransform = mat3());
+	void UpdateBuffers(int width, int height);
 	void SwapBuffers();
 	void ClearColorBuffer();
 	void ClearDepthBuffer();
