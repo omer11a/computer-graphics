@@ -24,8 +24,6 @@ Renderer::~Renderer(void)
 	DestroyBuffers();
 }
 
-
-
 void Renderer::CreateBuffers(int width, int height)
 {
 	m_width = width;
@@ -34,11 +32,6 @@ void Renderer::CreateBuffers(int width, int height)
 	m_outBuffer = new float[3 * m_width*m_height];
 }
 
-void Renderer::UpdateBuffers(int width, int height)
-{
-	DestroyBuffers();
-	CreateBuffers(width, height);
-}
 
 void Renderer::DestroyBuffers()
 {
@@ -157,7 +150,7 @@ void Renderer::DrawModerateLine(const vec3& p1, const vec3& p2, const vec3& colo
 	}
 }
 
-void Renderer::DrawTriangles(const vector<vec3>* vertices, const vector<vec3>* normals) {
+void Renderer::DrawTriangles(const vector<vec3>* vertices, const vector<vec3>* normals, const vector<vec3>* faceNormals) {
 	vec3 white(1, 1, 1);
 	
 	// assuming that vertices size is a multiplication of 3
@@ -181,6 +174,14 @@ void Renderer::DrawTriangles(const vector<vec3>* vertices, const vector<vec3>* n
 		DrawLine(b, center, white);
 		DrawLine(c, center, white);
 	}
+}
+
+void Renderer::DrawBox(const vec3 & minValues, const vec3 & maxValues)
+{
+}
+
+void Renderer::DrawCamera()
+{
 }
 
 void Renderer::SetCameraTransform(const mat4 & cTransform)
@@ -218,7 +219,7 @@ void Renderer::SetDemoBuffer()
 
 	for (float i = -1.0f; i <= 1; i += 0.1f) {
 		vec3 t2 = PointToScreen(vec3(i, 1, 0));
-		this->DrawLine(t, t2, vec3(0, abs(i), abs(i*i)));
+		DrawLine(t, t2, vec3(0, abs(i), abs(i*i)));
 	}
 
 	vector<vec3> vertices;
@@ -308,6 +309,12 @@ void Renderer::CreateOpenGLBuffer()
 	glBindTexture(GL_TEXTURE_2D, gScreenTex);
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB8, m_width, m_height, 0, GL_RGB, GL_FLOAT, NULL);
 	glViewport(0, 0, m_width, m_height);
+}
+
+void Renderer::UpdateBuffers(int width, int height)
+{
+	DestroyBuffers();
+	CreateBuffers(width, height);
 }
 
 void Renderer::SwapBuffers()
