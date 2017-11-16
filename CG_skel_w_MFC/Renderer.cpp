@@ -6,12 +6,14 @@
 
 #define INDEX(width,x,y,c) (x+y*width)*3+c
 
-Renderer::Renderer() :m_width(512), m_height(512), m_zbuffer(NULL)
+Renderer::Renderer() : m_width(512), m_height(512), m_zbuffer(NULL),
+	m_cTransform(), m_projection(), m_oTransform(), m_nTransform()
 {
 	InitOpenGLRendering();
 	CreateBuffers(512, 512);
 }
-Renderer::Renderer(int width, int height) : m_width(width), m_height(height), m_zbuffer(NULL)
+Renderer::Renderer(int width, int height) : m_width(width), m_height(height), m_zbuffer(NULL),
+	m_cTransform(), m_projection(), m_oTransform(), m_nTransform()
 {
 	InitOpenGLRendering();
 	CreateBuffers(width, height);
@@ -46,12 +48,28 @@ void Renderer::DestroyBuffers()
 	}
 }
 
-vec3 Renderer::PointToScreen(const vec3 p) const
+vec3 Renderer::PointToScreen(const vec3& p, const bool is_normal) const
 {
-	return vec3(round(0.5 * m_width * (p.x + 1)), round(0.5 * m_height * (p.y + 1)), p.z);
+	vec4 result;
+	if (is_normal) {
+		result = m_projection * m_cTransform * (m_nTransform * p);
+	} else {
+		result = m_projection * m_cTransform * this->m_oTransform * p;
+	}
+	return vec3(round(0.5 * this->m_width * (result.x + 1)), round(0.5 * m_height * (result.y + 1)), result.z);
 }
 
-void Renderer::PlotPixel(const int x, const int y, const vec3 color)
+//vec3 Renderer::TransformPoint(const vec3& p) const
+//{
+//
+//}
+//
+//vec3 Renderer::TransformNormal(const vec3& p) const
+//{
+//
+//}
+
+void Renderer::PlotPixel(const int x, const int y, const vec3& color)
 {
 	if ((x >= m_width) || (x < 0) || (y >= m_height) || (y < 0)) {
 		return;
@@ -62,11 +80,11 @@ void Renderer::PlotPixel(const int x, const int y, const vec3 color)
 	m_outBuffer[INDEX(m_width, x, y, 2)] = color.z;
 }
 
-vec3 Renderer::GetCenterMass(const vec3 p1, const vec3 p2, const vec3 p3) const {
+vec3 Renderer::GetCenterMass(const vec3& p1, const vec3& p2, const vec3& p3) const {
 	return vec3((p1.x + p2.x + p3.x) / 3, (p1.y + p2.y + p3.y) / 3, (p1.z + p2.z + p3.z) / 3);
 }
 
-void Renderer::DrawLine(const vec3 p1, const vec3 p2, const vec3 color)
+void Renderer::DrawLine(const vec3& p1, const vec3& p2, const vec3& color)
 {
 	if (abs(p1.y - p2.y) > abs(p1.x - p2.x)) {
 		this->DrawSteepLine(p1, p2, color);
@@ -75,7 +93,7 @@ void Renderer::DrawLine(const vec3 p1, const vec3 p2, const vec3 color)
 	}
 }
 
-void Renderer::DrawSteepLine(const vec3 p1, const vec3 p2, const vec3 color) {
+void Renderer::DrawSteepLine(const vec3& p1, const vec3& p2, const vec3& color) {
 	vec3 start, end;
 
 	if (p1.y > p2.y) {
@@ -107,7 +125,7 @@ void Renderer::DrawSteepLine(const vec3 p1, const vec3 p2, const vec3 color) {
 	}
 }
 
-void Renderer::DrawModerateLine(const vec3 p1, const vec3 p2, const vec3 color) {
+void Renderer::DrawModerateLine(const vec3& p1, const vec3& p2, const vec3& color) {
 	vec3 start, end;
 	if (p1.x > p2.x) {
 		start = p2;
@@ -149,10 +167,36 @@ void Renderer::DrawTriangles(const vector<vec3>* vertices, const vector<vec3>* n
 		vec3 b = PointToScreen(*(i++));
 		vec3 c = PointToScreen(*(i++));
 
+		/*
+		per p, do:
+		projection * cTrans * oTrans{/nTrans} * p;
+		*/
+
 		this->DrawLine(a, b, white);
 		this->DrawLine(b, c, white);
 		this->DrawLine(c, a, white);
+
+		vec3 center = GetCenterMass(a, b, c);
+		DrawLine(a, center, white);
+		DrawLine(b, center, white);
+		DrawLine(c, center, white);
 	}
+}
+
+void Renderer::SetCameraTransform(const mat4 & cTransform)
+{
+	m_cTransform = cTransform;
+}
+
+void Renderer::SetProjection(const mat4 & projection)
+{
+	m_projection = projection;
+}
+
+void Renderer::SetObjectMatrices(const mat4 & oTransform, const mat3 & nTransform)
+{
+	m_oTransform = oTransform;
+	m_nTransform = nTransform;
 }
 
 void Renderer::SetDemoBuffer()
@@ -169,21 +213,24 @@ void Renderer::SetDemoBuffer()
 	for (int i = 50; i <= 150; i += 10) {
 		DrawLine(vec3(100, 100, 0), vec3(50, i, 0), vec3(1, 1, 1));
 	}
-	
-	for (float i = -1.0; i <= 1; i += 0.1) {
-		DrawLine(PointToScreen(vec3(0, 0, 0)), PointToScreen(vec3(i, 1, 0)), vec3(0, abs(i), abs(i*i)));
+	;
+	vec3 t = this->PointToScreen(vec3(0, 0, 0));
+
+	for (float i = -1.0f; i <= 1; i += 0.1f) {
+		vec3 t2 = PointToScreen(vec3(i, 1, 0));
+		this->DrawLine(t, t2, vec3(0, abs(i), abs(i*i)));
 	}
 
 	vector<vec3> vertices;
-	vertices.push_back(vec3(0.2, 0.2, 20));
-	vertices.push_back(vec3(0.5, 0.6, 30));
-	vertices.push_back(vec3(0.8, 0.7, 0));
-	vertices.push_back(vec3(-0.05, -0.4, 0));
-	vertices.push_back(vec3(-0.15, -0.4, 0));
-	vertices.push_back(vec3(-0.1, -0.3, 0));
-	vertices.push_back(vec3(-0.05, -0.32, 0));
-	vertices.push_back(vec3(-0.15, -0.32, 0));
-	vertices.push_back(vec3(-0.1, -0.42, 0));
+	vertices.push_back(vec3(0.2f, 0.2f, 20));
+	vertices.push_back(vec3(0.5f, 0.6f, 30));
+	vertices.push_back(vec3(0.8f, 0.7f, 0));
+	vertices.push_back(vec3(-0.05f, -0.4f, 0));
+	vertices.push_back(vec3(-0.15f, -0.4f, 0));
+	vertices.push_back(vec3(-0.1f, -0.3f, 0));
+	vertices.push_back(vec3(-0.05f, -0.32f, 0));
+	vertices.push_back(vec3(-0.15f, -0.32f, 0));
+	vertices.push_back(vec3(-0.1f, -0.42f, 0));
 	this->DrawTriangles(&vertices);
 
 
