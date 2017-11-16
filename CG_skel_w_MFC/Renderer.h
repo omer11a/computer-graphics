@@ -37,8 +37,9 @@ public:
 	Renderer();
 	Renderer(int width, int height);
 	~Renderer(void);
+
 	void DrawTriangles(const vector<vec3>* vertices, const vector<vec3>* vertexNormals = NULL, const vector<vec3>* faceNormals = NULL);
-	void DrawBox(const vec3 & minValues, const vec3 & maxValues);
+	void DrawBox(const vec3& minValues, const vec3& maxValues);
 	void DrawCamera();
 	void SetCameraTransform(const mat4& cTransform);
 	void SetProjection(const mat4& projection);
