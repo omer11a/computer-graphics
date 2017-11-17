@@ -1,9 +1,18 @@
 // CG_skel_w_MFC.cpp : Defines the entry point for the console application.
 //
 
+
+/*
++/-		control scaling of current mode
+w		enter world mode
+m		enter active model mode
+v		enter active camera mode
+
+*/
+
 #include "stdafx.h"
 #include "CG_skel_w_MFC.h"
-
+#include "InputDialog.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -28,10 +37,15 @@
 #define MAIN_DEMO 1
 #define MAIN_ABOUT 2
 
+#define SETTING_SCALING		1
+#define SETTING_ROTATION	2
+#define SETTING_MOVEMENT	3
+
 typedef struct configuration_s {
 	unsigned char mode;	// 0 - none, 'm' - model, 'w' - world, 'v' - view
 	vec3 scaling;	// must be greater or equal to 1	(decreasing scaling is 1/scaling)
 	vec3 shifting;
+	vec3 rotating;
 	bool is_demo;
 } configuration_t;
 
@@ -77,15 +91,24 @@ void keyboard(unsigned char key, int x, int y)
 		clear_buffers();
 		config.is_demo = false;
 		break;
-	case '-':
-	case '+':
-		should_redraw = scale(key);
-		break;
+	// switch modes
 	case 'm': // model mode
 	case 'w': // world mode
 	case 'v': // view mode (camera mode)
 		config.mode = key;
 		cout << "switched mode to " << key << endl;
+		break;
+
+	// scaling
+	case '-':
+	case '+':
+		should_redraw = scale(key);
+		break;
+
+	// rotating
+	case 'r':
+	case 'R':
+		should_redraw = rotation(key);
 		break;
 	case 'b':
 		if (config.mode == 'm') {
@@ -145,14 +168,62 @@ void fileMenu(int id)
 	{
 		case FILE_OPEN:
 			CFileDialog dlg(TRUE,_T(".obj"),NULL,NULL,_T("*.obj|*.*"));
-			if(dlg.DoModal()==IDOK)
-			{
+			if (dlg.DoModal() == IDOK) {
 				std::string s((LPCTSTR)dlg.GetPathName());
 				scene->loadOBJModel((LPCTSTR)dlg.GetPathName());
 				scene->draw();
 				config.is_demo = false;
 			}
 			break;
+	}
+}
+
+void settingMenu(int id)
+{
+	CString s = "";
+	switch (id) {
+	case SETTING_SCALING:
+		s = "Scaling Setting";
+		break;
+	case SETTING_ROTATION:
+		s = "Rotation Setting";
+		break;
+	case SETTING_MOVEMENT:
+		s = "Movement Setting";	
+		break;
+	}
+
+	CXyzDialog dlg(s);
+	vec3 result;
+	if (dlg.DoModal() == IDOK) {
+		switch (id) {
+		case SETTING_SCALING:
+			result = dlg.GetXYZ();
+			if ((result.x >= 1) && (result.y >= 1) && (result.z >= 1)) {
+				config.scaling = result;
+			} else {
+				cout << "scaling setting mustn't be lower than 1." << endl;
+			}
+			break;
+		case SETTING_ROTATION:
+			result = dlg.GetXYZ();
+			if (((result.x > 0) && (result.y == 0) && (result.z == 0)) ||
+				((result.x == 0) && (result.y > 0) && (result.z == 0)) ||
+				((result.x == 0) && (result.y == 0) && (result.z > 0))) {
+				config.rotating = result;
+			} else {
+				cout << "rotation setting: must rotate in one axis at a time and to positive direction." << endl;
+			}
+			break;
+		case SETTING_MOVEMENT:
+			result = dlg.GetXYZ();
+			if ((result.x >= 0) && (result.y >= 0) && (result.z >= 0)) {
+				config.shifting = dlg.GetXYZ();
+			} else {
+				cout << "scaling setting mustn't be lower than 1." << endl;
+			}
+			break;
+		}
 	}
 }
 
@@ -172,11 +243,19 @@ void mainMenu(int id)
 
 void initMenu()
 {
-
+	// file sub menu
 	int menuFile = glutCreateMenu(fileMenu);
-	glutAddMenuEntry("Open..",FILE_OPEN);
+	glutAddMenuEntry("Open...", FILE_OPEN);
+
+	// setting sub menu
+	int menuSetting = glutCreateMenu(settingMenu);
+	glutAddMenuEntry("Scaling...", SETTING_SCALING);
+	glutAddMenuEntry("Rotation...", SETTING_ROTATION);
+	glutAddMenuEntry("Movement...", SETTING_MOVEMENT);
+
 	glutCreateMenu(mainMenu);
 	glutAddSubMenu("File",menuFile);
+	glutAddSubMenu("Setting", menuSetting);
 	glutAddMenuEntry("Demo",MAIN_DEMO);
 	glutAddMenuEntry("About",MAIN_ABOUT);
 	glutAttachMenu(GLUT_RIGHT_BUTTON);
@@ -193,29 +272,83 @@ void clear_buffers()
 bool scale(unsigned char key)
 {
 	bool should_redraw = false;
-	mat4 scaling_vec = Scale(config.scaling);
+	mat4 scaling_mat = Scale(config.scaling);
 	if (key == '-') {
-		scaling_vec = Scale(vec3(1 / config.scaling.x, 1 / config.scaling.y, 1 / config.scaling.z));
+		scaling_mat = Scale(vec3(1 / config.scaling.x, 1 / config.scaling.y, 1 / config.scaling.z));
 	}
 
 	switch (config.mode) {
 	case 'm':
-		scene->getActiveModel()->transformInModel(scaling_vec);
-		should_redraw = true;
+		if (scene->getNumberOfModels() > 0) {
+			scene->getActiveModel()->transformInModel(scaling_mat);
+			cout << "scalling model with " << scaling_mat << endl;
+			should_redraw = true;
+		}
 		break;
 	case 'w':
-		scene->getActiveModel()->transformInWorld(scaling_vec);
-		should_redraw = true;
+		if (scene->getNumberOfModels() > 0) {
+			scene->getActiveModel()->transformInWorld(scaling_mat);
+			cout << "scalling world with " << scaling_mat << endl;
+			should_redraw = true;
+		}
 		break;
 	case 'v':
-		scene->getActiveCamera()->transformInView(scaling_vec);
-		should_redraw = true;
+		if (scene->getNumberOfCameras() > 0) {
+			scene->getActiveCamera()->transformInView(scaling_mat);
+			cout << "scalling camera with " << scaling_mat << endl;
+			should_redraw = true;
+		}
 		break;
 	default:
 		return should_redraw;
 	}
-	cout << "scalling: with " << scaling_vec << endl;
 	return should_redraw;
+}
+
+bool rotation(unsigned char direction)
+{
+	bool should_redraw = false;
+	vec3 rotation_vec = config.rotating;
+	if (direction == 'R') {
+		rotation_vec *= -1;
+	}
+	
+	switch (config.mode) {
+	case 'm':
+		if (scene->getNumberOfModels() > 0) {
+			if (rotation_vec.x != 0) scene->getActiveModel()->transformInModel(RotateX(rotation_vec.x));
+			if (rotation_vec.y != 0) scene->getActiveModel()->transformInModel(RotateY(rotation_vec.y));
+			if (rotation_vec.z != 0) scene->getActiveModel()->transformInModel(RotateZ(rotation_vec.z));
+			should_redraw = true;
+		}
+		break;
+	case 'w':
+		if (scene->getNumberOfModels() > 0) {
+			if (rotation_vec.x != 0) scene->getActiveModel()->transformInWorld(RotateX(rotation_vec.x));
+			if (rotation_vec.y != 0) scene->getActiveModel()->transformInWorld(RotateY(rotation_vec.y));
+			if (rotation_vec.z != 0) scene->getActiveModel()->transformInWorld(RotateZ(rotation_vec.z));
+			should_redraw = true;
+		}
+		break;
+	case 'v':
+		if (scene->getNumberOfCameras() > 0) {
+			cout << "scalling: with " << rotation_vec << endl;
+			if (rotation_vec.x != 0) scene->getActiveCamera()->transformInView(RotateX(rotation_vec.x));
+			if (rotation_vec.y != 0) scene->getActiveCamera()->transformInView(RotateY(rotation_vec.y));
+			if (rotation_vec.z != 0) scene->getActiveCamera()->transformInView(RotateZ(rotation_vec.z));
+			should_redraw = true;
+		}
+		break;
+	default:
+		return should_redraw;
+	}
+	
+	return should_redraw;
+}
+
+bool translate(unsigned char direction)
+{
+	return false;
 }
 
 int my_main( int argc, char **argv )
