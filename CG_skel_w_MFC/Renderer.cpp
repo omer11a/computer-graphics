@@ -47,20 +47,10 @@ vec3 Renderer::PointToScreen(const vec3& p, const bool is_normal) const
 	if (is_normal) {
 		result = m_projection * m_cTransform * (m_nTransform * p);
 	} else {
-		result = m_projection * m_cTransform * this->m_oTransform * p;
+		result = m_projection * m_cTransform * m_oTransform * p;
 	}
 	return vec3(round(0.5 * this->m_width * (result.x + 1)), round(0.5 * m_height * (result.y + 1)), result.z);
 }
-
-//vec3 Renderer::TransformPoint(const vec3& p) const
-//{
-//
-//}
-//
-//vec3 Renderer::TransformNormal(const vec3& p) const
-//{
-//
-//}
 
 void Renderer::PlotPixel(const int x, const int y, const vec3& color)
 {
@@ -168,11 +158,6 @@ void Renderer::DrawTriangles(const vector<vec3>* vertices, const vector<vec3>* n
 		this->DrawLine(a, b, white);
 		this->DrawLine(b, c, white);
 		this->DrawLine(c, a, white);
-
-		vec3 center = GetCenterMass(a, b, c);
-		DrawLine(a, center, white);
-		DrawLine(b, center, white);
-		DrawLine(c, center, white);
 	}
 }
 

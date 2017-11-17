@@ -28,11 +28,20 @@
 #define MAIN_DEMO 1
 #define MAIN_ABOUT 2
 
+typedef struct configuration_s {
+	unsigned char mode;	// 0 - none, 'm' - model, 'w' - world, 'v' - view
+	vec3 scaling;	// must be greater or equal to 1	(decreasing scaling is 1/scaling)
+	vec3 shifting;
+	bool is_demo;
+} configuration_t;
+
 Scene *scene;
 Renderer *renderer;
+configuration_t config;
 
 int last_x,last_y;
 bool lb_down,rb_down,mb_down;
+unsigned char transformation_mode;
 
 //----------------------------------------------------------------------------
 // Callbacks
@@ -48,7 +57,13 @@ void reshape(int width, int height)
 	//update the renderer's buffers
 	renderer->UpdateBuffers(width, height);
 	// TODO: draw actual objects
-	scene->drawDemo();
+	if (config.is_demo) {
+
+		scene->drawDemo();
+	} else {
+		clear_buffers();
+		scene->draw();
+	}
 }
 
 void keyboard(unsigned char key, int x, int y)
@@ -59,9 +74,19 @@ void keyboard(unsigned char key, int x, int y)
 		break;
 	case 'c':
 		// clear screen
-		renderer->ClearColorBuffer();
-		renderer->ClearDepthBuffer();
-		renderer->SwapBuffers();
+		clear_buffers();
+		config.is_demo = false;
+		break;
+	case '-':
+	case '+':
+		scale(key);
+		break;
+	case 'm':
+	case 'w':
+	case 'v':
+		config.mode = key;
+		cout << "switched mode to " << key << endl;
+		break;
 	}
 }
 
@@ -107,6 +132,7 @@ void fileMenu(int id)
 				std::string s((LPCTSTR)dlg.GetPathName());
 				scene->loadOBJModel((LPCTSTR)dlg.GetPathName());
 				scene->draw();
+				config.is_demo = false;
 			}
 			break;
 	}
@@ -118,6 +144,7 @@ void mainMenu(int id)
 	{
 	case MAIN_DEMO:
 		scene->drawDemo();
+		config.is_demo = true;
 		break;
 	case MAIN_ABOUT:
 		AfxMessageBox(_T("Computer Graphics"));
@@ -138,7 +165,37 @@ void initMenu()
 }
 //----------------------------------------------------------------------------
 
+void clear_buffers()
+{
+	renderer->ClearColorBuffer();
+	renderer->ClearDepthBuffer();
+	renderer->SwapBuffers();
+}
 
+void scale(unsigned char key)
+{
+	vec3 scaling_vec = config.scaling;
+	if (key == '-') {
+		scaling_vec = vec3(1 / config.scaling.x, 1 / config.scaling.y, 1 / config.scaling.z);
+	}
+
+	switch (config.mode) {
+	case 'm':
+		scene->getActiveModel()->transformInModel(Scale(scaling_vec));
+		break;
+	case 'w':
+		scene->getActiveModel()->transformInWorld(Scale(scaling_vec));
+		break;
+	case 'v':
+		scene->getActiveCamera()->transformInView(Scale(scaling_vec));
+		break;
+	default:
+		return;
+	}
+	cout << "scalling: with " << scaling_vec << endl;
+	clear_buffers();
+	scene->draw();
+}
 
 int my_main( int argc, char **argv )
 {
@@ -165,6 +222,7 @@ int my_main( int argc, char **argv )
 	
 	renderer = new Renderer(512,512);
 	scene = new Scene(renderer);
+	config = { 0, vec3(1.1,1.1,1), vec3(), false};
 	//----------------------------------------------------------------------------
 	// Initialize Callbacks
 

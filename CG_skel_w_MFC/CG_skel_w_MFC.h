@@ -9,3 +9,7 @@ void mouse(int button, int state, int x, int y);
 void fileMenu(int id);
 void mainMenu(int id);
 void initMenu();
+
+
+void clear_buffers();
+void scale(unsigned char type);
