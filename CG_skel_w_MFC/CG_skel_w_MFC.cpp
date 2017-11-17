@@ -83,6 +83,7 @@ void keyboard(unsigned char key, int x, int y)
 {
 	bool should_redraw = false;
 	switch (key) {
+	case 'q':
 	case 033:
 		exit(EXIT_SUCCESS);
 		break;
@@ -109,6 +110,10 @@ void keyboard(unsigned char key, int x, int y)
 	case 'r':
 	case 'R':
 		should_redraw = rotation(key);
+		break;
+	case 't':
+	case 'T':
+		should_redraw = translate(key);
 		break;
 	case 'b':
 		if (config.mode == 'm') {
@@ -218,7 +223,7 @@ void settingMenu(int id)
 		case SETTING_MOVEMENT:
 			result = dlg.GetXYZ();
 			if ((result.x >= 0) && (result.y >= 0) && (result.z >= 0)) {
-				config.shifting = dlg.GetXYZ();
+				config.shifting = result;
 			} else {
 				cout << "scaling setting mustn't be lower than 1." << endl;
 			}
@@ -319,6 +324,7 @@ bool rotation(unsigned char direction)
 			if (rotation_vec.x != 0) scene->getActiveModel()->transformInModel(RotateX(rotation_vec.x));
 			if (rotation_vec.y != 0) scene->getActiveModel()->transformInModel(RotateY(rotation_vec.y));
 			if (rotation_vec.z != 0) scene->getActiveModel()->transformInModel(RotateZ(rotation_vec.z));
+			cout << "rotating model with " << rotation_vec << endl;
 			should_redraw = true;
 		}
 		break;
@@ -327,15 +333,16 @@ bool rotation(unsigned char direction)
 			if (rotation_vec.x != 0) scene->getActiveModel()->transformInWorld(RotateX(rotation_vec.x));
 			if (rotation_vec.y != 0) scene->getActiveModel()->transformInWorld(RotateY(rotation_vec.y));
 			if (rotation_vec.z != 0) scene->getActiveModel()->transformInWorld(RotateZ(rotation_vec.z));
+			cout << "rotating world with " << rotation_vec << endl;
 			should_redraw = true;
 		}
 		break;
 	case 'v':
 		if (scene->getNumberOfCameras() > 0) {
-			cout << "scalling: with " << rotation_vec << endl;
 			if (rotation_vec.x != 0) scene->getActiveCamera()->transformInView(RotateX(rotation_vec.x));
 			if (rotation_vec.y != 0) scene->getActiveCamera()->transformInView(RotateY(rotation_vec.y));
 			if (rotation_vec.z != 0) scene->getActiveCamera()->transformInView(RotateZ(rotation_vec.z));
+			cout << "rotating camera with " << rotation_vec << endl;
 			should_redraw = true;
 		}
 		break;
@@ -348,7 +355,39 @@ bool rotation(unsigned char direction)
 
 bool translate(unsigned char direction)
 {
-	return false;
+	bool should_redraw = false;
+	vec3 translation_vec = config.shifting;
+	if (direction == 'T') {
+		translation_vec *= -1;
+	}
+
+	switch (config.mode) {
+	case 'm':
+		if (scene->getNumberOfModels() > 0) {
+			scene->getActiveModel()->transformInModel(Translate(translation_vec));
+			cout << "translating model with " << translation_vec << endl;
+			should_redraw = true;
+		}
+		break;
+	case 'w':
+		if (scene->getNumberOfModels() > 0) {
+			scene->getActiveModel()->transformInWorld(Translate(translation_vec));
+			cout << "translating world with " << translation_vec << endl;
+			should_redraw = true;
+		}
+		break;
+	case 'v':
+		if (scene->getNumberOfCameras() > 0) {
+			scene->getActiveCamera()->transformInView(Translate(translation_vec));
+			cout << "translating camera with " << translation_vec << endl;
+			should_redraw = true;
+		}
+		break;
+	default:
+		return should_redraw;
+	}
+
+	return should_redraw;
 }
 
 int my_main( int argc, char **argv )
