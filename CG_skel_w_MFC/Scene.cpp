@@ -41,7 +41,7 @@ void Camera::transformInView(const mat4& transform) {
 
 void Camera::transformInWorld(const mat4& transform) {
 	if (!transform.isInvertible()) {
-		throw invalid_argument("Singular matrices cannot be performed as transformations on cameras.");
+			throw invalid_argument("Singular matrices cannot be performed as transformations on cameras.");
 	}
 
 	worldTransform = worldTransform * transform;
