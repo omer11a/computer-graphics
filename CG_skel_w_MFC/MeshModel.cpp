@@ -162,7 +162,7 @@ void MeshModel::computeBoundingBox() {
 MeshModel::MeshModel(string fileName) :
 	vertexPositions(), vertexNormals(), faceNormals(),
 	worldTransform(), modelTransform(), normalModelTransform(), normalWorldTransform(),
-	allowVertexNormals(false), allowFaceNormals(false)
+	allowVertexNormals(false), allowFaceNormals(false), allowBoundingBox(false)
 {
 	loadFile(fileName);
 }
@@ -177,19 +177,19 @@ void MeshModel::transformInWorld(const mat4 & transform) {
 	worldTransform = worldTransform * transform;
 }
 
-void MeshModel::setVertexNormalsVisibility(bool should_be_visible) {
-	allowVertexNormals = should_be_visible;
+void MeshModel::switchVertexNormalsVisibility() {
+	allowVertexNormals = !allowVertexNormals;
 }
 
-void MeshModel::setFaceNormalsVisibility(bool should_be_visible) {
-	allowFaceNormals = should_be_visible;
+void MeshModel::switchFaceNormalsVisibility() {
+	allowFaceNormals = !allowFaceNormals;
 	if (allowFaceNormals) {
 		computeFaceNormals();
 	}
 }
 
-void MeshModel::setBoundingBoxVisibility(bool should_be_visible) {
-	allowBoundingBox = should_be_visible;
+void MeshModel::switchBoundingBoxVisibility() {
+	allowBoundingBox = !allowBoundingBox;
 	if (allowBoundingBox) {
 		computeBoundingBox();
 	}

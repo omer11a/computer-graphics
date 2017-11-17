@@ -47,20 +47,11 @@ vec3 Renderer::PointToScreen(const vec3& p, const bool is_normal) const
 	if (is_normal) {
 		result = m_projection * m_cTransform * (m_nTransform * p);
 	} else {
-		result = m_projection * m_cTransform * this->m_oTransform * p;
+		result = m_projection * m_cTransform * m_oTransform * p;
 	}
-	return vec3(round(0.5 * this->m_width * (result.x + 1)), round(0.5 * m_height * (result.y + 1)), result.z);
+	//return vec3(round(0.5 * this->m_width * (result.x + 1)), round(0.5 * m_height * (result.y + 1)), result.z);
+	return vec3(round(0.5 * m_width + result.x), round(0.5 * m_height + result.y), result.z);
 }
-
-//vec3 Renderer::TransformPoint(const vec3& p) const
-//{
-//
-//}
-//
-//vec3 Renderer::TransformNormal(const vec3& p) const
-//{
-//
-//}
 
 void Renderer::PlotPixel(const int x, const int y, const vec3& color)
 {
@@ -154,6 +145,7 @@ void Renderer::DrawTriangles(const vector<vec3>* vertices, const vector<vec3>* n
 	vec3 white(1, 1, 1);
 	
 	// assuming that vertices size is a multiplication of 3
+
 	auto i = vertices->begin();
 	while (i != vertices->end()) {
 		vec3 a = PointToScreen(*(i++));
@@ -168,16 +160,43 @@ void Renderer::DrawTriangles(const vector<vec3>* vertices, const vector<vec3>* n
 		this->DrawLine(a, b, white);
 		this->DrawLine(b, c, white);
 		this->DrawLine(c, a, white);
-
-		vec3 center = GetCenterMass(a, b, c);
-		DrawLine(a, center, white);
-		DrawLine(b, center, white);
-		DrawLine(c, center, white);
 	}
 }
 
-void Renderer::DrawBox(const vec3 & minValues, const vec3 & maxValues)
+void Renderer::DrawSquare(const vec3& p1, const vec3& p2, const vec3& p3, const vec3& p4, const vec3& color)
 {
+	vec3 screen1 = PointToScreen(p1);
+	vec3 screen2 = PointToScreen(p2);
+	vec3 screen3 = PointToScreen(p3);
+	vec3 screen4 = PointToScreen(p4);
+
+	DrawLine(screen1, screen2, color);
+	DrawLine(screen2, screen3, color);
+	DrawLine(screen3, screen4, color);
+	DrawLine(screen4, screen1, color);
+}
+
+void Renderer::DrawBox(const vec3& minValues, const vec3& maxValues)
+{
+	vec3 color(0.9);
+	// front
+	DrawSquare(vec3(minValues.x, minValues.y, minValues.z), vec3(maxValues.x, minValues.y, minValues.z),
+		vec3(maxValues.x, maxValues.y, minValues.z), vec3(minValues.x, maxValues.y, minValues.z), color);
+	// back
+	DrawSquare(vec3(minValues.x, minValues.y, maxValues.z), vec3(maxValues.x, minValues.y, maxValues.z),
+		vec3(maxValues.x, maxValues.y, maxValues.z), vec3(minValues.x, maxValues.y, maxValues.z), color);
+	// top
+	DrawSquare(vec3(minValues.x, maxValues.y, minValues.z), vec3(maxValues.x, maxValues.y, minValues.z),
+		vec3(maxValues.x, maxValues.y, maxValues.z), vec3(minValues.x, maxValues.y, maxValues.z), color);
+	// bottom
+	DrawSquare(vec3(minValues.x, minValues.y, minValues.z), vec3(maxValues.x, minValues.y, minValues.z),
+		vec3(maxValues.x, minValues.y, maxValues.z), vec3(minValues.x, minValues.y, maxValues.z), color);
+	// left
+	DrawSquare(vec3(minValues.x, minValues.y, minValues.z), vec3(minValues.x, minValues.y, maxValues.z),
+		vec3(minValues.x, maxValues.y, maxValues.z), vec3(minValues.x, maxValues.y, minValues.z), color);
+	// right
+	DrawSquare(vec3(maxValues.x, minValues.y, minValues.z), vec3(maxValues.x, minValues.y, maxValues.z),
+		vec3(maxValues.x, maxValues.y, maxValues.z), vec3(maxValues.x, maxValues.y, minValues.z), color);
 }
 
 void Renderer::DrawCamera()
@@ -234,6 +253,7 @@ void Renderer::SetDemoBuffer()
 	vertices.push_back(vec3(-0.1f, -0.42f, 0));
 	this->DrawTriangles(&vertices);
 
+	DrawBox(vec3(1), vec3(3));
 
 	//vertical line
 	for (int i = 0; i < m_height; i++) {

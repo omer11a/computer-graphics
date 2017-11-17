@@ -9,3 +9,9 @@ void mouse(int button, int state, int x, int y);
 void fileMenu(int id);
 void mainMenu(int id);
 void initMenu();
+
+
+void clear_buffers();
+bool scale(unsigned char type);
+bool rotation(unsigned char direction);
+bool translate(unsigned char direction);

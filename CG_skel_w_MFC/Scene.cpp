@@ -247,6 +247,16 @@ Camera * Scene::getActiveCamera() {
 	return cameras.at(activeCamera);
 }
 
+size_t Scene::getNumberOfModels()
+{
+	return cameras.size();
+}
+
+size_t Scene::getNumberOfCameras()
+{
+	return models.size();
+}
+
 void Scene::setActiveModel(int i) {
 	if ((i < 0) || (i >= (signed int) models.size())) {
 		throw invalid_argument("No such model");

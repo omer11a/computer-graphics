@@ -34,8 +34,8 @@ public:
 	~MeshModel(void) = default;
 	void transformInModel(const mat4 & transform);
 	void transformInWorld(const mat4 & transform);
-	void setVertexNormalsVisibility(bool should_be_visible);
-	void setFaceNormalsVisibility(bool should_be_visible);
-	void setBoundingBoxVisibility(bool should_be_visible);
+	void switchVertexNormalsVisibility();
+	void switchFaceNormalsVisibility();
+	void switchBoundingBoxVisibility();
 	void draw(Renderer * renderer) const;
 };
