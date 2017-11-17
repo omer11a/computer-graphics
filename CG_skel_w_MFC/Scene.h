@@ -76,6 +76,8 @@ public:
 	void addCamera();
 	MeshModel * getActiveModel();
 	Camera * getActiveCamera();
+	size_t getNumberOfModels();
+	size_t getNumberOfCameras();
 	void setActiveModel(int i);
 	void setActiveCamera(int i);
 	void removeActiveModel();
