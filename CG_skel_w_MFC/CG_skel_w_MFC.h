@@ -12,4 +12,4 @@ void initMenu();
 
 
 void clear_buffers();
-void scale(unsigned char type);
+bool scale(unsigned char type);

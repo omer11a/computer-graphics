@@ -39,6 +39,7 @@ public:
 	~Renderer(void);
 
 	void DrawTriangles(const vector<vec3>* vertices, const vector<vec3>* vertexNormals = NULL, const vector<vec3>* faceNormals = NULL);
+	void Renderer::DrawSquare(const vec3& p1, const vec3& p2, const vec3& p3, const vec3& p4, const vec3& color);
 	void DrawBox(const vec3& minValues, const vec3& maxValues);
 	void DrawCamera();
 	void SetCameraTransform(const mat4& cTransform);

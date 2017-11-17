@@ -58,7 +58,6 @@ void reshape(int width, int height)
 	renderer->UpdateBuffers(width, height);
 	// TODO: draw actual objects
 	if (config.is_demo) {
-
 		scene->drawDemo();
 	} else {
 		clear_buffers();
@@ -68,9 +67,10 @@ void reshape(int width, int height)
 
 void keyboard(unsigned char key, int x, int y)
 {
-	switch ( key ) {
+	bool should_redraw = false;
+	switch (key) {
 	case 033:
-		exit( EXIT_SUCCESS );
+		exit(EXIT_SUCCESS);
 		break;
 	case 'c':
 		// clear screen
@@ -79,14 +79,32 @@ void keyboard(unsigned char key, int x, int y)
 		break;
 	case '-':
 	case '+':
-		scale(key);
+		should_redraw = scale(key);
 		break;
-	case 'm':
-	case 'w':
-	case 'v':
+	case 'm': // model mode
+	case 'w': // world mode
+	case 'v': // view mode (camera mode)
 		config.mode = key;
 		cout << "switched mode to " << key << endl;
 		break;
+	case 'b':
+		if (config.mode == 'm') {
+			if (scene->getNumberOfModels() > 0) {
+				scene->getActiveModel()->switchBoundingBoxVisibility();
+				cout << "switched bounding box visibility of active model." << endl;
+				should_redraw = true;
+			}
+		}
+		break;
+	}
+
+	if (should_redraw) {
+		if (config.is_demo) {
+			scene->drawDemo();
+		} else {
+			clear_buffers();
+			scene->draw();
+		};
 	}
 }
 
@@ -172,29 +190,32 @@ void clear_buffers()
 	renderer->SwapBuffers();
 }
 
-void scale(unsigned char key)
+bool scale(unsigned char key)
 {
-	vec3 scaling_vec = config.scaling;
+	bool should_redraw = false;
+	mat4 scaling_vec = Scale(config.scaling);
 	if (key == '-') {
-		scaling_vec = vec3(1 / config.scaling.x, 1 / config.scaling.y, 1 / config.scaling.z);
+		scaling_vec = Scale(vec3(1 / config.scaling.x, 1 / config.scaling.y, 1 / config.scaling.z));
 	}
 
 	switch (config.mode) {
 	case 'm':
-		scene->getActiveModel()->transformInModel(Scale(scaling_vec));
+		scene->getActiveModel()->transformInModel(scaling_vec);
+		should_redraw = true;
 		break;
 	case 'w':
-		scene->getActiveModel()->transformInWorld(Scale(scaling_vec));
+		scene->getActiveModel()->transformInWorld(scaling_vec);
+		should_redraw = true;
 		break;
 	case 'v':
-		scene->getActiveCamera()->transformInView(Scale(scaling_vec));
+		scene->getActiveCamera()->transformInView(scaling_vec);
+		should_redraw = true;
 		break;
 	default:
-		return;
+		return should_redraw;
 	}
 	cout << "scalling: with " << scaling_vec << endl;
-	clear_buffers();
-	scene->draw();
+	return should_redraw;
 }
 
 int my_main( int argc, char **argv )
