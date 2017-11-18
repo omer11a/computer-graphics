@@ -1,13 +1,32 @@
 // CG_skel_w_MFC.cpp : Defines the entry point for the console application.
 //
+/*
 
+keyboard commands:	(keys	->	action)
+general:
+ESC/q	->	exit
+c		-> clear screen
+
+modes:
+w		->	enter world mode
+m		->	enter active model mode
+v		->	enter active camera mode
+
+transformations:
++/-		->	control scaling in current mode
+r/R		->	control rotation in current mode
+t/T		->	control translation in current mode
+
+*/
 
 /*
-+/-		control scaling of current mode
-w		enter world mode
-m		enter active model mode
-v		enter active camera mode
-
+TODO:
+fix projection: filter pixels to (-1,1) only.
+camera changes: lookat, projection(ortho, perspective)
+change active model
+add models
+change active camera
+add cameras
 */
 
 #include "stdafx.h"
@@ -44,7 +63,7 @@ v		enter active camera mode
 typedef struct configuration_s {
 	unsigned char mode;	// 0 - none, 'm' - model, 'w' - world, 'v' - view
 	vec3 scaling;	// must be greater or equal to 1	(decreasing scaling is 1/scaling)
-	vec3 shifting;
+	vec3 translating;
 	vec3 rotating;
 	bool is_demo;
 } configuration_t;
@@ -188,47 +207,14 @@ void settingMenu(int id)
 	CString s = "";
 	switch (id) {
 	case SETTING_SCALING:
-		s = "Scaling Setting";
+		set_scale_vector();
 		break;
 	case SETTING_ROTATION:
-		s = "Rotation Setting";
+		set_rotation_vector();
 		break;
 	case SETTING_MOVEMENT:
-		s = "Movement Setting";	
+		set_translation_vector();
 		break;
-	}
-
-	CXyzDialog dlg(s);
-	vec3 result;
-	if (dlg.DoModal() == IDOK) {
-		switch (id) {
-		case SETTING_SCALING:
-			result = dlg.GetXYZ();
-			if ((result.x >= 1) && (result.y >= 1) && (result.z >= 1)) {
-				config.scaling = result;
-			} else {
-				cout << "scaling setting mustn't be lower than 1." << endl;
-			}
-			break;
-		case SETTING_ROTATION:
-			result = dlg.GetXYZ();
-			if (((result.x > 0) && (result.y == 0) && (result.z == 0)) ||
-				((result.x == 0) && (result.y > 0) && (result.z == 0)) ||
-				((result.x == 0) && (result.y == 0) && (result.z > 0))) {
-				config.rotating = result;
-			} else {
-				cout << "rotation setting: must rotate in one axis at a time and to positive direction." << endl;
-			}
-			break;
-		case SETTING_MOVEMENT:
-			result = dlg.GetXYZ();
-			if ((result.x >= 0) && (result.y >= 0) && (result.z >= 0)) {
-				config.shifting = result;
-			} else {
-				cout << "scaling setting mustn't be lower than 1." << endl;
-			}
-			break;
-		}
 	}
 }
 
@@ -277,6 +263,9 @@ void clear_buffers()
 bool scale(unsigned char key)
 {
 	bool should_redraw = false;
+	if ((config.scaling.x == 1) && (config.scaling.y == 1) && (config.scaling.z == 1)) {
+		set_scale_vector();
+	}
 	mat4 scaling_mat = Scale(config.scaling);
 	if (key == '-') {
 		scaling_mat = Scale(vec3(1 / config.scaling.x, 1 / config.scaling.y, 1 / config.scaling.z));
@@ -313,6 +302,10 @@ bool scale(unsigned char key)
 bool rotation(unsigned char direction)
 {
 	bool should_redraw = false;
+	if (length(config.rotating) == 0) {
+		set_rotation_vector();
+	}
+
 	vec3 rotation_vec = config.rotating;
 	if (direction == 'R') {
 		rotation_vec *= -1;
@@ -356,7 +349,10 @@ bool rotation(unsigned char direction)
 bool translate(unsigned char direction)
 {
 	bool should_redraw = false;
-	vec3 translation_vec = config.shifting;
+	if (length(config.translating) == 0) {
+		set_translation_vector();
+	}
+	vec3 translation_vec = config.translating;
 	if (direction == 'T') {
 		translation_vec *= -1;
 	}
@@ -390,6 +386,47 @@ bool translate(unsigned char direction)
 	return should_redraw;
 }
 
+void set_scale_vector()
+{
+	CXyzDialog dlg("Scaling Setting");
+	if (dlg.DoModal() == IDOK) {
+		vec3 result = dlg.GetXYZ();
+		if ((result.x >= 1) && (result.y >= 1) && (result.z >= 1)) {
+			config.scaling = result;
+		} else {
+			cout << "scaling setting mustn't be lower than 1." << endl;
+		}
+	}
+}
+
+void set_rotation_vector()
+{
+	CXyzDialog dlg("Rotation Setting");
+	if (dlg.DoModal() == IDOK) {
+		vec3 result = dlg.GetXYZ();
+		if (((result.x > 0) && (result.y == 0) && (result.z == 0)) ||
+			((result.x == 0) && (result.y > 0) && (result.z == 0)) ||
+			((result.x == 0) && (result.y == 0) && (result.z > 0))) {
+			config.rotating = result;
+		} else {
+			cout << "rotation setting: must rotate in one axis at a time and to positive direction." << endl;
+		}
+	}
+}
+
+void set_translation_vector()
+{
+	CXyzDialog dlg("Movement Setting");
+	if (dlg.DoModal() == IDOK) {
+		vec3 result = dlg.GetXYZ();
+		if ((result.x >= 0) && (result.y >= 0) && (result.z >= 0)) {
+			config.translating = result;
+		} else {
+			cout << "scaling setting mustn't be lower than 1." << endl;
+		}
+	}
+}
+
 int my_main( int argc, char **argv )
 {
 	//----------------------------------------------------------------------------
@@ -415,7 +452,7 @@ int my_main( int argc, char **argv )
 	
 	renderer = new Renderer(512,512);
 	scene = new Scene(renderer);
-	config = { 0, vec3(1.1,1.1,1), vec3(), false};
+	config = { 0, vec3(1), vec3(), vec3(), false};
 	//----------------------------------------------------------------------------
 	// Initialize Callbacks
 

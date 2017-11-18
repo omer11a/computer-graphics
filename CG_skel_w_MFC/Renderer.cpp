@@ -44,13 +44,14 @@ void Renderer::DestroyBuffers()
 vec3 Renderer::PointToScreen(const vec3& p, const bool is_normal) const
 {
 	vec4 result;
+	float min_size = min(m_height, m_width) * 0.5;
 	if (is_normal) {
 		result = m_projection * m_cTransform * (m_nTransform * p);
 	} else {
 		result = m_projection * m_cTransform * m_oTransform * p;
 	}
 	//return vec3(round(0.5 * this->m_width * (result.x + 1)), round(0.5 * m_height * (result.y + 1)), result.z);
-	return vec3(round(0.5 * m_width + result.x), round(0.5 * m_height + result.y), result.z);
+	return vec3(round(m_width * 0.5 + min_size * (result.x)), m_height - round(m_height * 0.5 + min_size * (result.y)), result.z);
 }
 
 void Renderer::PlotPixel(const int x, const int y, const vec3& color)
@@ -221,7 +222,7 @@ void Renderer::SetObjectMatrices(const mat4 & oTransform, const mat3 & nTransfor
 
 void Renderer::SetDemoBuffer()
 {
-	for (int i = 50; i <= 150; i += 10) {
+	/*for (int i = 50; i <= 150; i += 10) {
 		DrawLine(vec3(100, 100, 0), vec3(i, 150, 0), vec3(1, 0, 0));
 	}
 	for (int i = 50; i <= 150; i += 10) {
@@ -239,21 +240,31 @@ void Renderer::SetDemoBuffer()
 	for (float i = -1.0f; i <= 1; i += 0.1f) {
 		vec3 t2 = PointToScreen(vec3(i, 1, 0));
 		DrawLine(t, t2, vec3(0, abs(i), abs(i*i)));
-	}
+	}*/
 
 	vector<vec3> vertices;
 	vertices.push_back(vec3(0.2f, 0.2f, 20));
 	vertices.push_back(vec3(0.5f, 0.6f, 30));
 	vertices.push_back(vec3(0.8f, 0.7f, 0));
+
 	vertices.push_back(vec3(-0.05f, -0.4f, 0));
 	vertices.push_back(vec3(-0.15f, -0.4f, 0));
 	vertices.push_back(vec3(-0.1f, -0.3f, 0));
+
 	vertices.push_back(vec3(-0.05f, -0.32f, 0));
 	vertices.push_back(vec3(-0.15f, -0.32f, 0));
 	vertices.push_back(vec3(-0.1f, -0.42f, 0));
+	
+	vertices.push_back(vec3(-1.0f, -1.0f, 0));
+	vertices.push_back(vec3(-1.0f, 1.0f, 0));
+	vertices.push_back(vec3(1.0f, -1.0f, 0));
+	
+	vertices.push_back(vec3(1.0f, 1.0f, 0));
+	vertices.push_back(vec3(-1.0f, 1.0f, 0));
+	vertices.push_back(vec3(1.0f, -1.0f, 0));
 	this->DrawTriangles(&vertices);
 
-	DrawBox(vec3(1), vec3(3));
+	//DrawBox(vec3(1), vec3(3));
 
 	//vertical line
 	for (int i = 0; i < m_height; i++) {

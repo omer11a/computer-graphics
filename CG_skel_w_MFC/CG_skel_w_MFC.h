@@ -15,3 +15,6 @@ void clear_buffers();
 bool scale(unsigned char type);
 bool rotation(unsigned char direction);
 bool translate(unsigned char direction);
+void set_scale_vector();
+void set_rotation_vector();
+void set_translation_vector();
