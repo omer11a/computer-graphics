@@ -5,7 +5,7 @@
 keyboard commands:	(keys	->	action)
 general:
 ESC/q	->	exit
-c		-> clear screen
+DEL		-> clear screen
 
 modes:
 w		->	enter world mode
@@ -21,7 +21,6 @@ t/T		->	control translation in current mode
 
 /*
 TODO:
-fix projection: filter pixels to (-1,1) only.
 camera changes: lookat, projection(ortho, perspective)
 change active model
 add models
@@ -53,6 +52,8 @@ add cameras
 #define BUFFER_OFFSET( offset )   ((GLvoid*) (offset))
 
 #define FILE_OPEN 1
+#define ADD_CAMERA 2
+
 #define MAIN_DEMO 1
 #define MAIN_ABOUT 2
 
@@ -106,8 +107,9 @@ void keyboard(unsigned char key, int x, int y)
 	case 033:
 		exit(EXIT_SUCCESS);
 		break;
-	case 'c':
+	case 127:
 		// clear screen
+		//scene->clear();
 		clear_buffers();
 		config.is_demo = false;
 		break;
@@ -188,17 +190,30 @@ void motion(int x, int y)
 
 void fileMenu(int id)
 {
+	bool should_redraw = false;
+	CFileDialog dlg(TRUE, _T(".obj"), NULL, NULL, _T("*.obj|*.*"));
 	switch (id)
 	{
 		case FILE_OPEN:
-			CFileDialog dlg(TRUE,_T(".obj"),NULL,NULL,_T("*.obj|*.*"));
 			if (dlg.DoModal() == IDOK) {
 				std::string s((LPCTSTR)dlg.GetPathName());
 				scene->loadOBJModel((LPCTSTR)dlg.GetPathName());
-				scene->draw();
 				config.is_demo = false;
+				should_redraw = true;
 			}
 			break;
+		case ADD_CAMERA:
+			scene->addCamera();
+			should_redraw = true;
+			break;
+	}
+	if (should_redraw) {
+		if (config.is_demo) {
+			scene->drawDemo();
+		} else {
+			clear_buffers();
+			scene->draw();
+		};
 	}
 }
 
@@ -237,6 +252,11 @@ void initMenu()
 	// file sub menu
 	int menuFile = glutCreateMenu(fileMenu);
 	glutAddMenuEntry("Open...", FILE_OPEN);
+	glutAddMenuEntry("Camera", ADD_CAMERA);
+
+	// add sub menu
+	//int menuAdd = glutCreateMenu(fileMenu);
+	//glutAddMenuEntry("Model", ADD_MODEL);
 
 	// setting sub menu
 	int menuSetting = glutCreateMenu(settingMenu);

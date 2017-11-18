@@ -249,12 +249,12 @@ Camera * Scene::getActiveCamera() {
 
 size_t Scene::getNumberOfModels()
 {
-	return cameras.size();
+	return models.size();
 }
 
 size_t Scene::getNumberOfCameras()
 {
-	return models.size();
+	return cameras.size();
 }
 
 void Scene::setActiveModel(int i) {
