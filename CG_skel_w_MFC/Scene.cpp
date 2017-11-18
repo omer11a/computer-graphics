@@ -298,6 +298,14 @@ void Scene::removeActiveCamera() {
 	delete camera;
 }
 
+void Scene::clear() {
+	while (cameras.size() >= 2) {
+		cameras.pop_back();
+	}
+
+	models.clear();
+}
+
 void Scene::draw() const {
 	if (activeCamera < 0) {
 		throw invalid_argument("No active camera");

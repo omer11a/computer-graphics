@@ -82,6 +82,7 @@ public:
 	void setActiveCamera(int i);
 	void removeActiveModel();
 	void removeActiveCamera();
+	void clear();
 	void draw() const;
 	void drawDemo() const;
 };
