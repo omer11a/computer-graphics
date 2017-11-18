@@ -17,15 +17,17 @@ transformations:
 r/R		->	control rotation in current mode
 t/T		->	control translation in current mode
 
+active objects:
+</>		->	move between cameras
+
 */
 
 /*
 TODO:
-camera changes: lookat, projection(ortho, perspective)
+camera changes: lookat, projection(ortho, perspective), zoom in/out
+visible: normals, face-normals, cameras
 change active model
 add models
-change active camera
-add cameras
 */
 
 #include "stdafx.h"
@@ -112,6 +114,14 @@ void keyboard(unsigned char key, int x, int y)
 		scene->clear();
 		clear_buffers();
 		config.is_demo = false;
+		break;
+	case '>':
+		scene->nextCamera();
+		should_redraw = true;
+		break;
+	case '<':
+		scene->prevCamera();
+		should_redraw = true;
 		break;
 	// switch modes
 	case 'm': // model mode

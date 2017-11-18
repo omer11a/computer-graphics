@@ -273,6 +273,26 @@ void Scene::setActiveCamera(int i) {
 	activeCamera = i;
 }
 
+void Scene::prevCamera()
+{
+	if (cameras.size() != 0) {
+		--activeCamera;
+		if (activeCamera < 0) {
+			activeCamera = cameras.size() - 1;
+		}
+	}
+}
+
+void Scene::nextCamera()
+{
+	if (cameras.size() != 0) {
+		++activeCamera;
+		if (activeCamera == cameras.size()) {
+			activeCamera = 0;
+		}
+	}
+}
+
 void Scene::removeActiveModel() {
 	if (activeModel < 0) {
 		throw invalid_argument("No active model");

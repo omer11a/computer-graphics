@@ -80,6 +80,8 @@ public:
 	size_t getNumberOfCameras();
 	void setActiveModel(int i);
 	void setActiveCamera(int i);
+	void prevCamera();
+	void nextCamera();
 	void removeActiveModel();
 	void removeActiveCamera();
 	void clear();
