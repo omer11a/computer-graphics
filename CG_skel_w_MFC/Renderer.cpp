@@ -204,7 +204,7 @@ void Renderer::DrawCamera()
 {
 	vector<vec3> vertices;
 	vertices.push_back(vec3(-0.1f, 0.0f, 20));
-	vertices.push_back(vec3(-0.1f, 0.0f, 30));
+	vertices.push_back(vec3(0.1f, 0.0f, 30));
 	vertices.push_back(vec3(0.0f, 0.2f, 0));
 	this->DrawTriangles(&vertices);
 }

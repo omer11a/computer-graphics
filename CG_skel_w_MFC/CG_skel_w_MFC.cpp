@@ -109,7 +109,7 @@ void keyboard(unsigned char key, int x, int y)
 		break;
 	case 127:
 		// clear screen
-		//scene->clear();
+		scene->clear();
 		clear_buffers();
 		config.is_demo = false;
 		break;
