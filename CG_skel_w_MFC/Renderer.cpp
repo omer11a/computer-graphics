@@ -158,9 +158,9 @@ void Renderer::DrawTriangles(const vector<vec3>* vertices, const vector<vec3>* n
 		projection * cTrans * oTrans{/nTrans} * p;
 		*/
 
-		this->DrawLine(a, b, white);
-		this->DrawLine(b, c, white);
-		this->DrawLine(c, a, white);
+		DrawLine(a, b, white);
+		DrawLine(b, c, white);
+		DrawLine(c, a, white);
 	}
 }
 
@@ -202,11 +202,15 @@ void Renderer::DrawBox(const vec3& minValues, const vec3& maxValues)
 
 void Renderer::DrawCamera()
 {
+	vec3 color(1,140/255,1);
 	vector<vec3> vertices;
-	vertices.push_back(vec3(-0.1f, 0.0f, 20));
-	vertices.push_back(vec3(0.1f, 0.0f, 30));
-	vertices.push_back(vec3(0.0f, 0.2f, 0));
-	this->DrawTriangles(&vertices);
+	vertices.push_back(PointToScreen(vec3(-0.05f, 0.0f, 20)));
+	vertices.push_back(PointToScreen(vec3(0.05f, 0.0f, 30)));
+	vertices.push_back(PointToScreen(vec3(0.0f, 0.25f, 0)));
+
+	DrawLine(vertices[0], vertices[1], color);
+	DrawLine(vertices[1], vertices[2], color);
+	DrawLine(vertices[2], vertices[0], color);
 }
 
 void Renderer::SetCameraTransform(const mat4 & cTransform)
