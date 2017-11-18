@@ -294,6 +294,7 @@ bool scale(unsigned char key)
 		}
 		break;
 	default:
+		cout << "scaling error: not in mode" << endl;
 		return should_redraw;
 	}
 	return should_redraw;
@@ -340,6 +341,7 @@ bool rotation(unsigned char direction)
 		}
 		break;
 	default:
+		cout << "rotation error: not in mode" << endl;
 		return should_redraw;
 	}
 	
@@ -380,6 +382,7 @@ bool translate(unsigned char direction)
 		}
 		break;
 	default:
+		cout << "translation error: not in mode" << endl;
 		return should_redraw;
 	}
 
@@ -391,6 +394,9 @@ void set_scale_vector()
 	CXyzDialog dlg("Scaling Setting");
 	if (dlg.DoModal() == IDOK) {
 		vec3 result = dlg.GetXYZ();
+		result.x = (result.x == 0) ? 1 : result.x;
+		result.y = (result.y == 0) ? 1 : result.y;
+		result.z = (result.z == 0) ? 1 : result.z;
 		if ((result.x >= 1) && (result.y >= 1) && (result.z >= 1)) {
 			config.scaling = result;
 		} else {
