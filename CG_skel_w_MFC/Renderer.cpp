@@ -155,7 +155,7 @@ void Renderer::DrawTriangles(const vector<vec3>* vertices, const vector<vec3>* v
 		vec3 a = *(i++);
 		vec3 b = *(i++);
 		vec3 c = *(i++);
-		vec3 cm = GetCenterMass((a), (b), (c));
+		vec3 cm = GetCenterMass(a, b, c);
 		DrawLine(PointToScreen(a), PointToScreen(b), white);
 		DrawLine(PointToScreen(b), PointToScreen(c), white);
 		DrawLine(PointToScreen(c), PointToScreen(a), white);
