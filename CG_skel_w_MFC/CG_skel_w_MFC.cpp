@@ -465,11 +465,7 @@ void set_scale_vector()
 		result.x = (result.x == 0) ? 1 : result.x;
 		result.y = (result.y == 0) ? 1 : result.y;
 		result.z = (result.z == 0) ? 1 : result.z;
-		if ((result.x >= 1) && (result.y >= 1) && (result.z >= 1)) {
-			config.scaling = result;
-		} else {
-			cout << "scaling setting mustn't be lower than 1." << endl;
-		}
+		config.scaling = result;
 	}
 }
 
@@ -492,12 +488,7 @@ void set_translation_vector()
 {
 	CXyzDialog dlg("Movement Setting");
 	if (dlg.DoModal() == IDOK) {
-		vec3 result = dlg.GetXYZ();
-		if ((result.x >= 0) && (result.y >= 0) && (result.z >= 0)) {
-			config.translating = result;
-		} else {
-			cout << "scaling setting mustn't be lower than 1." << endl;
-		}
+		config.translating = dlg.GetXYZ();
 	}
 }
 
