@@ -142,13 +142,13 @@ void Renderer::DrawModerateLine(const vec3& p1, const vec3& p2, const vec3& colo
 	}
 }
 
-void Renderer::DrawTriangles(const vector<vec3>* vertices, const vector<vec3>* normals, const vector<vec3>* faceNormals) {
+void Renderer::DrawTriangles(const vector<vec3>* vertices, const vector<vec3>* vertexNormals, const vector<vec3>* faceNormals) {
 	vec3 white(1);
 	vec3 yellow(1, 1, 0);
 	vec3 pink(1, 140 / 255., 1);
 	int fn_index = 0;
-	int n_index = 0;
-	vec3 normal, f_normal;
+	int vn_index = 0;
+	vec3 v_normal, f_normal;
 
 	// assuming that vertices size is a multiplication of 3
 	auto i = vertices->begin();
@@ -157,22 +157,23 @@ void Renderer::DrawTriangles(const vector<vec3>* vertices, const vector<vec3>* n
 		vec3 b = *(i++);
 		vec3 c = *(i++);
 		vec3 cm = GetCenterMass(a, b, c);
-		DrawLine(PointToScreen(a), PointToScreen(b), white);
-		DrawLine(PointToScreen(b), PointToScreen(c), white);
-		DrawLine(PointToScreen(c), PointToScreen(a), white);
+		DrawLine(PointToScreen(a, true), PointToScreen(b, true), white);
+		DrawLine(PointToScreen(b, true), PointToScreen(c, true), white);
+		DrawLine(PointToScreen(c, true), PointToScreen(a, true), white);
 
 		if (faceNormals != NULL) {
 			f_normal = faceNormals->at(fn_index);
-			DrawLine(PointToScreen(cm), PointToScreen(cm + f_normal), pink);
+			DrawLine(PointToScreen(cm, true), PointToScreen(cm + f_normal, true), pink);
+			++fn_index;
 		}
 
-		if (normals != NULL) {
-			f_normal = normals->at(n_index++);
-			DrawLine(PointToScreen(a), PointToScreen(a + normal), yellow);
-			f_normal = normals->at(n_index++);
-			DrawLine(PointToScreen(b), PointToScreen(b + normal), yellow);
-			f_normal = normals->at(n_index++);
-			DrawLine(PointToScreen(c), PointToScreen(c + normal), yellow);
+		if (vertexNormals != NULL) {
+			v_normal = vertexNormals->at(vn_index++);
+			DrawLine(PointToScreen(a, true), PointToScreen(a + v_normal, true), yellow);
+			v_normal = vertexNormals->at(vn_index++);
+			DrawLine(PointToScreen(b, true), PointToScreen(b + v_normal, true), yellow);
+			v_normal = vertexNormals->at(vn_index++);
+			DrawLine(PointToScreen(c, true), PointToScreen(c + v_normal, true), yellow);
 		}
 	}
 }
