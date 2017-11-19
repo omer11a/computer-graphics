@@ -143,24 +143,37 @@ void Renderer::DrawModerateLine(const vec3& p1, const vec3& p2, const vec3& colo
 }
 
 void Renderer::DrawTriangles(const vector<vec3>* vertices, const vector<vec3>* normals, const vector<vec3>* faceNormals) {
-	vec3 white(1, 1, 1);
-	
-	// assuming that vertices size is a multiplication of 3
+	vec3 white(1);
+	vec3 yellow(1, 1, 0);
+	vec3 pink(1, 140 / 255., 1);
+	int fn_index = 0;
+	int n_index = 0;
+	vec3 normal, f_normal;
 
+	// assuming that vertices size is a multiplication of 3
 	auto i = vertices->begin();
 	while (i != vertices->end()) {
-		vec3 a = PointToScreen(*(i++));
-		vec3 b = PointToScreen(*(i++));
-		vec3 c = PointToScreen(*(i++));
+		vec3 a = *(i++);
+		vec3 b = *(i++);
+		vec3 c = *(i++);
+		vec3 cm = GetCenterMass(a, b, c);
+		DrawLine(PointToScreen(a), PointToScreen(b), white);
+		DrawLine(PointToScreen(b), PointToScreen(c), white);
+		DrawLine(PointToScreen(c), PointToScreen(a), white);
 
-		/*
-		per p, do:
-		projection * cTrans * oTrans{/nTrans} * p;
-		*/
+		if (faceNormals != NULL) {
+			f_normal = faceNormals->at(fn_index);
+			DrawLine(PointToScreen(cm), PointToScreen(cm + f_normal), pink);
+		}
 
-		DrawLine(a, b, white);
-		DrawLine(b, c, white);
-		DrawLine(c, a, white);
+		if (normals != NULL) {
+			f_normal = normals->at(n_index++);
+			DrawLine(PointToScreen(a), PointToScreen(a + normal), yellow);
+			f_normal = normals->at(n_index++);
+			DrawLine(PointToScreen(b), PointToScreen(b + normal), yellow);
+			f_normal = normals->at(n_index++);
+			DrawLine(PointToScreen(c), PointToScreen(c + normal), yellow);
+		}
 	}
 }
 
