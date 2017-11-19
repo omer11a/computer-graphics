@@ -32,7 +32,7 @@ f		->	switch model face normal visibility
 /*
 TODO:
 camera changes: lookat, projection(ortho, perspective), zoom in/out
-visible: normals, face-normals, cameras
+DONE:	visible: normals, face-normals, cameras
 change active model
 add models
 */
@@ -122,6 +122,8 @@ void keyboard(unsigned char key, int x, int y)
 		clear_buffers();
 		config.is_demo = false;
 		break;
+
+	// camera operations
 	case '>':
 		scene->nextCamera();
 		should_redraw = true;
@@ -130,6 +132,17 @@ void keyboard(unsigned char key, int x, int y)
 		scene->prevCamera();
 		should_redraw = true;
 		break;
+	case 'l':
+		//TODO
+		//scene->getActiveCamera()->lookAt();
+		break;
+	case 'o':
+		//scene->getActiveCamera()->ortho();
+		break;
+	case 'p':
+		//scene->getActiveCamera()->perspectiveHorizontal();
+		break;
+
 	// switch modes
 	case 'm': // model mode
 	case 'w': // world mode
@@ -149,10 +162,14 @@ void keyboard(unsigned char key, int x, int y)
 	case 'R':
 		should_redraw = rotation(key);
 		break;
+
+	// translating
 	case 't':
 	case 'T':
 		should_redraw = translate(key);
 		break;
+
+	// visibility options
 	case 'b':
 		if (scene->getNumberOfModels() > 0) {
 			scene->getActiveModel()->switchBoundingBoxVisibility();

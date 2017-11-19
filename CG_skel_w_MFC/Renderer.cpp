@@ -162,17 +162,17 @@ void Renderer::DrawTriangles(const vector<vec3>* vertices, const vector<vec3>* n
 		DrawLine(PointToScreen(c), PointToScreen(a), white);
 
 		if (faceNormals != NULL) {
-			f_normal = faceNormals->at(fn_index);
-			DrawLine(PointToScreen(cm), PointToScreen(cm + f_normal), pink);
+			f_normal = faceNormals->at(fn_index++);
+			DrawLine(PointToScreen(cm, true), PointToScreen(cm + f_normal, true), pink);
 		}
 
 		if (normals != NULL) {
-			f_normal = normals->at(n_index++);
-			DrawLine(PointToScreen(a), PointToScreen(a + normal), yellow);
-			f_normal = normals->at(n_index++);
-			DrawLine(PointToScreen(b), PointToScreen(b + normal), yellow);
-			f_normal = normals->at(n_index++);
-			DrawLine(PointToScreen(c), PointToScreen(c + normal), yellow);
+			normal = normals->at(n_index++);
+			DrawLine(PointToScreen(a, true), PointToScreen(a + normal, true), yellow);
+			normal = normals->at(n_index++);
+			DrawLine(PointToScreen(b, true), PointToScreen(b + normal, true), yellow);
+			normal = normals->at(n_index++);
+			DrawLine(PointToScreen(c, true), PointToScreen(c + normal, true), yellow);
 		}
 	}
 }
@@ -216,10 +216,11 @@ void Renderer::DrawBox(const vec3& minValues, const vec3& maxValues)
 void Renderer::DrawCamera()
 {
 	vec3 color(1,140/255,1);
+	vec3 camera_location = PointToScreen(vec3());
 	vector<vec3> vertices;
-	vertices.push_back(PointToScreen(vec3(-0.05f, 0.0f, 20)));
-	vertices.push_back(PointToScreen(vec3(0.05f, 0.0f, 30)));
-	vertices.push_back(PointToScreen(vec3(0.0f, 0.25f, 0)));
+	vertices.push_back(camera_location + vec3(-10, 0.0f, 20));
+	vertices.push_back(camera_location + vec3(10, 0, 30));
+	vertices.push_back(camera_location + vec3(0, 25, 0));
 
 	DrawLine(vertices[0], vertices[1], color);
 	DrawLine(vertices[1], vertices[2], color);
