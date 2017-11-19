@@ -19,6 +19,13 @@ t/T		->	control translation in current mode
 
 active objects:
 </>		->	move between cameras
+l		->	set camera look at
+p/o		->	set camera perspective/orthogonal
+
+<TBD>		->	move between models
+b		->	switch model bounding box visibility
+n		->	switch model normal visibility
+f		->	switch model face normal visibility
 
 */
 
@@ -147,12 +154,24 @@ void keyboard(unsigned char key, int x, int y)
 		should_redraw = translate(key);
 		break;
 	case 'b':
-		if (config.mode == 'm') {
-			if (scene->getNumberOfModels() > 0) {
-				scene->getActiveModel()->switchBoundingBoxVisibility();
-				cout << "switched bounding box visibility of active model." << endl;
-				should_redraw = true;
-			}
+		if (scene->getNumberOfModels() > 0) {
+			scene->getActiveModel()->switchBoundingBoxVisibility();
+			cout << "switched bounding box visibility of active model." << endl;
+			should_redraw = true;
+		}
+		break;
+	case 'n':
+		if (scene->getNumberOfModels() > 0) {
+			scene->getActiveModel()->switchVertexNormalsVisibility();
+			cout << "switched face normals visibility of active model." << endl;
+			should_redraw = true;
+		}
+		break;
+	case 'f':
+		if (scene->getNumberOfModels() > 0) {
+			scene->getActiveModel()->switchFaceNormalsVisibility();
+			cout << "switched face normals visibility of active model." << endl;
+			should_redraw = true;
 		}
 		break;
 	}
@@ -208,12 +227,14 @@ void fileMenu(int id)
 			if (dlg.DoModal() == IDOK) {
 				std::string s((LPCTSTR)dlg.GetPathName());
 				scene->loadOBJModel((LPCTSTR)dlg.GetPathName());
+				cout << "model " << s << " was loaded with ID #" << scene->getNumberOfModels() - 1 << endl;
 				config.is_demo = false;
 				should_redraw = true;
 			}
 			break;
 		case ADD_CAMERA:
 			scene->addCamera();
+			cout << "camera was added with ID #" << scene->getNumberOfCameras() - 1 << endl;
 			should_redraw = true;
 			break;
 	}
