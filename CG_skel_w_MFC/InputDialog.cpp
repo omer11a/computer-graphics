@@ -297,61 +297,105 @@ END_MESSAGE_MAP()
 
 int COrthoDialog::OnCreate(LPCREATESTRUCT lpcs)
 {
-	int start_loc = 30;
+	int start_loc = 50;
 	leftEdit.Create(ES_MULTILINE | WS_CHILD | WS_VISIBLE | WS_TABSTOP | WS_BORDER,
-		CRect(90, start_loc, 250, start_loc + 20), this, IDC_LEFT_EDIT);
+		CRect(110, start_loc, 230, start_loc + 20), this, IDC_LEFT_EDIT);
 
-	start_loc += 50;
+	
 	rightEdit.Create(ES_MULTILINE | WS_CHILD | WS_VISIBLE | WS_TABSTOP | WS_BORDER,
-		CRect(90, start_loc, 250, start_loc + 20), this, IDC_RIGHT_EDIT);
+		CRect(330, start_loc, 450, start_loc + 20), this, IDC_RIGHT_EDIT);
 
 	start_loc += 50;
 	bottomEdit.Create(ES_MULTILINE | WS_CHILD | WS_VISIBLE | WS_TABSTOP | WS_BORDER,
-		CRect(90, start_loc, 250, start_loc + 20), this, IDC_BOTTOM_EDIT);
+		CRect(110, start_loc, 230, start_loc + 20), this, IDC_BOTTOM_EDIT);
 
-	start_loc += 50;
+	
 	topEdit.Create(ES_MULTILINE | WS_CHILD | WS_VISIBLE | WS_TABSTOP | WS_BORDER,
-		CRect(90, start_loc, 250, start_loc + 20), this, IDC_TOP_EDIT);
+		CRect(330, start_loc, 450, start_loc + 20), this, IDC_TOP_EDIT);
 
 	start_loc += 50;
 	nearEdit.Create(ES_MULTILINE | WS_CHILD | WS_VISIBLE | WS_TABSTOP | WS_BORDER,
-		CRect(90, start_loc, 250, start_loc + 20), this, IDC_NEAR_EDIT);
+		CRect(110, start_loc, 230, start_loc + 20), this, IDC_NEAR_EDIT);
 
-	start_loc += 50;
+	
 	farEdit.Create(ES_MULTILINE | WS_CHILD | WS_VISIBLE | WS_TABSTOP | WS_BORDER,
-		CRect(90, start_loc, 250, start_loc + 20), this, IDC_FAR_EDIT);
+		CRect(330, start_loc, 450, start_loc + 20), this, IDC_FAR_EDIT);
 
 	return 0;
 }
 
 void COrthoDialog::OnPaint()
 {
-	int start_loc = 32;
+	int start_loc = 52;
 	CPaintDC dc(this);
 	dc.SetBkMode(TRANSPARENT);
 
-	CRect left_rect(50, start_loc, 350, start_loc + 18);
+	CRect left_rect(40, start_loc, 170, start_loc + 18);
 	dc.DrawText(CString(LEFT_EDIT_TITLE), -1, &left_rect, DT_SINGLELINE);
 
-	start_loc += 50;
-	CRect right_rect(50, start_loc, 350, start_loc + 18);
+	CRect right_rect(260, start_loc, 410, start_loc + 18);
 	dc.DrawText(CString(RIGHT_EDIT_TITLE), -1, &right_rect, DT_SINGLELINE);
 
 	start_loc += 50;
-	CRect bottom_rect(50, start_loc, 350, start_loc + 18);
+	CRect bottom_rect(40, start_loc, 170, start_loc + 18);
 	dc.DrawText(CString(BOTTOM_EDIT_TITLE), -1, &bottom_rect, DT_SINGLELINE);
 
-	start_loc += 50;
-	CRect top_rect(50, start_loc, 350, start_loc + 18);
+	CRect top_rect(260, start_loc, 410, start_loc + 18);
 	dc.DrawText(CString(TOP_EDIT_TITLE), -1, &top_rect, DT_SINGLELINE);
 
 	start_loc += 50;
-	CRect near_rect(50, start_loc, 350, start_loc + 18);
+	CRect near_rect(40, start_loc, 170, start_loc + 18);
 	dc.DrawText(CString(NEAR_EDIT_TITLE), -1, &near_rect, DT_SINGLELINE);
 
-	start_loc += 50;
-	CRect far_rect(50, start_loc, 450, start_loc + 18);
+	CRect far_rect(260, start_loc, 410, start_loc + 18);
 	dc.DrawText(CString(FAR_EDIT_TITLE), -1, &far_rect, DT_SINGLELINE);
 
 	leftEdit.SetFocus();
+}
+
+// ----------------------
+//    Class CZoomDialog
+// ----------------------
+
+CZoomDialog::CZoomDialog(CString title, float z)
+	: CInputDialog(title), z(z)
+{ }
+
+CZoomDialog::~CZoomDialog()
+{ }
+
+float CZoomDialog::GetZ()
+{
+	return z;
+}
+
+void CZoomDialog::DoDataExchange(CDataExchange* pDX)
+{
+	CInputDialog::DoDataExchange(pDX);
+	DDX_Text(pDX, IDC_Z_EDIT, z);
+}
+
+// CXyzDialog message handlers
+BEGIN_MESSAGE_MAP(CZoomDialog, CInputDialog)
+	ON_WM_CREATE()
+	ON_WM_PAINT()
+END_MESSAGE_MAP()
+
+int CZoomDialog::OnCreate(LPCREATESTRUCT lpcs)
+{
+	zEdit.Create(ES_MULTILINE | WS_CHILD | WS_VISIBLE | WS_TABSTOP | WS_BORDER,
+		CRect(130, 140, 340, 160), this, IDC_Z_EDIT);
+
+	return 0;
+}
+
+void CZoomDialog::OnPaint()
+{
+	CPaintDC dc(this);
+	dc.SetBkMode(TRANSPARENT);
+
+	CRect z_rect(100, 142, 450, 160);
+	dc.DrawText(CString(Z_EDIT_TITLE), -1, &z_rect, DT_SINGLELINE);
+
+	zEdit.SetFocus();
 }

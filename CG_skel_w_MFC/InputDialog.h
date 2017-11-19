@@ -148,3 +148,26 @@ protected:
 	afx_msg void OnPaint();
 	DECLARE_MESSAGE_MAP()
 };
+
+// ----------------------
+//    Class CZoomDialog
+// ----------------------
+
+class CZoomDialog : public CInputDialog
+{
+public:
+	CZoomDialog(CString title = "Input Dialog", float z = 1);
+	virtual ~CZoomDialog();
+
+	float GetZ();
+
+protected:
+	float z;
+	CEdit zEdit;
+
+	virtual void DoDataExchange(CDataExchange* pDX);
+
+	afx_msg int OnCreate(LPCREATESTRUCT lpcs);
+	afx_msg void OnPaint();
+	DECLARE_MESSAGE_MAP()
+};

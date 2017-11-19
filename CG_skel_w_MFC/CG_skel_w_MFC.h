@@ -13,6 +13,7 @@ void initMenu();
 
 void clear_buffers();
 bool set_ortho();
+bool set_zoom(char type);
 bool scale(unsigned char type);
 bool rotation(unsigned char direction);
 bool translate(unsigned char direction);

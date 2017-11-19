@@ -21,6 +21,7 @@ active objects:
 </>		->	move between cameras
 l		->	set camera look at
 o/p/P	->	set camera orthogonal / perspective-Horizontal / perspective-Vertical
+Z/z		->	set zoom in/out
 
 <TBD>		->	move between models
 b		->	switch model bounding box visibility
@@ -143,6 +144,10 @@ void keyboard(unsigned char key, int x, int y)
 		break;
 	case 'p':
 		//scene->getActiveCamera()->perspectiveHorizontal();
+		break;
+	case 'z':
+	case 'Z':
+		should_redraw = set_zoom(key);
 		break;
 
 	// switch modes
@@ -344,6 +349,22 @@ bool set_ortho()
 			dlg.GetFar()
 		);
 		return true;
+	}
+	return false;
+}
+
+bool set_zoom(char type)
+{
+	CZoomDialog dlg;
+	if (dlg.DoModal() == IDOK) {
+		switch (type) {
+		case 'Z':
+			scene->getActiveCamera()->zoomIn(dlg.GetZ());
+			return true;
+		case 'z':
+			scene->getActiveCamera()->zoomOut(dlg.GetZ());
+			return true;
+		}
 	}
 	return false;
 }
