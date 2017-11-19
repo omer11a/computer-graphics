@@ -13,6 +13,7 @@ class Renderer
 	int m_width, m_height;
 	mat4 m_cTransform, m_projection, m_oTransform;
 	mat3 m_nTransform;
+	mat4 m_camera_multiply;
 
 	void CreateBuffers(int width, int height);
 	void CreateLocalBuffer();

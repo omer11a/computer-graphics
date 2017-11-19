@@ -7,7 +7,7 @@
 #define INDEX(width,x,y,c) (x+y*width)*3+c
 
 Renderer::Renderer() : m_width(512), m_height(512), m_zbuffer(NULL),
-m_cTransform(), m_projection(), m_oTransform(), m_nTransform()
+m_cTransform(), m_projection(), m_oTransform(), m_nTransform(), m_camera_multiply()
 {
 	InitOpenGLRendering();
 	CreateBuffers(512, 512);
@@ -47,9 +47,9 @@ vec3 Renderer::PointToScreen(const vec3& p, const vec3& n) const
 	vec4 nTransformed;
 	float min_size = min(m_height, m_width) * 0.5;
 
-	pTransformed = m_projection * m_cTransform * m_oTransform * p;
+	pTransformed = m_camera_multiply * m_oTransform * p;
 	if (length(n) != 0) {
-		nTransformed = m_projection * m_cTransform * (m_nTransform * n);
+		nTransformed = m_camera_multiply * normalize(m_nTransform * n);
 	}
 
 	vec4 result = pTransformed + nTransformed;
@@ -155,7 +155,7 @@ void Renderer::DrawTriangles(const vector<vec3>* vertices, const vector<vec3>* v
 		vec3 a = *(i++);
 		vec3 b = *(i++);
 		vec3 c = *(i++);
-		vec3 cm = GetCenterMass(a, b, c);
+		vec3 cm = GetCenterMass((a), (b), (c));
 		DrawLine(PointToScreen(a), PointToScreen(b), white);
 		DrawLine(PointToScreen(b), PointToScreen(c), white);
 		DrawLine(PointToScreen(c), PointToScreen(a), white);
@@ -230,11 +230,13 @@ void Renderer::DrawCamera()
 void Renderer::SetCameraTransform(const mat4 & cTransform)
 {
 	m_cTransform = cTransform;
+	m_camera_multiply = m_projection * m_cTransform;
 }
 
 void Renderer::SetProjection(const mat4 & projection)
 {
 	m_projection = projection;
+	m_camera_multiply = m_projection * m_cTransform;
 }
 
 void Renderer::SetObjectMatrices(const mat4 & oTransform, const mat3 & nTransform)
