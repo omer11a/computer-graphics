@@ -35,8 +35,8 @@ void Camera::transformInView(const mat4& transform) {
 		throw invalid_argument("Singular matrices cannot be performed as transformations on cameras.");
 	}
 
-	viewTransform = viewTransform * transform;
-	inverseViewTransform = inverse(transform) * inverseViewTransform;
+	viewTransform = transform * viewTransform;
+	inverseViewTransform = inverseViewTransform * inverse(transform);
 }
 
 void Camera::transformInWorld(const mat4& transform) {
@@ -44,8 +44,8 @@ void Camera::transformInWorld(const mat4& transform) {
 			throw invalid_argument("Singular matrices cannot be performed as transformations on cameras.");
 	}
 
-	worldTransform = worldTransform * transform;
-	inverseWorldTransform = inverse(worldTransform) * inverseWorldTransform;
+	worldTransform = transform * worldTransform;
+	inverseWorldTransform = inverseWorldTransform * inverse(transform);
 }
 
 void Camera::lookAt(const vec4 & eye, const vec4 & at, const vec4 & up) {

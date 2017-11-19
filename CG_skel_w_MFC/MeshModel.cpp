@@ -168,13 +168,13 @@ MeshModel::MeshModel(string fileName) :
 }
 
 void MeshModel::transformInModel(const mat4 & transform) {
-	normalModelTransform = normalModelTransform * convertToNormalTransform(transform);
-	modelTransform = modelTransform * transform;
+	normalModelTransform = convertToNormalTransform(transform) * normalModelTransform;
+	modelTransform = transform * modelTransform;
 }
 
 void MeshModel::transformInWorld(const mat4 & transform) {
-	normalWorldTransform = normalWorldTransform * convertToNormalTransform(transform);
-	worldTransform = worldTransform * transform;
+	normalWorldTransform = convertToNormalTransform(transform) * normalWorldTransform;
+	worldTransform = transform * worldTransform;
 }
 
 void MeshModel::switchVertexNormalsVisibility() {
