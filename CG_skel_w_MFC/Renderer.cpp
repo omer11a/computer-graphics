@@ -49,7 +49,7 @@ vec3 Renderer::PointToScreen(const vec3& p, const vec3& n) const
 
 	pTransformed = m_projection * m_cTransform * m_oTransform * p;
 	if (length(n) != 0) {
-		nTransformed = m_projection * m_cTransform * (m_nTransform * n);
+		nTransformed = m_projection * m_cTransform * normalize(m_nTransform * n);
 	}
 
 	vec4 result = pTransformed + nTransformed;
