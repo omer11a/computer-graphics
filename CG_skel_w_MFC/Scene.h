@@ -41,10 +41,10 @@ public:
 	void transformInView(const mat4 & transform);
 	void transformInWorld(const mat4 & transform);
 	void lookAt(const vec4& eye, const vec4& at, const vec4& up);
-	void ortho( const float left, const float right,
+	void ortho(const float left, const float right,
 		const float bottom, const float top,
 		const float zNear, const float zFar );
-	void frustum( const float left, const float right,
+	void frustum(const float left, const float right,
 		const float bottom, const float top,
 		const float zNear, const float zFar );
 	void perspectiveVertical( const float fovy, const float aspect,

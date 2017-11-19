@@ -20,7 +20,7 @@ t/T		->	control translation in current mode
 active objects:
 </>		->	move between cameras
 l		->	set camera look at
-p/o		->	set camera perspective/orthogonal
+o/p/P	->	set camera orthogonal / perspective-Horizontal / perspective-Vertical
 
 <TBD>		->	move between models
 b		->	switch model bounding box visibility
@@ -139,7 +139,7 @@ void keyboard(unsigned char key, int x, int y)
 		//scene->getActiveCamera()->lookAt();
 		break;
 	case 'o':
-		//scene->getActiveCamera()->ortho();
+		should_redraw = set_ortho();
 		break;
 	case 'p':
 		//scene->getActiveCamera()->perspectiveHorizontal();
@@ -331,6 +331,23 @@ void clear_buffers()
 	renderer->SwapBuffers();
 }
 
+bool set_ortho()
+{
+	COrthoDialog dlg;
+	if (dlg.DoModal() == IDOK) {
+		scene->getActiveCamera()->ortho(
+			dlg.GetLeft(), 
+			dlg.GetRight(),
+			dlg.GetBottom(),
+			dlg.GetTop(),
+			dlg.GetNear(),
+			dlg.GetFar()
+		);
+		return true;
+	}
+	return false;
+}
+
 bool scale(unsigned char key)
 {
 	bool should_redraw = false;
@@ -485,13 +502,14 @@ bool translate(unsigned char direction)
 
 void set_scale_vector()
 {
-	CXyzDialog dlg("Scaling Setting");
+	CXyzDialog dlg("Scaling Setting", vec3(1));
 	if (dlg.DoModal() == IDOK) {
 		vec3 result = dlg.GetXYZ();
-		result.x = (result.x == 0) ? 1 : result.x;
-		result.y = (result.y == 0) ? 1 : result.y;
-		result.z = (result.z == 0) ? 1 : result.z;
-		config.scaling = result;
+		if ((result.x != 0) && (result.y != 0) && (result.z != 0)) {
+			config.scaling = result;
+		} else {
+			cout << "scaling setting: can't scale to zero." << endl;
+		}
 	}
 }
 

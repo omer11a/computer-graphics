@@ -7,10 +7,26 @@
 #define IDC_Y_EDIT 202
 #define IDC_Z_EDIT 203
 
+#define IDC_LEFT_EDIT		204
+#define IDC_RIGHT_EDIT		205
+#define IDC_BOTTOM_EDIT		206
+#define IDC_TOP_EDIT		207
+#define IDC_NEAR_EDIT		208
+#define IDC_FAR_EDIT		209
+
 #define CMD_EDIT_TITLE "Command"
 #define X_EDIT_TITLE "X ="
 #define Y_EDIT_TITLE "Y ="
 #define Z_EDIT_TITLE "Z ="
+
+#define LEFT_EDIT_TITLE "Left ="
+#define RIGHT_EDIT_TITLE "Right ="
+#define BOTTOM_EDIT_TITLE "Bottom ="
+#define TOP_EDIT_TITLE "Top ="
+#define NEAR_EDIT_TITLE "Near ="
+#define FAR_EDIT_TITLE "Far ="
+
+
 
 // ------------------------
 //    Class CInputDialog
@@ -90,8 +106,8 @@ void CCmdDialog::OnPaint()
 //    Class CXyzDialog
 // ----------------------
 
-CXyzDialog::CXyzDialog(CString title)
-	: CInputDialog(title), mX(0.0), mY(0.0), mZ(0.0)
+CXyzDialog::CXyzDialog(CString title, vec3 default_values)
+	: CInputDialog(title), mX(default_values.x), mY(default_values.y), mZ(default_values.z)
 { }
 
 CXyzDialog::~CXyzDialog()
@@ -218,4 +234,124 @@ void CCmdXyzDialog::OnPaint()
 	dc.DrawText(CString(Z_EDIT_TITLE), -1, &z_rect, DT_SINGLELINE);
 
 	mCmdEdit.SetFocus();
+}
+
+
+// ----------------------
+//    Class COrthoDialog
+// ----------------------
+
+COrthoDialog::COrthoDialog(CString title)
+	: CInputDialog(title), left(0), right(0), bottom(0), top(0), zNear(0), zFar(0)
+{ }
+
+COrthoDialog::~COrthoDialog()
+{ }
+
+float COrthoDialog::GetLeft() const
+{
+	return left;
+}
+
+float COrthoDialog::GetRight() const
+{
+	return right;
+}
+
+float COrthoDialog::GetBottom() const
+{
+	return bottom;
+}
+
+float COrthoDialog::GetTop() const
+{
+	return top;
+}
+
+float COrthoDialog::GetNear() const
+{
+	return zNear;
+}
+
+float COrthoDialog::GetFar() const
+{
+	return zFar;
+}
+
+void COrthoDialog::DoDataExchange(CDataExchange* pDX)
+{
+	CInputDialog::DoDataExchange(pDX);
+	DDX_Text(pDX, IDC_LEFT_EDIT, left);
+	DDX_Text(pDX, IDC_RIGHT_EDIT, right);
+	DDX_Text(pDX, IDC_BOTTOM_EDIT, bottom);
+	DDX_Text(pDX, IDC_TOP_EDIT, top);
+	DDX_Text(pDX, IDC_NEAR_EDIT, zNear);
+	DDX_Text(pDX, IDC_FAR_EDIT, zFar);
+}
+
+// COrthoDialog message handlers
+BEGIN_MESSAGE_MAP(COrthoDialog, CInputDialog)
+	ON_WM_CREATE()
+	ON_WM_PAINT()
+END_MESSAGE_MAP()
+
+int COrthoDialog::OnCreate(LPCREATESTRUCT lpcs)
+{
+	int start_loc = 30;
+	leftEdit.Create(ES_MULTILINE | WS_CHILD | WS_VISIBLE | WS_TABSTOP | WS_BORDER,
+		CRect(90, start_loc, 250, start_loc + 20), this, IDC_LEFT_EDIT);
+
+	start_loc += 50;
+	rightEdit.Create(ES_MULTILINE | WS_CHILD | WS_VISIBLE | WS_TABSTOP | WS_BORDER,
+		CRect(90, start_loc, 250, start_loc + 20), this, IDC_RIGHT_EDIT);
+
+	start_loc += 50;
+	bottomEdit.Create(ES_MULTILINE | WS_CHILD | WS_VISIBLE | WS_TABSTOP | WS_BORDER,
+		CRect(90, start_loc, 250, start_loc + 20), this, IDC_BOTTOM_EDIT);
+
+	start_loc += 50;
+	topEdit.Create(ES_MULTILINE | WS_CHILD | WS_VISIBLE | WS_TABSTOP | WS_BORDER,
+		CRect(90, start_loc, 250, start_loc + 20), this, IDC_TOP_EDIT);
+
+	start_loc += 50;
+	nearEdit.Create(ES_MULTILINE | WS_CHILD | WS_VISIBLE | WS_TABSTOP | WS_BORDER,
+		CRect(90, start_loc, 250, start_loc + 20), this, IDC_NEAR_EDIT);
+
+	start_loc += 50;
+	farEdit.Create(ES_MULTILINE | WS_CHILD | WS_VISIBLE | WS_TABSTOP | WS_BORDER,
+		CRect(90, start_loc, 250, start_loc + 20), this, IDC_FAR_EDIT);
+
+	return 0;
+}
+
+void COrthoDialog::OnPaint()
+{
+	int start_loc = 32;
+	CPaintDC dc(this);
+	dc.SetBkMode(TRANSPARENT);
+
+	CRect left_rect(50, start_loc, 350, start_loc + 18);
+	dc.DrawText(CString(LEFT_EDIT_TITLE), -1, &left_rect, DT_SINGLELINE);
+
+	start_loc += 50;
+	CRect right_rect(50, start_loc, 350, start_loc + 18);
+	dc.DrawText(CString(RIGHT_EDIT_TITLE), -1, &right_rect, DT_SINGLELINE);
+
+	start_loc += 50;
+	CRect bottom_rect(50, start_loc, 350, start_loc + 18);
+	dc.DrawText(CString(BOTTOM_EDIT_TITLE), -1, &bottom_rect, DT_SINGLELINE);
+
+	start_loc += 50;
+	CRect top_rect(50, start_loc, 350, start_loc + 18);
+	dc.DrawText(CString(TOP_EDIT_TITLE), -1, &top_rect, DT_SINGLELINE);
+
+	start_loc += 50;
+	CRect near_rect(50, start_loc, 350, start_loc + 18);
+	dc.DrawText(CString(NEAR_EDIT_TITLE), -1, &near_rect, DT_SINGLELINE);
+
+	start_loc += 50;
+	CRect far_rect(50, start_loc, 450, start_loc + 18);
+	dc.DrawText(CString(FAR_EDIT_TITLE), -1, &far_rect, DT_SINGLELINE);
+
+	leftEdit.SetFocus();
 }

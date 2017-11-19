@@ -59,7 +59,7 @@ protected:
 class CXyzDialog : public CInputDialog
 {
 public:
-	CXyzDialog(CString title = "Input Dialog");
+	CXyzDialog(CString title = "Input Dialog", vec3 default_values=vec3());
 	virtual ~CXyzDialog();
 
 	vec3 GetXYZ();
@@ -101,6 +101,46 @@ protected:
 	CEdit mXEdit;
 	CEdit mYEdit;
 	CEdit mZEdit;
+
+	virtual void DoDataExchange(CDataExchange* pDX);
+
+	afx_msg int OnCreate(LPCREATESTRUCT lpcs);
+	afx_msg void OnPaint();
+	DECLARE_MESSAGE_MAP()
+};
+
+
+// ----------------------
+//    Class COrthoDialog
+// ----------------------
+
+class COrthoDialog : public CInputDialog
+{
+public:
+	COrthoDialog(CString title = "Orthogonal Setting");
+	virtual ~COrthoDialog();
+
+	float GetLeft() const;
+	float GetRight() const;
+	float GetBottom() const;
+	float GetTop() const;
+	float GetNear() const;
+	float GetFar() const;
+
+protected:
+	
+	float left;
+	float right;
+	float bottom;
+	float top;
+	float zNear; 
+	float zFar;
+	CEdit leftEdit;
+	CEdit rightEdit;
+	CEdit bottomEdit;
+	CEdit topEdit;
+	CEdit nearEdit;
+	CEdit farEdit;
 
 	virtual void DoDataExchange(CDataExchange* pDX);
 
