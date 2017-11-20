@@ -23,8 +23,16 @@ void Camera::verifyProjectionParameters(
 	}
 }
 
+void Camera::updateProjection() {
+	if (isPerspective) {
+		frustum(left, right, bottom, top, zNear, zFar);
+	} else {
+		ortho(left, right, bottom, top, zNear, zFar);
+	}
+}
+
 Camera::Camera() :
-	isVisible(true),
+	isVisible(true), isPerspective(true),
 	viewTransform(), worldTransform(), inverseViewTransform(), inverseWorldTransform()
 {
 	frustum(-5, 5, -5, 5, 1, 5);
@@ -68,9 +76,17 @@ void Camera::ortho(
 ) {
 	verifyProjectionParameters(left, right, bottom, top, zNear, zFar);
 
+	this->left = left;
+	this->right = right;
+	this->bottom = bottom;
+	this->top = top;
+	this->zNear = zNear;
+	this->zFar = zFar;
+
 	mat4 t = Translate(-(right + left) / 2, -(bottom + top) / 2, (zNear + zFar) / 2);
 	mat4 s = Scale(2 / (right - left), 2 / (top - bottom), 2 / (zNear - zFar));
 	projection = s * t;
+	isPerspective = false;
 }
 
 void Camera::frustum(
@@ -100,6 +116,7 @@ void Camera::frustum(
 	n[3][3] = 0;
 
 	projection = n * s * h;
+	isPerspective = true;
 }
 
 void Camera::perspectiveVertical(
@@ -128,10 +145,12 @@ void Camera::perspectiveHorizontal(
 
 void Camera::zoomIn(const float z) {
 	zNear += z;
+	updateProjection();
 }
 
 void Camera::zoomOut(const float z) {
 	zNear -= z;
+	updateProjection();
 }
 
 void Camera::setVisibility(bool shouldBeVisible) {
