@@ -13,6 +13,7 @@ class Light {
 
 class Camera {
 	bool isVisible;
+	bool isPerspective;
 	float left;
 	float right;
 	float bottom;
@@ -35,6 +36,8 @@ class Camera {
 		const float fov, const float aspect,
 		const float zNear, const float zFar
 	);
+
+	void updateProjection();
 
 public:
 	Camera();
