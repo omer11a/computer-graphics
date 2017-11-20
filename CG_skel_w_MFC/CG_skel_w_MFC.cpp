@@ -136,8 +136,7 @@ void keyboard(unsigned char key, int x, int y)
 		should_redraw = true;
 		break;
 	case 'l':
-		//TODO
-		//scene->getActiveCamera()->lookAt();
+		should_redraw = set_lookat();
 		break;
 	case 'o':
 		should_redraw = set_ortho();
@@ -350,6 +349,20 @@ bool set_ortho()
 		);
 		return true;
 	}
+	return false;
+}
+
+bool set_lookat()
+{
+	/*CLookAtDialog dlg;
+	if (dlg.DoModal() == IDOK) {
+		scene->getActiveCamera()->lookAt(
+			dlg.GetEye(),
+			dlg.GetAt(),
+			dlg.GetUp()
+		);
+		return true;
+	}*/
 	return false;
 }
 

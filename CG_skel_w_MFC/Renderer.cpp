@@ -58,6 +58,10 @@ vec3 Renderer::PointToScreen(const vec3& p, const vec3& n) const
 
 void Renderer::PlotPixel(const int x, const int y, const vec3& color)
 {
+	int min_size = min(m_height, m_width);
+	int validation_x = x - (m_width / 2);
+	int validation_y = y + (m_width / 2);
+	//if ((validation_x >= min_size) || (validation_x < 0) || (validation_y >= min_size) || (validation_y < 0) || ()) {
 	if ((x >= m_width) || (x < 0) || (y >= m_height) || (y < 0)) {
 		return;
 	}
