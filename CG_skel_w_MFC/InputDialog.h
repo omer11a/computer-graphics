@@ -172,3 +172,37 @@ protected:
 	afx_msg void OnPaint();
 	DECLARE_MESSAGE_MAP()
 };
+
+// ----------------------
+//    Class CPerspectiveDialog
+// ----------------------
+
+class CPerspectiveDialog : public CInputDialog
+{
+public:
+	CPerspectiveDialog(CString title = "Perspective Setting", bool is_horizontal = true);
+	virtual ~CPerspectiveDialog();
+
+	float GetFov() const;
+	float GetAspect() const;
+	float GetNear() const;
+	float GetFar() const;
+
+protected:
+
+	bool is_horizontal;
+	float fov;
+	float aspect;
+	float zNear;
+	float zFar;
+	CEdit fovEdit;
+	CEdit aspectEdit;
+	CEdit nearEdit;
+	CEdit farEdit;
+
+	virtual void DoDataExchange(CDataExchange* pDX);
+
+	afx_msg int OnCreate(LPCREATESTRUCT lpcs);
+	afx_msg void OnPaint();
+	DECLARE_MESSAGE_MAP()
+};

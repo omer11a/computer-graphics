@@ -20,7 +20,7 @@ t/T		->	control translation in current mode
 active objects:
 </>		->	move between cameras
 l		->	set camera look at
-o/p/P	->	set camera orthogonal / perspective-Horizontal / perspective-Vertical
+o/P/p	->	set camera orthogonal / perspective-Horizontal / perspective-Vertical
 Z/z		->	set zoom in/out
 
 TAB		->	move between models
@@ -34,10 +34,8 @@ PrimMeshModels:
 
 /*
 TODO:
-camera changes: lookat, projection(ortho, perspective), zoom in/out
-DONE:	visible: normals, face-normals, cameras
-change active model
-add models
+camera changes: lookat, projection(ortho, perspective), frustum
+add models - check
 */
 
 #include "stdafx.h"
@@ -145,7 +143,8 @@ void keyboard(unsigned char key, int x, int y)
 		should_redraw = set_ortho();
 		break;
 	case 'p':
-		//scene->getActiveCamera()->perspectiveHorizontal();
+	case 'P':
+		set_perspective(key);
 		break;
 	case 'z':
 	case 'Z':
@@ -346,14 +345,50 @@ bool set_ortho()
 {
 	COrthoDialog dlg;
 	if (dlg.DoModal() == IDOK) {
+		if ((dlg.GetLeft() >= dlg.GetRight()) ||
+			(dlg.GetBottom() >= dlg.GetTop()) ||
+			(dlg.GetNear() >= dlg.GetFar())) {
+			cout << "ortho setting: invalid parameters (" <<
+				dlg.GetLeft() << ", " << dlg.GetRight() << ", " <<
+				dlg.GetBottom() << ", " << dlg.GetTop() << ", " <<
+				dlg.GetNear() << ", " << dlg.GetFar() << ")" << endl;
+			return false;
+		}
 		scene->getActiveCamera()->ortho(
-			dlg.GetLeft(), 
-			dlg.GetRight(),
-			dlg.GetBottom(),
-			dlg.GetTop(),
-			dlg.GetNear(),
-			dlg.GetFar()
+			dlg.GetLeft(), dlg.GetRight(),
+			dlg.GetBottom(), dlg.GetTop(),
+			dlg.GetNear(), dlg.GetFar()
 		);
+		return true;
+	}
+	return false;
+}
+
+bool set_perspective(char type)
+{
+	bool is_horizontal = (type == 'P');
+	CString title = is_horizontal ? "Horizontal" : "Vertical";
+	CPerspectiveDialog dlg(title + " Perspective Setting", is_horizontal);
+	if (dlg.DoModal() == IDOK) {
+		if ((dlg.GetFov() <= 0) || (dlg.GetFov() >= 180) ||
+			(dlg.GetAspect() <= 0) ||
+			(dlg.GetNear() >= dlg.GetFar())) {
+			cout << "perspective setting: invalid parameters (" <<
+				dlg.GetFov() << ", " << dlg.GetAspect() << ", " <<
+				dlg.GetNear() << ", " << dlg.GetFar() << ")" << endl;
+			return false;
+		}
+		if (is_horizontal) {
+			scene->getActiveCamera()->perspectiveHorizontal(
+				dlg.GetFov(), dlg.GetAspect(),
+				dlg.GetNear(), dlg.GetFar()
+			);
+		} else {
+			scene->getActiveCamera()->perspectiveVertical(
+				dlg.GetFov(), dlg.GetAspect(),
+				dlg.GetNear(), dlg.GetFar()
+			);
+		}
 		return true;
 	}
 	return false;

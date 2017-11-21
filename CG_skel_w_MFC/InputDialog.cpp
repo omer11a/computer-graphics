@@ -14,19 +14,21 @@
 #define IDC_NEAR_EDIT		208
 #define IDC_FAR_EDIT		209
 
-#define IDC_VALUE_EDIT		210
+#define IDC_FOV_EDIT		210
+#define IDC_ASPECT_EDIT		211
+#define IDC_VALUE_EDIT		212
 
 #define CMD_EDIT_TITLE "Command"
-#define X_EDIT_TITLE "X ="
-#define Y_EDIT_TITLE "Y ="
-#define Z_EDIT_TITLE "Z ="
+#define X_EDIT_TITLE "X:"
+#define Y_EDIT_TITLE "Y:"
+#define Z_EDIT_TITLE "Z:"
 
-#define LEFT_EDIT_TITLE "Left ="
-#define RIGHT_EDIT_TITLE "Right ="
-#define BOTTOM_EDIT_TITLE "Bottom ="
-#define TOP_EDIT_TITLE "Top ="
-#define NEAR_EDIT_TITLE "Near ="
-#define FAR_EDIT_TITLE "Far ="
+#define LEFT_EDIT_TITLE "Left:"
+#define RIGHT_EDIT_TITLE "Right:"
+#define BOTTOM_EDIT_TITLE "Bottom:"
+#define TOP_EDIT_TITLE "Top:"
+#define NEAR_EDIT_TITLE "Near:"
+#define FAR_EDIT_TITLE "Far:"
 
 
 
@@ -238,7 +240,6 @@ void CCmdXyzDialog::OnPaint()
 	mCmdEdit.SetFocus();
 }
 
-
 // ----------------------
 //    Class COrthoDialog
 // ----------------------
@@ -302,7 +303,6 @@ int COrthoDialog::OnCreate(LPCREATESTRUCT lpcs)
 	int start_loc = 50;
 	leftEdit.Create(ES_MULTILINE | WS_CHILD | WS_VISIBLE | WS_TABSTOP | WS_BORDER,
 		CRect(110, start_loc, 230, start_loc + 20), this, IDC_LEFT_EDIT);
-
 	
 	rightEdit.Create(ES_MULTILINE | WS_CHILD | WS_VISIBLE | WS_TABSTOP | WS_BORDER,
 		CRect(330, start_loc, 450, start_loc + 20), this, IDC_RIGHT_EDIT);
@@ -310,7 +310,6 @@ int COrthoDialog::OnCreate(LPCREATESTRUCT lpcs)
 	start_loc += 50;
 	bottomEdit.Create(ES_MULTILINE | WS_CHILD | WS_VISIBLE | WS_TABSTOP | WS_BORDER,
 		CRect(110, start_loc, 230, start_loc + 20), this, IDC_BOTTOM_EDIT);
-
 	
 	topEdit.Create(ES_MULTILINE | WS_CHILD | WS_VISIBLE | WS_TABSTOP | WS_BORDER,
 		CRect(330, start_loc, 450, start_loc + 20), this, IDC_TOP_EDIT);
@@ -318,7 +317,6 @@ int COrthoDialog::OnCreate(LPCREATESTRUCT lpcs)
 	start_loc += 50;
 	nearEdit.Create(ES_MULTILINE | WS_CHILD | WS_VISIBLE | WS_TABSTOP | WS_BORDER,
 		CRect(110, start_loc, 230, start_loc + 20), this, IDC_NEAR_EDIT);
-
 	
 	farEdit.Create(ES_MULTILINE | WS_CHILD | WS_VISIBLE | WS_TABSTOP | WS_BORDER,
 		CRect(330, start_loc, 450, start_loc + 20), this, IDC_FAR_EDIT);
@@ -377,7 +375,7 @@ void CValueDialog::DoDataExchange(CDataExchange* pDX)
 	DDX_Text(pDX, IDC_VALUE_EDIT, value);
 }
 
-// CXyzDialog message handlers
+// CValueDialog message handlers
 BEGIN_MESSAGE_MAP(CValueDialog, CInputDialog)
 	ON_WM_CREATE()
 	ON_WM_PAINT()
@@ -400,4 +398,93 @@ void CValueDialog::OnPaint()
 	dc.DrawText(name, -1, &value_rect, DT_SINGLELINE | DT_RIGHT);
 
 	valueEdit.SetFocus();
+}
+
+// ----------------------
+//    Class CPerspectiveDialog
+// ----------------------
+
+CPerspectiveDialog::CPerspectiveDialog(CString title, bool is_horizontal)
+	: CInputDialog(title), is_horizontal(is_horizontal), fov(0), aspect(0), zNear(0), zFar(0)
+{ }
+
+CPerspectiveDialog::~CPerspectiveDialog()
+{ }
+
+float CPerspectiveDialog::GetFov() const
+{
+	return fov;
+}
+
+float CPerspectiveDialog::GetAspect() const
+{
+	return aspect;
+}
+
+float CPerspectiveDialog::GetNear() const
+{
+	return zNear;
+}
+
+float CPerspectiveDialog::GetFar() const
+{
+	return zFar;
+}
+
+void CPerspectiveDialog::DoDataExchange(CDataExchange* pDX)
+{
+	CInputDialog::DoDataExchange(pDX);
+	DDX_Text(pDX, IDC_FOV_EDIT, fov);
+	DDX_Text(pDX, IDC_ASPECT_EDIT, aspect);
+	DDX_Text(pDX, IDC_NEAR_EDIT, zNear);
+	DDX_Text(pDX, IDC_FAR_EDIT, zFar);
+}
+
+// CPerspectiveDialog message handlers
+BEGIN_MESSAGE_MAP(CPerspectiveDialog, CInputDialog)
+	ON_WM_CREATE()
+	ON_WM_PAINT()
+END_MESSAGE_MAP()
+
+int CPerspectiveDialog::OnCreate(LPCREATESTRUCT lpcs)
+{
+	int start_loc = 50;
+	fovEdit.Create(ES_MULTILINE | WS_CHILD | WS_VISIBLE | WS_TABSTOP | WS_BORDER,
+		CRect(130, start_loc, 240, start_loc + 20), this, IDC_FOV_EDIT);
+
+
+	aspectEdit.Create(ES_MULTILINE | WS_CHILD | WS_VISIBLE | WS_TABSTOP | WS_BORDER,
+		CRect(350, start_loc, 450, start_loc + 20), this, IDC_ASPECT_EDIT);
+
+	start_loc += 80;
+	nearEdit.Create(ES_MULTILINE | WS_CHILD | WS_VISIBLE | WS_TABSTOP | WS_BORDER,
+		CRect(130, start_loc, 240, start_loc + 20), this, IDC_NEAR_EDIT);
+
+
+	farEdit.Create(ES_MULTILINE | WS_CHILD | WS_VISIBLE | WS_TABSTOP | WS_BORDER,
+		CRect(350, start_loc, 450, start_loc + 20), this, IDC_FAR_EDIT);
+
+	return 0;
+}
+
+void CPerspectiveDialog::OnPaint()
+{
+	int start_loc = 52;
+	CPaintDC dc(this);
+	dc.SetBkMode(TRANSPARENT);
+
+	CRect fov_rect(0, start_loc, 120, start_loc + 18);
+	dc.DrawText((is_horizontal ? "Horizontal FOV:" : "Vertical FOV:"), -1, &fov_rect, DT_SINGLELINE | DT_RIGHT);
+
+	CRect aspect_rect(290, start_loc, 340, start_loc + 18);
+	dc.DrawText("Aspect:", -1, &aspect_rect, DT_SINGLELINE | DT_RIGHT);
+
+	start_loc += 80;
+	CRect near_rect(40, start_loc, 120, start_loc + 18);
+	dc.DrawText(CString(NEAR_EDIT_TITLE), -1, &near_rect, DT_SINGLELINE | DT_RIGHT);
+
+	CRect far_rect(290, start_loc, 340, start_loc + 18);
+	dc.DrawText(CString(FAR_EDIT_TITLE), -1, &far_rect, DT_SINGLELINE | DT_RIGHT);
+
+	fovEdit.SetFocus();
 }

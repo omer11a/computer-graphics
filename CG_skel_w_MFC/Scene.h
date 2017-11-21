@@ -50,7 +50,7 @@ public:
 	void frustum(const float left, const float right,
 		const float bottom, const float top,
 		const float zNear, const float zFar );
-	void perspectiveVertical( const float fovy, const float aspect,
+	void perspectiveVertical(const float fovy, const float aspect,
 		const float zNear, const float zFar);
 	void perspectiveHorizontal(const float fovx, const float aspect,
 		const float zNear, const float zFar);
