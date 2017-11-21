@@ -41,7 +41,7 @@ void Renderer::DestroyBuffers()
 	}
 }
 
-vec3 Renderer::TransformPoint(const vec3& p, const vec3& n) const
+vec4 Renderer::TransformPoint(const vec3& p, const vec3& n) const
 {
 	vec4 pTransformed;
 	vec4 nTransformed;
@@ -53,14 +53,17 @@ vec3 Renderer::TransformPoint(const vec3& p, const vec3& n) const
 	}
 
 	vec4 result = pTransformed + nTransformed;
-	return vec3(result.x, result.y, result.z);
-	//return vec3(round(m_width * 0.5 + min_size * (result.x)), m_height - round(m_height * 0.5 + min_size * (result.y)), result.z);
+	return result;
+	//return vec3(result.x / result.w, result.y / result.w, result.z / result.w);
+	//return vec3(result.x, result.y, result.z);
 }
 
-vec3 Renderer::PointToScreen(vec3 p) const
+vec3 Renderer::PointToScreen(vec4 p) const
 {
 	float min_size = min(m_height, m_width) * 0.5;
-	return vec3(round(m_width * 0.5 + min_size * (p.x)), m_height - round(m_height * 0.5 + min_size * (p.y)), p.z);
+	return vec3(round(m_width * 0.5 + min_size * (p.x / p.w)),
+		m_height - round(m_height * 0.5 + min_size * (p.y / p.w)),
+		p.z / p.w);
 }
 
 void Renderer::PlotPixel(const int x, const int y, const vec3& color)
@@ -82,12 +85,56 @@ vec3 Renderer::GetCenterMass(const vec3& p1, const vec3& p2, const vec3& p3) con
 	return vec3((p1.x + p2.x + p3.x) / 3, (p1.y + p2.y + p3.y) / 3, (p1.z + p2.z + p3.z) / 3);
 }
 
-void Renderer::DrawLine(const vec3& p1, const vec3& p2, const vec3& color)
+void Renderer::DrawLine(const vec4& p1, const vec4& p2, const vec3& color)
 {
-	if (abs(p1.y - p2.y) > abs(p1.x - p2.x)) {
-		this->DrawSteepLine(PointToScreen(p1), PointToScreen(p2), color);
+	float dx = p2.x - p1.x;
+	float dy = p2.y - p1.y;
+	float dz = p2.z - p1.z;
+	float dw = p2.w - p1.w;
+	float lower_t[3], upper_t[3];
+	int l_i = 0, u_i = 0;
+
+	if (dx == 0) {
+		// in case of entire line is out side of boundry
+		if ((p1.x > 1) || (p1.x < -1)) return;
 	} else {
-		this->DrawModerateLine(PointToScreen(p1), PointToScreen(p2), color);
+		lower_t[l_i++] = min((-1 - p1.x) / dx, (1 - p1.x) / dx);
+		upper_t[u_i++] = max((-1 - p1.x) / dx, (1 - p1.x) / dx);
+	}
+	if (dy == 0) {
+		if ((p1.y > 1) || (p1.y < -1)) return;
+	} else {
+		lower_t[l_i++] = min((-1 - p1.y) / dy, (1 - p1.y) / dy);
+		upper_t[u_i++] = max((-1 - p1.y) / dy, (1 - p1.y) / dy);
+	}
+	if (dz == 0) {
+		if ((p1.z > 1) || (p1.z < -1)) return;
+	} else {
+		lower_t[l_i++] = min((-1 - p1.z) / dz, (1 - p1.z) / dz);
+		upper_t[u_i++] = max((-1 - p1.z) / dz, (1 - p1.z) / dz);
+	}
+
+	float max_lower = lower_t[0];
+	for (int i = 1; i < l_i; ++i) {
+		max_lower = max(max_lower, lower_t[i]);
+	}
+	float min_upper = upper_t[0];
+	for (int i = 1; i < l_i; ++i) {
+		min_upper = max(min_upper, upper_t[i]);
+	}
+
+	vec4 delta(dx, dy, dz, dw);
+	vec4 new_p1 = ((max_lower < 1) && (max_lower > 0)) ? p1 + max_lower * delta : p1;
+	vec4 new_p2 = ((min_upper < 1) && (min_upper > 0)) ? p1 + min_upper * delta : p2;
+
+	if (max_lower <= min_upper) {
+		if (abs(dy) > abs(dx)) {
+			DrawSteepLine(PointToScreen(new_p1), PointToScreen(new_p2), color);
+			//DrawSteepLine(PointToScreen(p1), PointToScreen(p2), color);
+		} else {
+			DrawModerateLine(PointToScreen(new_p1), PointToScreen(new_p2), color);
+			//DrawModerateLine(PointToScreen(p1), PointToScreen(p2), color);
+		}
 	}
 }
 
@@ -190,10 +237,10 @@ void Renderer::DrawTriangles(const vector<vec3>* vertices, const vector<vec3>* v
 
 void Renderer::DrawSquare(const vec3& p1, const vec3& p2, const vec3& p3, const vec3& p4, const vec3& color)
 {
-	vec3 screen1 = TransformPoint(p1);
-	vec3 screen2 = TransformPoint(p2);
-	vec3 screen3 = TransformPoint(p3);
-	vec3 screen4 = TransformPoint(p4);
+	vec4 screen1 = TransformPoint(p1);
+	vec4 screen2 = TransformPoint(p2);
+	vec4 screen3 = TransformPoint(p3);
+	vec4 screen4 = TransformPoint(p4);
 
 	DrawLine(screen1, screen2, color);
 	DrawLine(screen2, screen3, color);
@@ -226,16 +273,16 @@ void Renderer::DrawBox(const vec3& minValues, const vec3& maxValues)
 
 void Renderer::DrawCamera()
 {
-	vec3 color(1, 140 / 255, 1);
-	vec3 camera_location = TransformPoint(vec3());
-	vector<vec3> vertices;
-	vertices.push_back(camera_location + vec3(-10, 0.0f, 20));
-	vertices.push_back(camera_location + vec3(10, 0, 30));
-	vertices.push_back(camera_location + vec3(0, 25, 0));
+	//vec3 color(1, 140 / 255, 1);
+	//vec4 camera_location = TransformPoint(vec3());
+	//vector<vec4> vertices;
+	//vertices.push_back(camera_location + vec4(-10, 0.0f, 20,0));
+	//vertices.push_back(camera_location + vec4(10, 0, 30));
+	//vertices.push_back(camera_location + vec4(0, 25, 0));
 
-	DrawLine(vertices[0], vertices[1], color);
-	DrawLine(vertices[1], vertices[2], color);
-	DrawLine(vertices[2], vertices[0], color);
+	//DrawLine(vertices[0], vertices[1], color);
+	//DrawLine(vertices[1], vertices[2], color);
+	//DrawLine(vertices[2], vertices[0], color);
 }
 
 void Renderer::SetCameraTransform(const mat4 & cTransform)

@@ -19,11 +19,11 @@ class Renderer
 	void CreateLocalBuffer();
 	void DestroyBuffers();
 
-	vec3 TransformPoint(const vec3& p, const vec3& n = vec3()) const;
-	vec3 PointToScreen(vec3 p) const;
+	vec4 TransformPoint(const vec3& p, const vec3& n = vec3()) const;
+	vec3 PointToScreen(vec4 p) const;
 	void PlotPixel(const int x, const int y, const vec3& color);
 	vec3 GetCenterMass(const vec3& p1, const vec3& p2, const vec3& p3) const;
-	void DrawLine(const vec3& p1, const vec3& p2, const vec3& color);
+	void DrawLine(const vec4& p1, const vec4& p2, const vec3& color);
 	void DrawSteepLine(const vec3& p1, const vec3& p2, const vec3& color);
 	void DrawModerateLine(const vec3& p1, const vec3& p2, const vec3& color);
 
