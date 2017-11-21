@@ -13,6 +13,7 @@ void initMenu();
 
 void clear_buffers();
 bool set_ortho();
+bool set_frustum();
 bool set_perspective(char type);
 bool set_lookat();
 bool set_zoom(char type);

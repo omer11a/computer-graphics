@@ -1,7 +1,6 @@
 // CG_skel_w_MFC.cpp : Defines the entry point for the console application.
 //
 /*
-
 keyboard commands:	(keys	->	action)
 general:
 ESC/q	->	exit
@@ -20,13 +19,14 @@ t/T		->	control translation in current mode
 active objects:
 </>		->	move between cameras
 l		->	set camera look at
-o/P/p	->	set camera orthogonal / perspective-Horizontal / perspective-Vertical
+P/p		->	set camera perspective-Horizontal / perspective-Vertical
+o/f		->	set camera orthogonal / frustum
 Z/z		->	set zoom in/out
 
 TAB		->	move between models
 b		->	switch model bounding box visibility
 n		->	switch model normal visibility
-f		->	switch model face normal visibility
+N		->	switch model face normal visibility
 
 PrimMeshModels:
 1-9		-> add model
@@ -34,8 +34,7 @@ PrimMeshModels:
 
 /*
 TODO:
-camera changes: lookat, projection(ortho, perspective), frustum
-add models - check
+camera changes: lookat
 */
 
 #include "stdafx.h"
@@ -142,6 +141,9 @@ void keyboard(unsigned char key, int x, int y)
 	case 'o':
 		should_redraw = set_ortho();
 		break;
+	case 'f':
+		should_redraw = set_frustum();
+		break;
 	case 'p':
 	case 'P':
 		set_perspective(key);
@@ -197,7 +199,7 @@ void keyboard(unsigned char key, int x, int y)
 			should_redraw = true;
 		}
 		break;
-	case 'f':
+	case 'N':
 		if (scene->getNumberOfModels() > 0) {
 			scene->getActiveModel()->switchFaceNormalsVisibility();
 			cout << "switched face normals visibility of active model." << endl;
@@ -355,6 +357,29 @@ bool set_ortho()
 			return false;
 		}
 		scene->getActiveCamera()->ortho(
+			dlg.GetLeft(), dlg.GetRight(),
+			dlg.GetBottom(), dlg.GetTop(),
+			dlg.GetNear(), dlg.GetFar()
+		);
+		return true;
+	}
+	return false;
+}
+
+bool set_frustum()
+{
+	COrthoDialog dlg("Frustum Setting");
+	if (dlg.DoModal() == IDOK) {
+		if ((dlg.GetLeft() >= dlg.GetRight()) ||
+			(dlg.GetBottom() >= dlg.GetTop()) ||
+			(dlg.GetNear() >= dlg.GetFar())) {
+			cout << "ortho setting: invalid parameters (" <<
+				dlg.GetLeft() << ", " << dlg.GetRight() << ", " <<
+				dlg.GetBottom() << ", " << dlg.GetTop() << ", " <<
+				dlg.GetNear() << ", " << dlg.GetFar() << ")" << endl;
+			return false;
+		}
+		scene->getActiveCamera()->frustum(
 			dlg.GetLeft(), dlg.GetRight(),
 			dlg.GetBottom(), dlg.GetTop(),
 			dlg.GetNear(), dlg.GetFar()
