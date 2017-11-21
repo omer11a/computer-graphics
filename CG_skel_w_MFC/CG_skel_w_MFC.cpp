@@ -23,7 +23,7 @@ l		->	set camera look at
 o/p/P	->	set camera orthogonal / perspective-Horizontal / perspective-Vertical
 Z/z		->	set zoom in/out
 
-<TBD>		->	move between models
+TAB		->	move between models
 b		->	switch model bounding box visibility
 n		->	switch model normal visibility
 f		->	switch model face normal visibility
@@ -125,6 +125,9 @@ void keyboard(unsigned char key, int x, int y)
 		clear_buffers();
 		config.is_demo = false;
 		break;
+	case '\t':
+		change_active_model();
+		break;
 
 	// camera operations
 	case '>':
@@ -151,9 +154,13 @@ void keyboard(unsigned char key, int x, int y)
 
 	// switch modes
 	case 'm': // model mode
+	case 'M':
 	case 'w': // model world mode
+	case 'W':
 	case 'v': // camera view mode
+	case 'V':
 	case 'c': // camera world mode
+	case 'C':
 		config.mode = key;
 		cout << "switched mode to " << key << endl;
 		break;
@@ -368,18 +375,32 @@ bool set_lookat()
 
 bool set_zoom(char type)
 {
-	CZoomDialog dlg;
+	CValueDialog dlg("Zoom Dialog", "Z:", 1);
 	if (dlg.DoModal() == IDOK) {
 		switch (type) {
 		case 'Z':
-			scene->getActiveCamera()->zoomIn(dlg.GetZ());
+			scene->getActiveCamera()->zoomIn(dlg.GetValue());
 			return true;
 		case 'z':
-			scene->getActiveCamera()->zoomOut(dlg.GetZ());
+			scene->getActiveCamera()->zoomOut(dlg.GetValue());
 			return true;
 		}
 	}
 	return false;
+}
+
+void change_active_model()
+{
+	CValueDialog dlg("Active Model", "Model ID:", scene->getNumberOfModels() - 1);
+	if (dlg.DoModal() == IDOK) {
+		int v = dlg.GetValue();
+		if ((v < 0) || (v >= scene->getNumberOfModels())) {
+			cout << "invalid model ID #" << v << endl;
+		} else {
+			scene->setActiveModel(v);
+			cout << "active model changed to #" << v << endl;
+		}
+	}
 }
 
 bool scale(unsigned char key)

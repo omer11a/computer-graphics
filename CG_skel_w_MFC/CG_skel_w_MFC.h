@@ -15,6 +15,7 @@ void clear_buffers();
 bool set_ortho();
 bool set_lookat();
 bool set_zoom(char type);
+void change_active_model();
 bool scale(unsigned char type);
 bool rotation(unsigned char direction);
 bool translate(unsigned char direction);

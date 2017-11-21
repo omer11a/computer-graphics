@@ -14,6 +14,8 @@
 #define IDC_NEAR_EDIT		208
 #define IDC_FAR_EDIT		209
 
+#define IDC_VALUE_EDIT		210
+
 #define CMD_EDIT_TITLE "Command"
 #define X_EDIT_TITLE "X ="
 #define Y_EDIT_TITLE "Y ="
@@ -354,48 +356,48 @@ void COrthoDialog::OnPaint()
 }
 
 // ----------------------
-//    Class CZoomDialog
+//    Class CValueDialog
 // ----------------------
 
-CZoomDialog::CZoomDialog(CString title, float z)
-	: CInputDialog(title), z(z)
+CValueDialog::CValueDialog(CString title, CString field, float default_value)
+	: CInputDialog(title), name(field), value(default_value)
 { }
 
-CZoomDialog::~CZoomDialog()
+CValueDialog::~CValueDialog()
 { }
 
-float CZoomDialog::GetZ()
+float CValueDialog::GetValue()
 {
-	return z;
+	return value;
 }
 
-void CZoomDialog::DoDataExchange(CDataExchange* pDX)
+void CValueDialog::DoDataExchange(CDataExchange* pDX)
 {
 	CInputDialog::DoDataExchange(pDX);
-	DDX_Text(pDX, IDC_Z_EDIT, z);
+	DDX_Text(pDX, IDC_VALUE_EDIT, value);
 }
 
 // CXyzDialog message handlers
-BEGIN_MESSAGE_MAP(CZoomDialog, CInputDialog)
+BEGIN_MESSAGE_MAP(CValueDialog, CInputDialog)
 	ON_WM_CREATE()
 	ON_WM_PAINT()
 END_MESSAGE_MAP()
 
-int CZoomDialog::OnCreate(LPCREATESTRUCT lpcs)
+int CValueDialog::OnCreate(LPCREATESTRUCT lpcs)
 {
-	zEdit.Create(ES_MULTILINE | WS_CHILD | WS_VISIBLE | WS_TABSTOP | WS_BORDER,
-		CRect(130, 140, 340, 160), this, IDC_Z_EDIT);
+	valueEdit.Create(ES_MULTILINE | WS_CHILD | WS_VISIBLE | WS_TABSTOP | WS_BORDER,
+		CRect(200, 140, 400, 160), this, IDC_VALUE_EDIT);
 
 	return 0;
 }
 
-void CZoomDialog::OnPaint()
+void CValueDialog::OnPaint()
 {
 	CPaintDC dc(this);
 	dc.SetBkMode(TRANSPARENT);
 
-	CRect z_rect(100, 142, 450, 160);
-	dc.DrawText(CString(Z_EDIT_TITLE), -1, &z_rect, DT_SINGLELINE);
+	CRect value_rect(0, 142, 190, 160);
+	dc.DrawText(name, -1, &value_rect, DT_SINGLELINE | DT_RIGHT);
 
-	zEdit.SetFocus();
+	valueEdit.SetFocus();
 }

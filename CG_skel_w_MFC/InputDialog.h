@@ -150,20 +150,21 @@ protected:
 };
 
 // ----------------------
-//    Class CZoomDialog
+//    Class CValueDialog
 // ----------------------
 
-class CZoomDialog : public CInputDialog
+class CValueDialog : public CInputDialog
 {
 public:
-	CZoomDialog(CString title = "Input Dialog", float z = 1);
-	virtual ~CZoomDialog();
+	CValueDialog(CString title = "Input Dialog", CString field = "Value:", float default_value = 0);
+	virtual ~CValueDialog();
 
-	float GetZ();
+	float GetValue();
 
 protected:
-	float z;
-	CEdit zEdit;
+	float value;
+	CString name;
+	CEdit valueEdit;
 
 	virtual void DoDataExchange(CDataExchange* pDX);
 
