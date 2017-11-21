@@ -343,6 +343,9 @@ void Scene::clear() {
 	}
 
 	models.clear();
+
+	activeModel = -1;
+	activeCamera = 0;
 }
 
 void Scene::draw() const {
