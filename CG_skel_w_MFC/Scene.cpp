@@ -143,13 +143,8 @@ void Camera::perspectiveHorizontal(
 	perspectiveVertical(fovy, aspect, zNear, zFar);
 }
 
-void Camera::zoomIn(const float z) {
+void Camera::zoom(const float z) {
 	zNear += z;
-	updateProjection();
-}
-
-void Camera::zoomOut(const float z) {
-	zNear -= z;
 	updateProjection();
 }
 

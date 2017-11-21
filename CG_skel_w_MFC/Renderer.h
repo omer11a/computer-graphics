@@ -16,11 +16,11 @@ class Renderer
 	mat4 m_camera_multiply;
 
 	void CreateBuffers(int width, int height);
-	void CreateLocalBuffer();
+	/*void CreateLocalBuffer();*/
 	void DestroyBuffers();
 
 	vec4 TransformPoint(const vec3& p, const vec3& n = vec3()) const;
-	vec3 PointToScreen(vec4 p) const;
+	vec3 PointToScreen(vec4& p) const;
 	void PlotPixel(const int x, const int y, const vec3& color);
 	vec3 GetCenterMass(const vec3& p1, const vec3& p2, const vec3& p3) const;
 	void DrawLine(const vec4& p1, const vec4& p2, const vec3& color);

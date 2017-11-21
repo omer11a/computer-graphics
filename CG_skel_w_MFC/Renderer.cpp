@@ -58,7 +58,7 @@ vec4 Renderer::TransformPoint(const vec3& p, const vec3& n) const
 	//return vec3(result.x, result.y, result.z);
 }
 
-vec3 Renderer::PointToScreen(vec4 p) const
+vec3 Renderer::PointToScreen(vec4& p) const
 {
 	float min_size = min(m_height, m_width) * 0.5;
 	return vec3(round(m_width * 0.5 + min_size * (p.x / p.w)),
