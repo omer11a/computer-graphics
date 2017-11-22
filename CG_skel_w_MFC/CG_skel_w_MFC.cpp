@@ -1,16 +1,16 @@
 // CG_skel_w_MFC.cpp : Defines the entry point for the console application.
 //
 /*
-
 keyboard commands:	(keys	->	action)
 general:
 ESC/q	->	exit
 DEL		-> clear screen
 
 modes:
-w		->	enter world mode
-m		->	enter active model mode
-v		->	enter active camera mode
+w/W		->	enter world mode
+m/M		->	enter model mode
+v/V		->	enter camera view mode
+c/C		->	enter camera world mode
 
 transformations:
 +/-		->	control scaling in current mode
@@ -20,13 +20,14 @@ t/T		->	control translation in current mode
 active objects:
 </>		->	move between cameras
 l		->	set camera look at
-o/p/P	->	set camera orthogonal / perspective-Horizontal / perspective-Vertical
+P/p		->	set camera perspective-Horizontal / perspective-Vertical
+o/f		->	set camera orthogonal / frustum
 Z/z		->	set zoom in/out
 
-<TBD>		->	move between models
+TAB		->	move between models
 b		->	switch model bounding box visibility
 n		->	switch model normal visibility
-f		->	switch model face normal visibility
+N		->	switch model face normal visibility
 
 PrimMeshModels:
 1-9		-> add model
@@ -34,10 +35,7 @@ PrimMeshModels:
 
 /*
 TODO:
-camera changes: lookat, projection(ortho, perspective), zoom in/out
-DONE:	visible: normals, face-normals, cameras
-change active model
-add models
+camera changes: lookat
 */
 
 #include "stdafx.h"
@@ -67,17 +65,20 @@ add models
 #define ADD_CAMERA 2
 
 #define MAIN_DEMO 1
-#define MAIN_ABOUT 2
+#define MAIN_HELP 2
+#define MAIN_ABOUT 3
 
 #define SETTING_SCALING		1
 #define SETTING_ROTATION	2
 #define SETTING_MOVEMENT	3
+#define SETTING_ZOOM	4
 
 typedef struct configuration_s {
 	unsigned char mode;	// 0 - none, 'm' - model, 'w' - world, 'v' - view
 	vec3 scaling;	// must be greater or equal to 1	(decreasing scaling is 1/scaling)
 	vec3 translating;
 	vec3 rotating;
+	float zoom;
 	bool is_demo;
 } configuration_t;
 
@@ -95,20 +96,14 @@ unsigned char transformation_mode;
 void display(void)
 {
 //Call the scene and ask it to draw itself
-	//scene->drawDemo();
+	redraw();
 }
 
 void reshape(int width, int height)
 {
 	//update the renderer's buffers
 	renderer->UpdateBuffers(width, height);
-	// TODO: draw actual objects
-	if (config.is_demo) {
-		scene->drawDemo();
-	} else {
-		clear_buffers();
-		scene->draw();
-	}
+	redraw();
 }
 
 void keyboard(unsigned char key, int x, int y)
@@ -119,11 +114,18 @@ void keyboard(unsigned char key, int x, int y)
 	case 033:
 		exit(EXIT_SUCCESS);
 		break;
+	case 'a': // secret conf
+	case 'A':
+		fileMenu((key == 'a') ? FILE_OPEN : ADD_CAMERA);
+		break;
 	case 127:
 		// clear screen
 		scene->clear();
-		clear_buffers();
 		config.is_demo = false;
+		should_redraw = true;
+		break;
+	case '\t':
+		change_active_model();
 		break;
 
 	// camera operations
@@ -136,25 +138,32 @@ void keyboard(unsigned char key, int x, int y)
 		should_redraw = true;
 		break;
 	case 'l':
-		//TODO
-		//scene->getActiveCamera()->lookAt();
+		should_redraw = set_lookat();
 		break;
 	case 'o':
 		should_redraw = set_ortho();
 		break;
+	case 'f':
+		should_redraw = set_frustum();
+		break;
 	case 'p':
-		//scene->getActiveCamera()->perspectiveHorizontal();
+	case 'P':
+		set_perspective(key);
 		break;
 	case 'z':
 	case 'Z':
-		should_redraw = set_zoom(key);
+		should_redraw = zoom(key);
 		break;
 
 	// switch modes
 	case 'm': // model mode
+	case 'M':
 	case 'w': // model world mode
+	case 'W':
 	case 'v': // camera view mode
+	case 'V':
 	case 'c': // camera world mode
+	case 'C':
 		config.mode = key;
 		cout << "switched mode to " << key << endl;
 		break;
@@ -192,23 +201,21 @@ void keyboard(unsigned char key, int x, int y)
 			should_redraw = true;
 		}
 		break;
-	case 'f':
+	case 'N':
 		if (scene->getNumberOfModels() > 0) {
 			scene->getActiveModel()->switchFaceNormalsVisibility();
 			cout << "switched face normals visibility of active model." << endl;
 			should_redraw = true;
 		}
 		break;
+
+	case '4':
+		scene->addPrimitive(key - '0');
+		should_redraw = true;
+		break;
 	}
 
-	if (should_redraw) {
-		if (config.is_demo) {
-			scene->drawDemo();
-		} else {
-			clear_buffers();
-			scene->draw();
-		};
-	}
+	redraw(should_redraw);
 }
 
 void mouse(int button, int state, int x, int y)
@@ -242,6 +249,40 @@ void motion(int x, int y)
 	last_y=y;
 }
 
+void help()
+{
+	AfxMessageBox(
+		"GENERAL:\n"
+		"ESC/q\t\texit\n"
+		"DEL\t\tclear screen\n"
+		"\n"
+		"MODES:\n"
+		"* w/W\t\tenter world mode\n"
+		"* m/M\t\tenter model mode\n"
+		"* v/V\t\tenter camera view mode\n"
+		"* c/C\t\tenter camera world mode\n"
+		"\n"
+		"TRANSFORMATIONS:\n"
+		"* +/-\t\tcontrol scaling in current mode\n"
+		"* r/R\t\tcontrol rotation in current mode\n"
+		"* t/T\t\tcontrol translation in current mode\n"
+		"\n"
+		"ACTIVE OBJECTS:\n"
+		"* </>\t\tmove between cameras\n"
+		"* l\t\tset camera look at\n"
+		"* P/p\t\tset camera perspective - Horizontal / perspective - Vertical\n"
+		"* o/f\t\tset camera orthogonal / frustum\n"
+		"* Z/z\t\tset zoom in / out\n"
+		"\n"
+		"* TAB\t\tmove between models\n"
+		"* b\t\tswitch model bounding box visibility\n"
+		"* n\t\tswitch model normal visibility\n"
+		"* N\t\tswitch model face normal visibility\n"
+		"\n"
+		"PrimMeshModels:\n"
+		"* 1-9\t\tadd model", MB_USERICON);
+}
+
 void fileMenu(int id)
 {
 	bool should_redraw = false;
@@ -263,19 +304,11 @@ void fileMenu(int id)
 			should_redraw = true;
 			break;
 	}
-	if (should_redraw) {
-		if (config.is_demo) {
-			scene->drawDemo();
-		} else {
-			clear_buffers();
-			scene->draw();
-		};
-	}
+	redraw(should_redraw);
 }
 
 void settingMenu(int id)
 {
-	CString s = "";
 	switch (id) {
 	case SETTING_SCALING:
 		set_scale_vector();
@@ -286,6 +319,9 @@ void settingMenu(int id)
 	case SETTING_MOVEMENT:
 		set_translation_vector();
 		break;
+	case SETTING_ZOOM:
+		set_zoom_value();
+		break;
 	}
 }
 
@@ -294,8 +330,11 @@ void mainMenu(int id)
 	switch (id)
 	{
 	case MAIN_DEMO:
-		scene->drawDemo();
 		config.is_demo = true;
+		redraw();
+		break;
+	case MAIN_HELP:
+		help();
 		break;
 	case MAIN_ABOUT:
 		AfxMessageBox(_T("Computer Graphics"));
@@ -310,63 +349,143 @@ void initMenu()
 	glutAddMenuEntry("Open...", FILE_OPEN);
 	glutAddMenuEntry("Camera", ADD_CAMERA);
 
-	// add sub menu
-	//int menuAdd = glutCreateMenu(fileMenu);
-	//glutAddMenuEntry("Model", ADD_MODEL);
-
 	// setting sub menu
 	int menuSetting = glutCreateMenu(settingMenu);
 	glutAddMenuEntry("Scaling...", SETTING_SCALING);
 	glutAddMenuEntry("Rotation...", SETTING_ROTATION);
 	glutAddMenuEntry("Movement...", SETTING_MOVEMENT);
+	glutAddMenuEntry("Zoom...", SETTING_ZOOM);
 
 	glutCreateMenu(mainMenu);
 	glutAddSubMenu("File",menuFile);
 	glutAddSubMenu("Setting", menuSetting);
 	glutAddMenuEntry("Demo",MAIN_DEMO);
+	glutAddMenuEntry("Help", MAIN_HELP);
 	glutAddMenuEntry("About",MAIN_ABOUT);
 	glutAttachMenu(GLUT_RIGHT_BUTTON);
 }
 //----------------------------------------------------------------------------
 
-void clear_buffers()
+void redraw(bool should_redraw)
 {
-	renderer->ClearColorBuffer();
-	renderer->ClearDepthBuffer();
-	renderer->SwapBuffers();
+	if (should_redraw) {
+		if (config.is_demo) {
+			scene->drawDemo();
+		} else {
+			renderer->ClearColorBuffer();
+			renderer->ClearDepthBuffer();
+			scene->draw();
+		};
+	}
 }
 
 bool set_ortho()
 {
 	COrthoDialog dlg;
 	if (dlg.DoModal() == IDOK) {
+		if ((dlg.GetLeft() >= dlg.GetRight()) ||
+			(dlg.GetBottom() >= dlg.GetTop()) ||
+			(dlg.GetNear() >= dlg.GetFar())) {
+			cout << "ortho setting: invalid parameters (" <<
+				dlg.GetLeft() << ", " << dlg.GetRight() << ", " <<
+				dlg.GetBottom() << ", " << dlg.GetTop() << ", " <<
+				dlg.GetNear() << ", " << dlg.GetFar() << ")" << endl;
+			return false;
+		}
 		scene->getActiveCamera()->ortho(
-			dlg.GetLeft(), 
-			dlg.GetRight(),
-			dlg.GetBottom(),
-			dlg.GetTop(),
-			dlg.GetNear(),
-			dlg.GetFar()
+			dlg.GetLeft(), dlg.GetRight(),
+			dlg.GetBottom(), dlg.GetTop(),
+			dlg.GetNear(), dlg.GetFar()
 		);
 		return true;
 	}
 	return false;
 }
 
-bool set_zoom(char type)
+bool set_frustum()
 {
-	CZoomDialog dlg;
+	COrthoDialog dlg("Frustum Setting");
 	if (dlg.DoModal() == IDOK) {
-		switch (type) {
-		case 'Z':
-			scene->getActiveCamera()->zoomIn(dlg.GetZ());
-			return true;
-		case 'z':
-			scene->getActiveCamera()->zoomOut(dlg.GetZ());
-			return true;
+		if ((dlg.GetLeft() >= dlg.GetRight()) ||
+			(dlg.GetBottom() >= dlg.GetTop()) ||
+			(dlg.GetNear() >= dlg.GetFar())) {
+			cout << "frumstum setting: invalid parameters (" <<
+				dlg.GetLeft() << ", " << dlg.GetRight() << ", " <<
+				dlg.GetBottom() << ", " << dlg.GetTop() << ", " <<
+				dlg.GetNear() << ", " << dlg.GetFar() << ")" << endl;
+			return false;
 		}
+		scene->getActiveCamera()->frustum(
+			dlg.GetLeft(), dlg.GetRight(),
+			dlg.GetBottom(), dlg.GetTop(),
+			dlg.GetNear(), dlg.GetFar()
+		);
+		return true;
 	}
 	return false;
+}
+
+bool set_perspective(char type)
+{
+	bool is_horizontal = (type == 'P');
+	CString title = is_horizontal ? "Horizontal" : "Vertical";
+	CPerspectiveDialog dlg(title + " Perspective Setting", is_horizontal);
+	if (dlg.DoModal() == IDOK) {
+		if ((dlg.GetFov() <= 0) || (dlg.GetFov() >= 180) ||
+			(dlg.GetAspect() <= 0) ||
+			(dlg.GetNear() >= dlg.GetFar())) {
+			cout << "perspective setting: invalid parameters (" <<
+				dlg.GetFov() << ", " << dlg.GetAspect() << ", " <<
+				dlg.GetNear() << ", " << dlg.GetFar() << ")" << endl;
+			return false;
+		}
+		if (is_horizontal) {
+			scene->getActiveCamera()->perspectiveHorizontal(
+				dlg.GetFov(), dlg.GetAspect(),
+				dlg.GetNear(), dlg.GetFar()
+			);
+		} else {
+			scene->getActiveCamera()->perspectiveVertical(
+				dlg.GetFov(), dlg.GetAspect(),
+				dlg.GetNear(), dlg.GetFar()
+			);
+		}
+		return true;
+	}
+	return false;
+}
+
+bool set_lookat()
+{
+	/*CLookAtDialog dlg;
+	if (dlg.DoModal() == IDOK) {
+		scene->getActiveCamera()->lookAt(
+			dlg.GetEye(),
+			dlg.GetAt(),
+			dlg.GetUp()
+		);
+		return true;
+	}*/
+	return false;
+}
+
+void change_active_model()
+{
+	int max_id = scene->getNumberOfModels();
+	if (max_id > 0) {
+		CValueDialog dlg("Active Model", "Model ID:", max_id - 1);
+		if (dlg.DoModal() == IDOK) {
+			int v = dlg.GetValue();
+			if ((v < 0) || (v >= scene->getNumberOfModels())) {
+				cout << "invalid model ID #" << v << endl;
+			} else {
+				scene->setActiveModel(v);
+				cout << "active model changed to #" << v << endl;
+			}
+		}
+	} else {
+		cout << "no model in system" << endl;
+	}
 }
 
 bool scale(unsigned char key)
@@ -521,6 +640,21 @@ bool translate(unsigned char direction)
 	return should_redraw;
 }
 
+bool zoom(unsigned char type)
+{
+	switch (type) {
+	case 'z':
+		scene->getActiveCamera()->zoom(config.zoom);
+		break;
+	case 'Z':
+		scene->getActiveCamera()->zoom(-config.zoom);
+		break;
+	default:
+		return false;
+	}
+	return true;
+}
+
 void set_scale_vector()
 {
 	CXyzDialog dlg("Scaling Setting", vec3(1));
@@ -557,6 +691,14 @@ void set_translation_vector()
 	}
 }
 
+void set_zoom_value()
+{
+	CValueDialog dlg("Zoom Dialog", "Z:", 1);
+	if (dlg.DoModal() == IDOK) {
+		config.zoom = dlg.GetValue();
+	}
+}
+
 int my_main( int argc, char **argv )
 {
 	//----------------------------------------------------------------------------
@@ -581,8 +723,8 @@ int my_main( int argc, char **argv )
 	
 	
 	renderer = new Renderer(512,512);
-	scene = new Scene(renderer, vec3(0, 5, 15));
-	config = { 0, vec3(1), vec3(), vec3(), false};
+	scene = new Scene(renderer, vec3(0, 0, 10));
+	config = { 0, vec3(1), vec3(), vec3(), 1, false};
 	//----------------------------------------------------------------------------
 	// Initialize Callbacks
 

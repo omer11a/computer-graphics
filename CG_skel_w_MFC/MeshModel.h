@@ -9,9 +9,6 @@ using namespace std;
 
 class MeshModel
 {
-	vector<vec3> vertexPositions;
-	vector<vec3> vertexNormals;
-	vector<vec3> faceNormals;
 	mat4 modelTransform;
 	mat4 worldTransform;
 	mat3 normalModelTransform;
@@ -22,12 +19,17 @@ class MeshModel
 	bool allowFaceNormals;
 	bool allowBoundingBox;
 
-	MeshModel() = delete;
-	vec3 & getVecByIndex(vector<vec3> & vecs, int i);
 	void loadFile(string fileName);
 	mat3 convertToNormalTransform(const mat4 & transform) const;
 	void computeFaceNormals();
 	void computeBoundingBox();
+
+protected:
+	MeshModel();
+	vector<vec3> vertexPositions;
+	vector<vec3> vertexNormals;
+	vector<vec3> faceNormals;
+	vec3 & getVecByIndex(vector<vec3> & vecs, int i);
 
 public:
 	MeshModel(string fileName);
@@ -38,4 +40,10 @@ public:
 	void switchFaceNormalsVisibility();
 	void switchBoundingBoxVisibility();
 	void draw(Renderer * renderer) const;
+};
+
+class PrimMeshModel : public MeshModel
+{
+public:
+	PrimMeshModel();
 };

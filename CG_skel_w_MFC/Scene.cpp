@@ -140,13 +140,8 @@ void Camera::perspectiveHorizontal(
 	perspectiveVertical(fovy, aspect, zNear, zFar);
 }
 
-void Camera::zoomIn(const float z) {
+void Camera::zoom(const float z) {
 	zNear += z;
-	updateProjection();
-}
-
-void Camera::zoomOut(const float z) {
-	zNear -= z;
 	updateProjection();
 }
 
@@ -234,6 +229,16 @@ void Scene::loadOBJModel(string fileName)
 		}
 
 		throw;
+	}
+}
+
+void Scene::addPrimitive(int id)
+{
+	switch (id) {
+	case 4:
+		activeModel = models.size();
+		models.push_back(new PrimMeshModel());
+		break;
 	}
 }
 
@@ -348,6 +353,9 @@ void Scene::clear() {
 	}
 
 	models.clear();
+
+	activeModel = -1;
+	activeCamera = 0;
 }
 
 void Scene::draw() const {
