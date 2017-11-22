@@ -581,7 +581,7 @@ int my_main( int argc, char **argv )
 	
 	
 	renderer = new Renderer(512,512);
-	scene = new Scene(renderer);
+	scene = new Scene(renderer, vec3(0, 5, 15));
 	config = { 0, vec3(1), vec3(), vec3(), false};
 	//----------------------------------------------------------------------------
 	// Initialize Callbacks

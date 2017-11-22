@@ -59,6 +59,8 @@ public:
 	void setVisibility(bool shouldBeVisible);
 	mat4 getInverseTransform() const;
 	mat4 getProjection() const;
+	float getNear() const;
+	float getFar() const;
 	void draw(Renderer * renderer) const;
 };
 

@@ -35,7 +35,7 @@ Camera::Camera() :
 	isVisible(true), isPerspective(true),
 	viewTransform(), worldTransform(), inverseViewTransform(), inverseWorldTransform()
 {
-	frustum(-5, 5, -5, 5, 1, 5);
+	frustum(-5, 5, -5, 5, 5, 15);
 }
 
 void Camera::transformInView(const mat4& transform) {
@@ -85,7 +85,8 @@ void Camera::ortho(
 
 	mat4 t = Translate(-(right + left) / 2, -(bottom + top) / 2, (zNear + zFar) / 2);
 	mat4 s = Scale(2 / (right - left), 2 / (top - bottom), 2 / (zNear - zFar));
-	projection = s * t;
+	mat4 m = Scale(1, 1, 0);
+	projection = m * s * t;
 	isPerspective = false;
 }
 
@@ -103,19 +104,15 @@ void Camera::frustum(
 	this->zNear = zNear;
 	this->zFar = zFar;
 
-	mat4 h = mat4();
-	h[0][2] = (left + right) / (-2 * zNear);
-	h[1][2] = (top + bottom) / (-2 * zNear);
-
-	mat4 s = Scale((-2 * zNear) / (right - left), (-2 * zNear) / (top - bottom), 1);
-
-	mat4 n = mat4();
-	n[2][2] = -((zNear + zFar) / (zNear - zFar));
-	n[2][3] = -((2 * zNear * zFar) / (zNear - zFar));
-	n[3][2] = -1;
-	n[3][3] = 0;
-
-	projection = n * s * h;
+	projection = mat4();
+	projection[0][0] = 2 * zNear / (right - left);
+	projection[0][2] = (right + left) / (right - left);
+	projection[1][1] = 2 * zNear / (top - bottom);
+	projection[1][2] = (top + bottom) / (top - bottom);
+	projection[2][2] = -(zFar + zNear) / (zFar - zNear);
+	projection[2][3] = -2 * zFar * zNear / (zFar - zNear);
+	projection[3][2] = -1;
+	
 	isPerspective = true;
 }
 
@@ -163,6 +160,14 @@ mat4 Camera::getInverseTransform() const {
 
 mat4 Camera::getProjection() const {
 	return projection;
+}
+
+float Camera::getNear() const {
+	return zNear;
+}
+
+float Camera::getFar() const {
+	return zFar;
 }
 
 void Camera::draw(Renderer * renderer) const {
@@ -351,8 +356,10 @@ void Scene::draw() const {
 	}
 
 	// 1. Send the renderer the current camera transform and the projection
-	renderer->SetCameraTransform(cameras.at(activeCamera)->getInverseTransform());
-	renderer->SetProjection(cameras.at(activeCamera)->getProjection());
+	Camera * camera = cameras.at(activeCamera);
+	renderer->SetCameraTransform(camera->getInverseTransform());
+	renderer->SetProjection(camera->getProjection());
+	renderer->SetZRange(camera->getNear(), camera->getFar());
 
 	// 2. Tell all models to draw themselves
 	for (MeshModel * model : models) {
