@@ -132,10 +132,12 @@ void keyboard(unsigned char key, int x, int y)
 	// camera operations
 	case '>':
 		scene->nextCamera();
+		cout << "switched active camera" << endl;
 		should_redraw = true;
 		break;
 	case '<':
 		scene->prevCamera();
+		cout << "switched active camera" << endl;
 		should_redraw = true;
 		break;
 	case 'l':
@@ -463,15 +465,22 @@ bool set_perspective(char type)
 
 bool set_lookat()
 {
-	/*CLookAtDialog dlg;
-	if (dlg.DoModal() == IDOK) {
-		scene->getActiveCamera()->lookAt(
-			dlg.GetEye(),
-			dlg.GetAt(),
-			dlg.GetUp()
-		);
+	Camera * cam = scene->getActiveCamera();
+	mat4 tc = inverse(cam->getInverseTransform());
+	vec4 eye = tc * vec3();
+	vec4 up = tc * vec3(0, 1, 0);
+
+	cout << "start from : " << eye << " with up in " << up << endl;
+	if (scene->getNumberOfModels() > 0) {
+		vec4 at = scene->getActiveModel()->getLocation();
+		cam->lookAt(eye, at, up);
+		cout << "look at: looking at " << at << endl;
+		tc = inverse(cam->getInverseTransform());
+		cout << "end at: " << (tc * vec3()) << " with up in " << (tc * vec3(0, 1, 0)) << endl;
 		return true;
-	}*/
+	} else {
+		cout << "look at: no model to look at..." << endl;
+	}
 	return false;
 }
 

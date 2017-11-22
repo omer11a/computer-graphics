@@ -183,6 +183,17 @@ void MeshModel::transformInWorld(const mat4 & transform) {
 	worldTransform = transform * worldTransform;
 }
 
+vec4 MeshModel::getLocation()
+{
+	vec3 cm;
+	for (unsigned int i = 1; i < vertexPositions.size(); ++i) {
+		vec3 vertex = vertexPositions.at(i);
+		cm += vertex;
+	}
+
+	return worldTransform * modelTransform * (cm / vertexPositions.size());
+}
+
 void MeshModel::switchVertexNormalsVisibility() {
 	allowVertexNormals = !allowVertexNormals;
 }

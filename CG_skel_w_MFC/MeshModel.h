@@ -36,6 +36,7 @@ public:
 	~MeshModel(void) = default;
 	void transformInModel(const mat4 & transform);
 	void transformInWorld(const mat4 & transform);
+	vec4 getLocation();
 	void switchVertexNormalsVisibility();
 	void switchFaceNormalsVisibility();
 	void switchBoundingBoxVisibility();
