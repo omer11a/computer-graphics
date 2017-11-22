@@ -23,6 +23,7 @@ l		->	set camera look at
 P/p		->	set camera perspective-Horizontal / perspective-Vertical
 o/f		->	set camera orthogonal / frustum
 Z/z		->	set zoom in/out
+s		->	set camera visibility
 
 TAB		->	move between models
 b		->	switch model bounding box visibility
@@ -148,7 +149,7 @@ void keyboard(unsigned char key, int x, int y)
 		break;
 	case 'p':
 	case 'P':
-		set_perspective(key);
+		should_redraw = set_perspective(key);
 		break;
 	case 'z':
 	case 'Z':
@@ -187,6 +188,10 @@ void keyboard(unsigned char key, int x, int y)
 		break;
 
 	// visibility options
+	case 's':
+		scene->getActiveCamera()->switchVisibility();
+		should_redraw = true;
+		break;
 	case 'b':
 		if (scene->getNumberOfModels() > 0) {
 			scene->getActiveModel()->switchBoundingBoxVisibility();
@@ -273,6 +278,7 @@ void help()
 		"* P/p\t\tset camera perspective - Horizontal / perspective - Vertical\n"
 		"* o/f\t\tset camera orthogonal / frustum\n"
 		"* Z/z\t\tset zoom in / out\n"
+		"* s\t\tset camera visibility"
 		"\n"
 		"* TAB\t\tmove between models\n"
 		"* b\t\tswitch model bounding box visibility\n"
@@ -280,7 +286,7 @@ void help()
 		"* N\t\tswitch model face normal visibility\n"
 		"\n"
 		"PrimMeshModels:\n"
-		"* 1-9\t\tadd model", MB_USERICON);
+		"* 1-9\t\tadd model", MB_ICONINFORMATION);
 }
 
 void fileMenu(int id)
@@ -642,17 +648,14 @@ bool translate(unsigned char direction)
 
 bool zoom(unsigned char type)
 {
-	switch (type) {
-	case 'z':
-		scene->getActiveCamera()->zoom(config.zoom);
-		break;
-	case 'Z':
-		scene->getActiveCamera()->zoom(-config.zoom);
-		break;
-	default:
-		return false;
+	int delta = (type == 'z') ? config.zoom : -config.zoom;
+	Camera * cam = scene->getActiveCamera();
+	if ((cam->getNear() + delta > 0) && (cam->getNear() + delta > 0)) {
+		scene->getActiveCamera()->zoom(delta);
+		return true;
 	}
-	return true;
+	cout << "zoom is out of range, far=" << cam->getFar() << ", near=" << cam->getNear() << ", zoom=" << delta << endl;
+	return false;
 }
 
 void set_scale_vector()

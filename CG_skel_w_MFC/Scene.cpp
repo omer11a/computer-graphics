@@ -141,12 +141,15 @@ void Camera::perspectiveHorizontal(
 }
 
 void Camera::zoom(const float z) {
-	zNear += z;
-	updateProjection();
+	if ((zNear + z > 0) && (zNear + z < zFar)) {
+		zNear += z;
+		updateProjection();
+	}
 }
 
-void Camera::setVisibility(bool shouldBeVisible) {
-	isVisible = shouldBeVisible;
+void Camera::switchVisibility()
+{
+	isVisible = !isVisible;
 }
 
 mat4 Camera::getInverseTransform() const {

@@ -229,17 +229,25 @@ void Renderer::DrawBox(const vec3& minValues, const vec3& maxValues)
 
 void Renderer::DrawCamera()
 {
-	/*
 	vec3 color(1, 140 / 255, 1);
-	vec3 camera_location = PointToScreen(vec3());
+	vec3 camera_location;
+	bool in_sight = PointToScreen(vec3(), vec3(), camera_location);
+	if (!in_sight) {
+		return;
+	}
 	vector<vec3> vertices;
 	vertices.push_back(camera_location + vec3(-10, 0.0f, 20));
 	vertices.push_back(camera_location + vec3(10, 0, 30));
 	vertices.push_back(camera_location + vec3(0, 25, 0));
-	
+	/*
 	DrawLine(vertices[0], vertices[1], color);
 	DrawLine(vertices[1], vertices[2], color);
 	DrawLine(vertices[2], vertices[0], color);*/
+	
+	for (int i = -5; i < 5; ++i) {
+		PlotPixel(camera_location.x + i, camera_location.y, color);
+		PlotPixel(camera_location.x, camera_location.y + i, color);
+	}
 }
 
 void Renderer::SetCameraTransform(const mat4 & cTransform)

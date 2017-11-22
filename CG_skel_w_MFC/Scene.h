@@ -55,7 +55,7 @@ public:
 	void perspectiveHorizontal(const float fovx, const float aspect,
 		const float zNear, const float zFar);
 	void zoom(const float z = 1);
-	void setVisibility(bool shouldBeVisible);
+	void switchVisibility();
 	mat4 getInverseTransform() const;
 	mat4 getProjection() const;
 	float getNear() const;
