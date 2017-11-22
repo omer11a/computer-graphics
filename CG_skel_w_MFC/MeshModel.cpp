@@ -159,6 +159,12 @@ void MeshModel::computeBoundingBox() {
 	}
 }
 
+MeshModel::MeshModel() :
+	vertexPositions(), vertexNormals(), faceNormals(),
+	worldTransform(), modelTransform(), normalModelTransform(), normalWorldTransform(),
+	allowVertexNormals(false), allowFaceNormals(false), allowBoundingBox(false)
+{ }
+
 MeshModel::MeshModel(string fileName) :
 	vertexPositions(), vertexNormals(), faceNormals(),
 	worldTransform(), modelTransform(), normalModelTransform(), normalWorldTransform(),
@@ -208,5 +214,55 @@ void MeshModel::draw(Renderer * renderer) const {
 
 	if (allowBoundingBox) {
 		renderer->DrawBox(minValues, maxValues);
+	}
+}
+
+PrimMeshModel::PrimMeshModel() : MeshModel()
+{
+	vector<FaceIdcs> faces;
+	vector<vec3> vertices;
+	vector<vec3> normals;
+
+	// cube with center mass at (0,0,0), edge legnth is 2
+	vertices.push_back(vec3(-1, -1, -1));
+	vertices.push_back(vec3(-1, -1, 1));
+	vertices.push_back(vec3(-1, 1, -1));
+	vertices.push_back(vec3(-1, 1, 1));
+	vertices.push_back(vec3(1, -1, -1));
+	vertices.push_back(vec3(1, -1, 1));
+	vertices.push_back(vec3(1, 1, -1));
+	vertices.push_back(vec3(1, 1, 1));
+
+	normals.push_back(vec3(0, 0, 1));
+	normals.push_back(vec3(0, 0, -1));
+	normals.push_back(vec3(0, 1, 0));
+	normals.push_back(vec3(0, -1, 0));
+	normals.push_back(vec3(1, 0, 0));
+	normals.push_back(vec3(-1, 0, 0));
+	
+	// back face
+	faces.push_back(istringstream("1//2  7//2  5//2"));
+	faces.push_back(istringstream("1//2  3//2  7//2"));
+	// left face
+	faces.push_back(istringstream("1//6  4//6  3//6"));
+	faces.push_back(istringstream("1//6  2//6  4//6"));
+	// top face
+	faces.push_back(istringstream("3//3  8//3  7//3"));
+	faces.push_back(istringstream("3//3  4//3  8//3"));
+	// right face
+	faces.push_back(istringstream("5//5  7//5  8//5"));
+	faces.push_back(istringstream("5//5  8//5  6//5"));
+	// bottom face
+	faces.push_back(istringstream("1//4  5//4  6//4"));
+	faces.push_back(istringstream("1//4  6//4  2//4"));
+	// front face
+	faces.push_back(istringstream("2//1  6//1  8//1"));
+	faces.push_back(istringstream("2//1  8//1  4//1"));
+	
+	for (vector<FaceIdcs>::iterator it = faces.begin(); it != faces.end(); ++it) {
+		for (int i = 0; i < 3; i++) {
+			vertexPositions.push_back(getVecByIndex(vertices, it->v[i]));
+			vertexNormals.push_back(getVecByIndex(normals, it->vn[i]));
+		}
 	}
 }

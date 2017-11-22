@@ -208,6 +208,11 @@ void keyboard(unsigned char key, int x, int y)
 			should_redraw = true;
 		}
 		break;
+
+	case '4':
+		scene->addPrimitive(key - '0');
+		should_redraw = true;
+		break;
 	}
 
 	redraw(should_redraw);
@@ -275,7 +280,7 @@ void help()
 		"* N\t\tswitch model face normal visibility\n"
 		"\n"
 		"PrimMeshModels:\n"
-		"* 1-9\t\tadd model");
+		"* 1-9\t\tadd model", MB_USERICON);
 }
 
 void fileMenu(int id)
@@ -718,8 +723,8 @@ int my_main( int argc, char **argv )
 	
 	
 	renderer = new Renderer(512,512);
-	scene = new Scene(renderer);
-	config = { 0, vec3(1), vec3(), vec3(), false};
+	scene = new Scene(renderer, vec3(0, 0, 10));
+	config = { 0, vec3(1), vec3(), vec3(), 1, false};
 	//----------------------------------------------------------------------------
 	// Initialize Callbacks
 

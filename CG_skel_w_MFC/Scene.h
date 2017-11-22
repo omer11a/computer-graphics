@@ -75,6 +75,7 @@ public:
 	explicit Scene(Renderer * renderer, const vec3 & eye = vec3());
 	~Scene();
 	void loadOBJModel(string fileName);
+	void addPrimitive(int id);
 	void addCamera();
 	MeshModel * getActiveModel();
 	Camera * getActiveCamera();

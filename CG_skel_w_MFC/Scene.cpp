@@ -227,6 +227,16 @@ void Scene::loadOBJModel(string fileName)
 	}
 }
 
+void Scene::addPrimitive(int id)
+{
+	switch (id) {
+	case 4:
+		activeModel = models.size();
+		models.push_back(new PrimMeshModel());
+		break;
+	}
+}
+
 void Scene::addCamera() {
 	Camera * camera = NULL;
 	int newActiveCamera = cameras.size();
