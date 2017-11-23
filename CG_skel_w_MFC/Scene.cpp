@@ -61,8 +61,11 @@ void Camera::lookAt(const vec4 & eye, const vec4 & at, const vec4 & up) {
 	inverseViewTransform = viewTransform;
 
 	vec4 n = normalize(eye - at);
+	n.w = 0;
 	vec4 u = normalize(cross(up, n));
+	u.w = 0;
 	vec4 v = normalize(cross(n, u));
+	v.w = 0;
 	vec4 t = vec4(0, 0, 0, 1);
 	mat4 c = mat4(u, v, n, t);
 	worldTransform = Translate(eye) * transpose(c);

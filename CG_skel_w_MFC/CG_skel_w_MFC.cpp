@@ -468,11 +468,14 @@ bool set_lookat()
 	Camera * cam = scene->getActiveCamera();
 	mat4 tc = inverse(cam->getInverseTransform());
 	vec4 eye = tc * vec3();
+	eye = eye / eye.w;
 	vec4 up = tc * vec3(0, 1, 0);
+	up = up / up.w;
 
 	cout << "start from : " << eye << " with up in " << up << endl;
 	if (scene->getNumberOfModels() > 0) {
 		vec4 at = scene->getActiveModel()->getLocation();
+		at = at / at.w;
 		cam->lookAt(eye, at, up);
 		cout << "look at: looking at " << at << endl;
 		tc = inverse(cam->getInverseTransform());

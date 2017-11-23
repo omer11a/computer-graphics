@@ -186,7 +186,7 @@ void MeshModel::transformInWorld(const mat4 & transform) {
 vec4 MeshModel::getLocation()
 {
 	vec3 cm;
-	for (unsigned int i = 1; i < vertexPositions.size(); ++i) {
+	for (unsigned int i = 0; i < vertexPositions.size(); ++i) {
 		vec3 vertex = vertexPositions.at(i);
 		cm += vertex;
 	}
