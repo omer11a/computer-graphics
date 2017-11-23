@@ -50,6 +50,7 @@ bool Renderer::PointToScreen(const vec3& p, const vec3& n, vec3& q) const
 	pTransformed = m_oTransform * p;
 	if (length(n) != 0) {
 		nTransformed = normalize(m_nTransform * n);
+		nTransformed.w = 0;
 	}
 
 	vec4 result = m_cTransform * (pTransformed + nTransformed);
@@ -180,9 +181,8 @@ void Renderer::DrawTriangles(const vector<vec3>* vertices, const vector<vec3>* v
 		DrawLine(c, vec3(), a, vec3(), white);
 		
 		if (faceNormals != NULL) {
-			f_normal = faceNormals->at(fn_index);
+			f_normal = faceNormals->at(fn_index++);
 			DrawLine(cm, vec3(), cm, f_normal, pink);
-			++fn_index;
 		}
 
 		if (vertexNormals != NULL) {
