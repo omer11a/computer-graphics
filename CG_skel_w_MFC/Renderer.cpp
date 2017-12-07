@@ -189,9 +189,9 @@ void Renderer::DrawTriangles(const vector<vec3>* vertices, const vector<vec3>* v
 			v_normal = vertexNormals->at(vn_index++);
 			DrawLine(a, vec3(), a, v_normal, yellow);
 			v_normal = vertexNormals->at(vn_index++);
-			DrawLine(a, vec3(), b, v_normal, yellow);
+			DrawLine(b, vec3(), b, v_normal, yellow);
 			v_normal = vertexNormals->at(vn_index++);
-			DrawLine(a, vec3(), c, v_normal, yellow);
+			DrawLine(c, vec3(), c, v_normal, yellow);
 		}
 	}
 }
