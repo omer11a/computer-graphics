@@ -21,7 +21,14 @@ class Renderer
 	void CreateLocalBuffer();
 	void DestroyBuffers();
 
-	bool PointToScreen(const vec3& p, const vec3& n, vec3& q) const;
+	vec4 applyCameraTransformation(const vec3& p, const vec3& n) const;
+	vec3 applyProjection(const vec4& p) const;
+	void clip(float x0, float x1, float xmin, float xmax, float& t1, float& t2) const;
+	bool clipLine(const vec3& v1, const vec3& n1, const vec3& v2, const vec3& n2, vec3& start, vec3& end) const;
+	vec3 convertToScreen(const vec3& p) const;
+	bool pointToScreen(const vec3& p, const vec3& n, vec3& q) const;
+	bool lineToScreen(const vec3& p1, const vec3& n1, const vec3& p2, const vec3& n2, vec3& q1, vec3& q2) const;
+
 	void PlotPixel(const int x, const int y, const vec3& color);
 	vec3 GetCenterMass(const vec3& p1, const vec3& p2, const vec3& p3) const;
 	void DrawLine(const vec3& p1, const vec3& n1, const vec3& p2, const vec3& n2, const vec3& color);
