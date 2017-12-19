@@ -41,11 +41,9 @@ void Renderer::DestroyBuffers()
 	}
 }
 
-bool Renderer::PointToScreen(const vec3& p, const vec3& n, vec3& q) const
-{
+vec4 Renderer::applyCameraTransformation(const vec3& p, const vec3& n) const {
 	vec4 pTransformed;
 	vec4 nTransformed;
-	float min_size = min(m_height, m_width) * 0.5;
 
 	pTransformed = m_oTransform * p;
 	if (length(n) != 0) {
@@ -53,18 +51,106 @@ bool Renderer::PointToScreen(const vec3& p, const vec3& n, vec3& q) const
 		nTransformed.w = 0;
 	}
 
-	vec4 result = m_cTransform * (pTransformed + nTransformed);
-	if ((result.z > -zNear) || (result.z < -zFar)) {
+	return m_cTransform * (pTransformed + nTransformed);
+}
+
+vec3 Renderer::applyProjection(const vec4& p) const {
+	vec4 result = m_projection * p;
+	result = result / result.w;
+	return vec3(result.x, result.y, result.z);
+}
+
+void Renderer::clip(float x0, float x1, float xmin, float xmax, float& t1, float& t2) const {
+	float p1 = x0 - x1;
+	float p2 = -p1;
+	float q1 = x0 - xmin;
+	float q2 = xmax - x0;
+
+	if (p1 == 0) {
+		// line is parallel to clipping window
+		if ((q1 < 0) || (q2 < 0)) {
+			// line is outside of the clipping window
+			t1 = 0;
+			t2 = 0;
+		}
+
+		return;
+	}
+	
+	float u1 = 0;
+	float u2 = 0;
+	float r1 = q1 / p1;
+	float r2 = q2 / p2;
+	if (p1 < 0) {
+		u1 = r1;
+		u2 = r2;
+	} else {
+		u1 = r2;
+		u2 = r1;
+	}
+
+	t1 = max(t1, u1);
+	t2 = min(t2, u2);
+}
+
+bool Renderer::clipLine(const vec3& v1, const vec3& n1, const vec3& v2, const vec3& n2, vec3& start, vec3& end) const {
+	vec4 p1 = applyCameraTransformation(v1, n1);
+	vec4 p2 = applyCameraTransformation(v2, n2);
+
+	float t1 = 0;
+	float t2 = 1;
+	clip(p1.z, p2.z, -zFar, -zNear, t1, t2);
+	if (t1 >= t2) {
 		return false;
 	}
 
-	result = m_projection * result;
-	result = result / result.w;
+	vec4 dp = p2 - p1;
+	vec3 q1 = applyProjection(p1 + t1 * dp);
+	vec3 q2 = applyProjection(p1 + t2 * dp);
+	
+	t1 = 0;
+	t2 = 1;
+	clip(q1.x, q2.x, -1, 1, t1, t2);
+	clip(q1.y, q2.y, -1, 1, t1, t2);
+	if (t1 >= t2) {
+		return false;
+	}
+
+	vec3 dq = q2 - q1;
+	start = q1 + t1 * dq;
+	end = q1 + t2 * dq;
+	return true;
+}
+
+vec3 Renderer::convertToScreen(const vec3& p) const {
+	static const double min_size = min(m_height, m_width) * 0.5;
+	return vec3(round(m_width * 0.5 + min_size * (p.x)), round(m_height * 0.5 + min_size * (p.y)), p.z);
+}
+
+bool Renderer::pointToScreen(const vec3& p, const vec3& n, vec3& q) const
+{
+	vec4 transformed = applyCameraTransformation(p, n);
+	if ((transformed.z > -zNear) || (transformed.z < -zFar)) {
+		return false;
+	}
+
+	vec3 result = applyProjection(transformed);
 	if ((result.x < -1) || (result.x > 1) || (result.y < -1) || (result.y > 1)) {
 		return false;
 	}
 
-	q = vec3(round(m_width * 0.5 + min_size * (result.x)), round(m_height * 0.5 + min_size * (result.y)), result.z);
+	q = convertToScreen(result);
+	return true;
+}
+
+bool Renderer::lineToScreen(const vec3& p1, const vec3& n1, const vec3& p2, const vec3& n2, vec3& q1, vec3& q2) const {
+	bool shouldDraw = clipLine(p1, n1, p2, n2, q1, q2);
+	if (!shouldDraw) {
+		return false;
+	}
+
+	q1 = convertToScreen(q1);
+	q2 = convertToScreen(q2);
 	return true;
 }
 
@@ -86,10 +172,7 @@ vec3 Renderer::GetCenterMass(const vec3& p1, const vec3& p2, const vec3& p3) con
 void Renderer::DrawLine(const vec3& p1, const vec3& n1, const vec3& p2, const vec3& n2, const vec3& color)
 {
 	vec3 newP1, newP2;
-	bool shouldDraw = true;
-	shouldDraw &= PointToScreen(p1, n1, newP1);
-	shouldDraw &= PointToScreen(p2, n2, newP2);
-	if (!shouldDraw) {
+	if (!lineToScreen(p1, n1, p2, n2, newP1, newP2)) {
 		return;
 	}
 
@@ -231,7 +314,7 @@ void Renderer::DrawCamera()
 {
 	vec3 color(1, 140 / 255, 1);
 	vec3 camera_location;
-	bool in_sight = PointToScreen(vec3(), vec3(), camera_location);
+	bool in_sight = pointToScreen(vec3(), vec3(), camera_location);
 	if (!in_sight) {
 		return;
 	}
