@@ -412,4 +412,9 @@ vec3 cross(const vec4& a, const vec4& b )
 		 a.x * b.y - a.y * b.x );
 }
 
+inline
+vec3 convert4dTo3d(const vec4& v) {
+	return vec3(v.x / v.w, v.y / v.w, v.z / v.w);
+}
+
 //----------------------------------------------------------------------------

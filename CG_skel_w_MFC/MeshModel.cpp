@@ -160,13 +160,13 @@ void MeshModel::computeBoundingBox() {
 }
 
 MeshModel::MeshModel() :
-	vertexPositions(), vertexNormals(), faceNormals(),
+	vertexPositions(), vertexNormals(), faceNormals(), colors(),
 	worldTransform(), modelTransform(), normalModelTransform(), normalWorldTransform(),
 	allowVertexNormals(false), allowFaceNormals(false), allowBoundingBox(false)
 { }
 
 MeshModel::MeshModel(string fileName) :
-	vertexPositions(), vertexNormals(), faceNormals(),
+	vertexPositions(), vertexNormals(), faceNormals(), colors(),
 	worldTransform(), modelTransform(), normalModelTransform(), normalWorldTransform(),
 	allowVertexNormals(false), allowFaceNormals(false), allowBoundingBox(false)
 {
