@@ -159,7 +159,7 @@ public:
 	CValueDialog(CString title = "Input Dialog", CString field = "Value:", float default_value = 0);
 	virtual ~CValueDialog();
 
-	float GetValue();
+	float GetValue() const;
 
 protected:
 	float value;
@@ -205,4 +205,39 @@ protected:
 	afx_msg int OnCreate(LPCREATESTRUCT lpcs);
 	afx_msg void OnPaint();
 	DECLARE_MESSAGE_MAP()
+};
+
+class CLightDialog : public CInputDialog {
+public:
+	CLightDialog(CString title = "Add light Source");
+	virtual ~CLightDialog();
+
+	vec3 GetColor() const;
+	vec3 GetLLocation() const;
+	vec3 GetLSize() const;
+	bool IsPoint() const;
+protected:
+
+	bool is_point;
+	COLORREF color;
+	vec3 l_location;
+	vec3 l_size;
+
+	CButton point_radio;
+	CButton parallel_radio;
+	CEdit locxEdit;
+	CEdit locyEdit;
+	CEdit loczEdit;
+	CEdit sizexEdit;
+	CEdit sizeyEdit;
+	CEdit sizezEdit;
+	CButton colorEdit;
+
+	afx_msg void choose_color();
+	virtual void DoDataExchange(CDataExchange* pDX);
+	
+	afx_msg int OnCreate(LPCREATESTRUCT lpcs);
+	afx_msg void OnPaint();
+	DECLARE_MESSAGE_MAP()
+
 };
