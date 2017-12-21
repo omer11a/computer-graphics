@@ -1,6 +1,14 @@
 #include "stdafx.h"
 #include "Shader.h"
 
+void Shader::updateLightTransform() const {
+	if (lights != NULL) {
+		for (Light * light : *lights) {
+			light->setTransform(transform);
+		}
+	}
+}
+
 vec3 Shader::computeColor(
 	const vec3& modelPosition,
 	const vec3& normal,
@@ -9,7 +17,7 @@ vec3 Shader::computeColor(
 	vec3 color;
 	if (lights != NULL) {
 		for (Light * light : *lights) {
-			color += light->computeColor(transform, modelPosition, cameraPosition, normal, material);
+			color += light->computeColor(modelPosition, cameraPosition, normal, material);
 		}
 	}
 
@@ -25,6 +33,7 @@ void Shader::setLights(const vector<Light *> * lights) {
 	}
 
 	this->lights = lights;
+	updateLightTransform();
 }
 
 void Shader::setTransform(const mat4& transform) {
@@ -33,6 +42,7 @@ void Shader::setTransform(const mat4& transform) {
 	}
 
 	this->transform = transform;
+	updateLightTransform();
 }
 
 void Shader::setCameraPosition(const vec3 & cameraPosition) {
@@ -60,7 +70,36 @@ vec3 FlatShader::getColor(const vec3& pixel) const {
 	return color;
 }
 
-GouraudShader::GouraudShader() : Shader(), positionToColorMatrix()
+vec3 InterpolatedShader::calculateBarycentricCoordinates(const vec3& position) const {
+	float areaPBC = length(cross(vertices[1] - position, vertices[2] - position));
+	float areaPCA = length(cross(vertices[2] - position, vertices[0] - position));
+
+	vec3 result;
+	result.x = areaPBC / area;
+	result.y = areaPCA / area;
+	result.z = 1 - result.x - result.z;
+	return result;
+}
+
+InterpolatedShader::InterpolatedShader() : Shader(), vertices(), area(1)
+{}
+
+void InterpolatedShader::setPolygon(
+	const mat3& vertices,
+	const PolygonMaterial& materials,
+	const mat3& vertexNormals,
+	const vec3& faceNormal
+) {
+	float areaABC = length(cross(vertices[1] - vertices[0], vertices[2] - vertices[0]));
+	if (areaABC == 0) {
+		throw invalid_argument("Vertices are on the same line");
+	}
+
+	this->vertices = vertices;
+	this->area = areaABC;
+}
+
+GouraudShader::GouraudShader() : InterpolatedShader(), colorMatrix()
 {}
 
 void GouraudShader::setPolygon(
@@ -69,26 +108,22 @@ void GouraudShader::setPolygon(
 	const mat3& vertexNormals,
 	const vec3& faceNormal
 ) {
-	if (!vertices.isInvertible()) {
-		throw invalid_argument("Vertices do not span a triangle");
-	}
+	InterpolatedShader::setPolygon(vertices, materials, vertexNormals, faceNormal);
 
-	mat3 barycentricMatrix = inverse(transpose(vertices));
 	mat3 colors;
 	for (int i = 0; i < 3; ++i) {
 		colors[i] = computeColor(vertices[i], vertexNormals[i], materials[i]);
 	}
 
-	positionToColorMatrix = transpose(colors) * barycentricMatrix;
+	colorMatrix = transpose(colors);
 }
 
 vec3 GouraudShader::getColor(const vec3& position) const {
-	return positionToColorMatrix * position;
+	return colorMatrix * calculateBarycentricCoordinates(position);
 }
 
 PhongShader::PhongShader() :
-	Shader(),
-	barycentricMatrix(),
+	InterpolatedShader(),
 	ambientMatrix(), specularMatrix(), diffuseMatrix(), shininessVector(),
 	normalMatrix()
 {}
@@ -99,11 +134,8 @@ void PhongShader::setPolygon(
 	const mat3& vertexNormals,
 	const vec3& faceNormal
 ) {
-	if (!vertices.isInvertible()) {
-		throw invalid_argument("Vertices do not span a triangle");
-	}
+	InterpolatedShader::setPolygon(vertices, materials, vertexNormals, faceNormal);
 
-	barycentricMatrix = inverse(transpose(vertices));
 	ambientMatrix = transpose(mat3(materials[0].ambientReflectance, materials[1].ambientReflectance, materials[2].ambientReflectance));
 	specularMatrix = transpose(mat3(materials[0].specularReflectance, materials[1].specularReflectance, materials[2].specularReflectance));
 	diffuseMatrix = transpose(mat3(materials[0].diffuseReflectance, materials[1].diffuseReflectance, materials[2].diffuseReflectance));
@@ -112,7 +144,7 @@ void PhongShader::setPolygon(
 }
 
 vec3 PhongShader::getColor(const vec3& position) const {
-	vec3 barycentricCoordinates = barycentricMatrix * position;
+	vec3 barycentricCoordinates = calculateBarycentricCoordinates(position);
 	Material material = {
 		ambientMatrix * barycentricCoordinates,
 		specularMatrix * barycentricCoordinates,

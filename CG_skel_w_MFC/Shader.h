@@ -1,10 +1,11 @@
 #pragma once
 
-#include <vector>
 #include "Light.h"
 using namespace std;
 
 class Shader {
+	void updateLightTransform() const;
+
 protected:
 	const int VERTICES_NUMBER = 3;
 
@@ -50,8 +51,26 @@ public:
 	vec3 getColor(const vec3& pixel) const override;
 };
 
-class GouraudShader : public Shader {
-	mat3 positionToColorMatrix;
+class InterpolatedShader : public Shader {
+	mat3 vertices;
+	float area;
+
+protected:
+	vec3 calculateBarycentricCoordinates(const vec3& position) const;
+
+public:
+	InterpolatedShader();
+
+	void setPolygon(
+		const mat3& vertices,
+		const PolygonMaterial& materials,
+		const mat3& vertexNormals = mat3(),
+		const vec3& faceNormal = vec3()
+	) override;
+};
+
+class GouraudShader : public InterpolatedShader {
+	mat3 colorMatrix;
 
 public:
 	GouraudShader();
@@ -66,8 +85,7 @@ public:
 	vec3 getColor(const vec3& pixel) const override;
 };
 
-class PhongShader : public Shader {
-	mat3 barycentricMatrix;
+class PhongShader : public InterpolatedShader {
 	mat3 ambientMatrix;
 	mat3 specularMatrix;
 	mat3 diffuseMatrix;
