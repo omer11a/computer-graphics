@@ -21,7 +21,7 @@ vec3 Shader::computeColor(
 		}
 	}
 
-	return color;
+	return minvec(color, 255);
 }
 
 Shader::Shader() : lights(NULL), transform(), cameraPosition()
