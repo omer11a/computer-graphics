@@ -182,9 +182,14 @@ void Camera::draw(Renderer * renderer) const {
 	}
 }
 
-Scene::Scene(Renderer * renderer, const vec3 & eye) :
+Scene::Scene(
+	Renderer * renderer,
+	const vec3& eye,
+	const AmbientLight& ambientLight
+) :
 	activeModel(-1), activeLight(-1), activeCamera(-1),
-	renderer(renderer)
+	renderer(renderer),
+	ambientLight(ambientLight)
 {
 	if (renderer == NULL) {
 		throw invalid_argument("Renderer is null");
@@ -240,11 +245,27 @@ void Scene::loadOBJModel(string fileName)
 
 void Scene::addPrimitive(int id)
 {
-	switch (id) {
-	case 4:
-		activeModel = models.size();
-		models.push_back(new PrimMeshModel());
-		break;
+	MeshModel * model = NULL;
+	int newActiveModel = models.size();
+
+	try {
+		switch (id) {
+		case 4:
+			model = new PrimMeshModel();
+			break;
+		default:
+			return;
+		}
+
+		models.push_back(model);
+		activeModel = newActiveModel;
+
+	} catch (...) {
+		if (model != NULL) {
+			delete model;
+		}
+
+		throw;
 	}
 }
 
@@ -260,6 +281,28 @@ void Scene::addCamera() {
 	} catch (...) {
 		if (camera != NULL) {
 			delete camera;
+		}
+
+		throw;
+	}
+}
+
+void Scene::setAmbientLight(const AmbientLight& ambientLight) {
+	this->ambientLight = ambientLight;
+}
+
+void Scene::addLight(const DirectionalLightSource& light) {
+	Light * newLight = NULL;
+	int newActiveLight = lights.size();
+
+	try {
+		newLight = light.clone();
+		lights.push_back(newLight);
+		activeLight = newActiveLight;
+
+	} catch (...) {
+		if (newLight != NULL) {
+			delete newLight;
 		}
 
 		throw;
@@ -282,14 +325,24 @@ Camera * Scene::getActiveCamera() {
 	return cameras.at(activeCamera);
 }
 
-size_t Scene::getNumberOfModels()
-{
+Light * Scene::getActiveLight() {
+	if (activeLight < 0) {
+		throw invalid_argument("No active light");
+	}
+
+	return lights.at(activeLight);
+}
+
+size_t Scene::getNumberOfModels() const {
 	return models.size();
 }
 
-size_t Scene::getNumberOfCameras()
-{
+size_t Scene::getNumberOfCameras() const {
 	return cameras.size();
+}
+
+size_t Scene::getNumberOfLights() const {
+	return lights.size();
 }
 
 void Scene::setActiveModel(int i) {
@@ -306,6 +359,14 @@ void Scene::setActiveCamera(int i) {
 	}
 
 	activeCamera = i;
+}
+
+void Scene::setActiveLight(int i) {
+	if ((i < 0) || (i >= (signed int) lights.size())) {
+		throw invalid_argument("No such light");
+	}
+
+	activeLight = i;
 }
 
 void Scene::prevCamera()
@@ -338,6 +399,7 @@ void Scene::removeActiveModel() {
 	activeModel = models.empty() ? -1 : 0;
 	delete model;
 }
+
 void Scene::removeActiveCamera() {
 	if (activeCamera < 0) {
 		throw invalid_argument("No active camera");
@@ -351,6 +413,17 @@ void Scene::removeActiveCamera() {
 	cameras.erase(cameras.begin() + activeCamera);
 	activeCamera = cameras.empty() ? -1 : 0;
 	delete camera;
+}
+
+void Scene::removeActiveLight() {
+	if (activeLight < 0) {
+		throw invalid_argument("No active camera");
+	}
+
+	Light * light = lights.at(activeLight);
+	lights.erase(lights.begin() + activeLight);
+	activeLight = lights.empty() ? -1 : 0;
+	delete light;
 }
 
 void Scene::clear() {

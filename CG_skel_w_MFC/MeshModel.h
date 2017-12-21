@@ -7,6 +7,15 @@
 
 using namespace std;
 
+struct Material {
+	vec3 ambientReflectance;
+	vec3 specularReflectance;
+	vec3 diffuseReflectance;
+	float shininess;
+};
+
+typedef Material PolygonMaterial[3];
+
 class MeshModel
 {
 	mat4 modelTransform;
@@ -29,6 +38,7 @@ protected:
 	vector<vec3> vertexPositions;
 	vector<vec3> vertexNormals;
 	vector<vec3> faceNormals;
+	vector<vec3> colors;
 	vec3 & getVecByIndex(vector<vec3> & vecs, int i);
 
 public:

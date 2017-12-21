@@ -5,11 +5,8 @@
 #include <string>
 #include "Renderer.h"
 #include "MeshModel.h"
+#include "Light.h"
 using namespace std;
-
-class Light {
-
-};
 
 class Camera {
 	bool isVisible;
@@ -69,26 +66,37 @@ class Scene {
 	int activeCamera;
 	Renderer * renderer;
 	vector<MeshModel *> models;
-	vector<Light *> lights;
 	vector<Camera *> cameras;
+	AmbientLight ambientLight;
+	vector<Light *> lights;
 
 public:
 	Scene() = delete;
-	explicit Scene(Renderer * renderer, const vec3 & eye = vec3());
+	explicit Scene(
+		Renderer * renderer,
+		const vec3& eye = vec3(),
+		const AmbientLight& ambientLight = AmbientLight(vec3(255, 255, 255))
+	);
 	~Scene();
 	void loadOBJModel(string fileName);
 	void addPrimitive(int id);
 	void addCamera();
+	void setAmbientLight(const AmbientLight& ambientLight);
+	void addLight(const DirectionalLightSource& light);
 	MeshModel * getActiveModel();
 	Camera * getActiveCamera();
-	size_t getNumberOfModels();
-	size_t getNumberOfCameras();
+	Light * getActiveLight();
+	size_t getNumberOfModels() const;
+	size_t getNumberOfCameras() const;
+	size_t getNumberOfLights() const;
 	void setActiveModel(int i);
 	void setActiveCamera(int i);
+	void setActiveLight(int i);
 	void prevCamera();
 	void nextCamera();
 	void removeActiveModel();
 	void removeActiveCamera();
+	void removeActiveLight();
 	void clear();
 	void draw() const;
 	void drawDemo() const;
