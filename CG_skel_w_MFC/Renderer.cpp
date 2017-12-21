@@ -6,13 +6,13 @@
 
 #define INDEX(width,x,y,c) (x+y*width)*3+c
 
-Renderer::Renderer() : m_width(512), m_height(512), m_zbuffer(NULL),
+Renderer::Renderer() : m_width(512), m_height(512), m_zBuffer(NULL),
 m_cTransform(), m_projection(), m_oTransform(), m_nTransform(), m_camera_multiply()
 {
 	InitOpenGLRendering();
 	CreateBuffers(512, 512);
 }
-Renderer::Renderer(int width, int height) : m_width(width), m_height(height), m_zbuffer(NULL),
+Renderer::Renderer(int width, int height) : m_width(width), m_height(height), m_zBuffer(NULL),
 m_cTransform(), m_projection(), m_oTransform(), m_nTransform()
 {
 	InitOpenGLRendering();
@@ -29,15 +29,28 @@ void Renderer::CreateBuffers(int width, int height)
 	m_width = width;
 	m_height = height;
 	CreateOpenGLBuffer(); //Do not remove this line.
-	m_outBuffer = new float[3 * m_width*m_height];
+	m_outBuffer = new float[3 * m_width * m_height];
+	m_zBuffer = new float[m_width * m_height];
+	//m_paintBuffer = NULL;
 }
+
+//void Renderer::CreateLocalBuffer()
+//{
+//	if (m_paintBuffer != NULL) {
+//		delete[] m_paintBuffer;
+//	}
+//	m_paintBuffer = new bool[m_width * m_height];
+//	for (int i = 0; i < m_width * m_height; ++i) {
+//		m_paintBuffer[i] = false;
+//	}
+//}
 
 
 void Renderer::DestroyBuffers()
 {
 	delete[] m_outBuffer;
-	if (m_zbuffer != NULL) {
-		delete[] m_zbuffer;
+	if (m_zBuffer != NULL) {
+		delete[] m_zBuffer;
 	}
 }
 
@@ -127,7 +140,16 @@ vec3 Renderer::convertToScreen(const vec3& p) const {
 	return vec3(round(m_width * 0.5 + min_size * (p.x)), round(m_height * 0.5 + min_size * (p.y)), p.z);
 }
 
-bool Renderer::pointToScreen(const vec3& p, const vec3& n, vec3& q) const
+//vec3 Renderer::PixelToPoint(const vec3 & p) const
+//{
+//	static const double min_size = min(m_height, m_width) * 0.5;
+//	float x = (p.x - m_width * 0.5) / min_size;
+//	float y = (p.y - m_height * 0.5) / min_size;
+//	return vec3(x, y, p.z);
+//}
+
+// TODO: check if extra bool is still important...
+bool Renderer::pointToScreen(const vec3& p, const vec3& n, vec3& q, bool should_screen) const
 {
 	vec4 transformed = applyCameraTransformation(p, n);
 	if ((transformed.z > -zNear) || (transformed.z < -zFar)) {
@@ -139,7 +161,7 @@ bool Renderer::pointToScreen(const vec3& p, const vec3& n, vec3& q) const
 		return false;
 	}
 
-	q = convertToScreen(result);
+	q = should_screen ? convertToScreen(result) : result;
 	return true;
 }
 
@@ -154,55 +176,112 @@ bool Renderer::lineToScreen(const vec3& p1, const vec3& n1, const vec3& p2, cons
 	return true;
 }
 
-void Renderer::PlotPixel(const int x, const int y, const vec3& color)
+bool Renderer::PlotPixel(const int x, const int y, const float z, const vec3& color)
 {
 	if ((x >= m_width) || (x < 0) || (y >= m_height) || (y < 0)) {
-		return;
+		return false;
 	}
 
-	m_outBuffer[INDEX(m_width, x, y, 0)] = color.x;
-	m_outBuffer[INDEX(m_width, x, y, 1)] = color.y;
-	m_outBuffer[INDEX(m_width, x, y, 2)] = color.z;
+	if (z > m_zBuffer[y * m_width + x]) {
+		m_outBuffer[INDEX(m_width, x, y, 0)] = color.x;
+		m_outBuffer[INDEX(m_width, x, y, 1)] = color.y;
+		m_outBuffer[INDEX(m_width, x, y, 2)] = color.z;
+		m_zBuffer[y * m_width + x] = z;
+	}
+	//if (m_paintBuffer != NULL) {
+	//	m_paintBuffer[y * m_width + x] = true;
+	//}
+	return true;
 }
 
 vec3 Renderer::GetCenterMass(const vec3& p1, const vec3& p2, const vec3& p3) const {
 	return vec3((p1.x + p2.x + p3.x) / 3, (p1.y + p2.y + p3.y) / 3, (p1.z + p2.z + p3.z) / 3);
 }
 
-void Renderer::DrawLine(const vec3& p1, const vec3& n1, const vec3& p2, const vec3& n2, const vec3& color)
+//void Renderer::UpdateBCPoint(const vec3& p1, const vec3& p2, const vec3& p3, vec3& p) const
+//{
+//	vec3 first, second, third;
+//	if ((p1.x <= p.x) && (p1.y <= p.y)) {
+//		first = p1;
+//		if ((p2.x >= p.x) && (p2.y >= p.y)) {
+//			second = p2;
+//			third = p3;
+//		} else {
+//			second = p3;
+//			third = p2;
+//		}
+//	} else if ((p2.x <= p.x) && (p2.y <= p.y)) {
+//		first = p2;
+//		if ((p1.x >= p.x) && (p1.y >= p.y)) {
+//			second = p1;
+//			third = p3;
+//		} else {
+//			second = p3;
+//			third = p1;
+//		}
+//	} else if ((p3.x <= p.x) && (p3.y <= p.y)) {
+//		first = p3;
+//		if ((p2.x >= p.x) && (p2.y >= p.y)) {
+//			second = p2;
+//			third = p1;
+//		} else {
+//			second = p1;
+//			third = p2;
+//		}
+//	}
+//
+//	vec2 bc = inverse(mat2(first.x, second.x, first.y, second.y)) * vec2(p.x, p.y);
+//
+//	p = transpose(mat3(first, second, third)) * vec3(bc, 1 - bc.x - bc.y);
+//	//return vec3(bc, 1 - bc.x - bc.y);
+//}
+
+void Renderer::DrawLine(const vec3& p1, const vec3& n1, const vec3& p2, const vec3& n2, const vec3& c1, const vec3& c2)
 {
 	vec3 newP1, newP2;
 	if (!lineToScreen(p1, n1, p2, n2, newP1, newP2)) {
 		return;
 	}
 
+	//TODO: recalculate colors
 	if (abs(newP1.y - newP2.y) > abs(newP1.x - newP2.x)) {
-		this->DrawSteepLine(newP1, newP2, color);
+		this->DrawSteepLine(newP1, newP2, c1, c2);
 	} else {
-		this->DrawModerateLine(newP1, newP2, color);
+		this->DrawModerateLine(newP1, newP2, c1, c2);
 	}
 }
 
-void Renderer::DrawSteepLine(const vec3& p1, const vec3& p2, const vec3& color) {
-	vec3 start, end;
+void Renderer::DrawSteepLine(const vec3& p1, const vec3& p2, const vec3& c1, const vec3& c2) {
+	vec3 start, start_c, end, end_c;
 
 	if (p1.y > p2.y) {
 		start = p2;
+		start_c = c2;
 		end = p1;
+		end_c = c1;
 	} else {
 		start = p1;
+		start_c = c1;
 		end = p2;
+		end_c = c2;
 	}
 
 	int x = start.x;
+	int y = start.y;
+	float z = start.z;
+	vec3 color = start_c;
+	
 	int dx = abs(end.x - start.x);
 	int dy = end.y - start.y;
+	float dz = (end.z - start.z) / dy;
+	vec3 dc = (end_c - start_c) / dy;
+
 	int de = 2 * dx;
 	int d = 2 * dx - dy;
 	int dne = 2 * dx - 2 * dy;
 	int x_change = (end.x > start.x) ? 1 : -1;
 
-	PlotPixel(x, start.y, color);
+	PlotPixel(x, y, z, start_c);
 	for (int y = start.y; y < end.y; ++y) {
 		if (d < 0) {
 			d += de;
@@ -210,29 +289,43 @@ void Renderer::DrawSteepLine(const vec3& p1, const vec3& p2, const vec3& color) 
 			x += x_change;
 			d += dne;
 		}
-		PlotPixel(x, y, color);
+		z += dz;
+		color += dc;
+		PlotPixel(x, y, z, color);
 	}
 }
 
-void Renderer::DrawModerateLine(const vec3& p1, const vec3& p2, const vec3& color) {
-	vec3 start, end;
+void Renderer::DrawModerateLine(const vec3& p1, const vec3& p2, const vec3& c1, const vec3& c2) {
+	vec3 start, start_c, end, end_c;
+
 	if (p1.x > p2.x) {
 		start = p2;
+		start_c = c2;
 		end = p1;
+		end_c = c1;
 	} else {
 		start = p1;
+		start_c = c1;
 		end = p2;
+		end_c = c2;
 	}
 
+	int x = start.x;
 	int y = start.y;
+	float z = start.z;
+	vec3 color = start_c;
+
 	int dx = end.x - start.x;
 	int dy = abs(end.y - start.y);
+	float dz = (end.z - start.z) / dx;
+	vec3 dc = (end_c - start_c) / dx;
+
 	int de = 2 * dy;
 	int d = 2 * dy - dx;
 	int dne = 2 * dy - 2 * dx;
 	int y_change = (end.y > start.y) ? 1 : -1;
 
-	PlotPixel(start.x, y, color);
+	PlotPixel(x, y, z, start_c);
 	for (int x = start.x; x < end.x; ++x) {
 		if (d < 0) {
 			d += de;
@@ -240,8 +333,97 @@ void Renderer::DrawModerateLine(const vec3& p1, const vec3& p2, const vec3& colo
 			y += y_change;
 			d += dne;
 		}
-		PlotPixel(x, y, color);
+
+		z += dz;
+		color += dc;
+		PlotPixel(x, y, z, color);
 	}
+}
+
+//void Renderer::PaintTriangle(const vec3& p1, const vec3& p2, const vec3& p3, const vec3& c1)
+//{
+//	vec3 n_p1, n_p2, n_p3;
+//	if (
+//		!pointToScreen(p1, vec3(), n_p1, false) &
+//		!pointToScreen(p2, vec3(), n_p2, false) &
+//		!pointToScreen(p3, vec3(), n_p3, false)) {
+//		return;
+//	}
+//
+//	vec3 n_cm = convertToScreen(GetCenterMass(n_p1, n_p2, n_p3));
+//
+//	PaintTriangleRecursive(n_p1, n_p2, n_p3, n_cm, c1);
+//}
+//
+//void Renderer::PaintTriangleRecursive(const vec3& p1, const vec3& p2, const vec3& p3, const vec3& p, const vec3& c1)
+//{
+//	//if already painted
+//	if (m_paintBuffer[(int)(p.y * m_width + p.x)]) {
+//		return;
+//	}
+//
+//	//Set the color of node to replacement - color.
+//	vec3 np = PixelToPoint(p);
+//	UpdateBCPoint(p1, p2, p3, np);
+//
+//	if (!PlotPixel(p.x, p.y, np.z, c1)) {
+//		return;
+//	}
+//
+//	PaintTriangleRecursive(p1, p2, p3, p + vec3(1, 0, 0), c1);
+//	PaintTriangleRecursive(p1, p2, p3, p + vec3(-1, 0, 0), c1);
+//	PaintTriangleRecursive(p1, p2, p3, p + vec3(0, 1, 0), c1);
+//	PaintTriangleRecursive(p1, p2, p3, p + vec3(-1, 0, 0), c1);
+//}
+
+
+void Renderer::PaintTriangle2(const vec3& p1, const vec3& p2, const vec3& p3, const vec3& c1, const vec3& c2, const vec3& c3)
+{
+	vec3 top, middle, bottom;
+	//sort points by height
+	if ((p1.y >= p2.y) && (p1.y >= p3.y)) {
+		// p1 is top point
+		top = p1;
+		middle = (p2.y > p3.y) ? p2 : p3;
+		bottom = (p2.y > p3.y) ? p3 : p2;
+	} else if ((p2.y >= p1.y) && (p2.y >= p3.y)) {
+		// p1 is top point
+		top = p2;
+		middle = (p1.y > p3.y) ? p1 : p3;
+		bottom = (p1.y > p3.y) ? p3 : p1;
+	} else if ((p3.y >= p2.y) && (p3.y >= p1.y)) {
+		// p1 is top point
+		top = p3;
+		middle = (p2.y > p1.y) ? p2 : p1;
+		bottom = (p2.y > p1.y) ? p1 : p2;
+	}
+
+	vec3 s_top, s_middle, s_bottom;
+	pointToScreen(top, vec3(), s_top);
+	pointToScreen(middle, vec3(), s_middle);
+	pointToScreen(bottom, vec3(), s_bottom);
+
+	float t1, t2;
+	int step_number = 2*(s_middle.y - s_bottom.y);
+	if (step_number != 0) {
+		vec3 dp1 = (middle - bottom) / step_number;
+		vec3 dp2 = (top - bottom) / (s_top.y - s_bottom.y);
+		for (int i = 0; i < step_number; ++i) {
+			t1 = 0, t2 = 1;
+			clip(bottom.y, middle.y, bottom.y, bottom.y + i * dp1.y, t1, t2);
+			vec3 end_line = bottom + t2 * (middle - bottom);
+
+			//t1 = 0, t2 = 1;
+			t2 = (end_line.y - bottom.y) / (top.y - bottom.y);
+			//clip(bottom.y, top.y, bottom.y, bottom.y + i * dp1.y, t1, t2);
+			vec3 start_line = bottom + t2 * (top - bottom);
+
+			DrawLine(start_line, vec3(), end_line, vec3(), c1, c2);
+		}
+	}
+
+	
+	
 }
 
 void Renderer::DrawTriangles(const vector<vec3>* vertices, const vector<vec3>* vertexNormals, const vector<vec3>* faceNormals) {
@@ -259,32 +441,34 @@ void Renderer::DrawTriangles(const vector<vec3>* vertices, const vector<vec3>* v
 		vec3 b = *(i++);
 		vec3 c = *(i++);
 		vec3 cm = GetCenterMass(a, b, c);
-		DrawLine(a, vec3(), b, vec3(), white);
-		DrawLine(b, vec3(), c, vec3(), white);
-		DrawLine(c, vec3(), a, vec3(), white);
-		
+		//CreateLocalBuffer();
+		DrawLine(a, vec3(), b, vec3(), white, white);
+		DrawLine(b, vec3(), c, vec3(), white, white);
+		DrawLine(c, vec3(), a, vec3(), white, white);
+		PaintTriangle2(a, b, c, white, white, white);
+
 		if (faceNormals != NULL) {
 			f_normal = faceNormals->at(fn_index++);
-			DrawLine(cm, vec3(), cm, f_normal, pink);
+			DrawLine(cm, vec3(), cm, f_normal, pink, pink);
 		}
 
 		if (vertexNormals != NULL) {
 			v_normal = vertexNormals->at(vn_index++);
-			DrawLine(a, vec3(), a, v_normal, yellow);
+			DrawLine(a, vec3(), a, v_normal, yellow, yellow);
 			v_normal = vertexNormals->at(vn_index++);
-			DrawLine(b, vec3(), b, v_normal, yellow);
+			DrawLine(b, vec3(), b, v_normal, yellow, yellow);
 			v_normal = vertexNormals->at(vn_index++);
-			DrawLine(c, vec3(), c, v_normal, yellow);
+			DrawLine(c, vec3(), c, v_normal, yellow, yellow);
 		}
 	}
 }
 
 void Renderer::DrawSquare(const vec3& p1, const vec3& p2, const vec3& p3, const vec3& p4, const vec3& color)
 {
-	DrawLine(p1, vec3(), p2, vec3(), color);
-	DrawLine(p2, vec3(), p3, vec3(), color);
-	DrawLine(p3, vec3(), p4, vec3(), color);
-	DrawLine(p4, vec3(), p1, vec3(), color);
+	DrawLine(p1, vec3(), p2, vec3(), color, color);
+	DrawLine(p2, vec3(), p3, vec3(), color, color);
+	DrawLine(p3, vec3(), p4, vec3(), color, color);
+	DrawLine(p4, vec3(), p1, vec3(), color, color);
 }
 
 void Renderer::DrawBox(const vec3& minValues, const vec3& maxValues)
@@ -328,8 +512,8 @@ void Renderer::DrawCamera()
 	DrawLine(vertices[2], vertices[0], color);*/
 	
 	for (int i = -5; i < 5; ++i) {
-		PlotPixel(camera_location.x + i, camera_location.y, color);
-		PlotPixel(camera_location.x, camera_location.y + i, color);
+		PlotPixel(camera_location.x + i, camera_location.y, camera_location.z, color);
+		PlotPixel(camera_location.x, camera_location.y + i, camera_location.z, color);
 	}
 }
 
@@ -379,6 +563,14 @@ void Renderer::SetDemoBuffer()
 	DrawLine(t, t2, vec3(0, abs(i), abs(i*i)));
 	}*/
 
+	DrawLine(vec3(3.05f, 0.35, 0.05), vec3(), vec3(-3.30f, 7.70f, 0.9f), vec3(), vec3(1, 0, 0.5f), vec3(0, 1, 0.5f));
+	//CreateLocalBuffer();
+	vector<vec3> vertices0;
+	vertices0.push_back(vec3(-3.2f, 7.2f, 9));
+	vertices0.push_back(vec3(0.5f, 5.6f, 8));
+	vertices0.push_back(vec3(5.8f, 7.7f, 7));
+	this->DrawTriangles(&vertices0);
+
 	vector<vec3> vertices;
 	vertices.push_back(vec3(0.2f, 0.2f, 20));
 	vertices.push_back(vec3(0.5f, 0.6f, 30));
@@ -399,7 +591,7 @@ void Renderer::SetDemoBuffer()
 	vertices.push_back(vec3(1.0f, 1.0f, 0));
 	vertices.push_back(vec3(-1.0f, 1.0f, 0));
 	vertices.push_back(vec3(1.0f, -1.0f, 0));
-	this->DrawTriangles(&vertices);
+	//this->DrawTriangles(&vertices);
 
 	//DrawBox(vec3(1), vec3(3));
 
@@ -511,17 +703,17 @@ void Renderer::ClearColorBuffer()
 
 	for (int x = 0; x < m_width; ++x) {
 		for (int y = 0; y < m_height; ++y) {
-			PlotPixel(x, y, black);
+			PlotPixel(x, y, INFINITY, black);
 		}
 	}
 }
 
 void Renderer::ClearDepthBuffer()
 {
-	if (m_zbuffer != NULL) {
+	if (m_zBuffer != NULL) {
 		for (int x = 0; x < m_width; ++x) {
 			for (int y = 0; y < m_height; ++y) {
-				m_zbuffer[m_width * y + x] = -INFINITY;
+				m_zBuffer[m_width * y + x] = -INFINITY;//can be zFar
 			}
 		}
 	}
