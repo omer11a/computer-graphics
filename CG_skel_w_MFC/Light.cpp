@@ -19,7 +19,6 @@ Light * AmbientLight::clone() const {
 
 vec3 AmbientLight::computeColor(
 	const vec3& modelPosition,
-	const vec3& cameraPosition,
 	const vec3& normal,
 	const Material& material
 ) const {
@@ -29,12 +28,11 @@ vec3 AmbientLight::computeColor(
 vec3 DirectionalLightSource::computeSpecularColor(
 	const vec3& direction,
 	const vec3& modelPosition,
-	const vec3& cameraPosition,
 	const vec3& normal,
 	const Material& material
 ) const {
 	vec3 R = normalize(2 * dot(direction, normal) * normal - direction);
-	vec3 V = normalize(cameraPosition - modelPosition);
+	vec3 V = normalize(-modelPosition);
 	float product = dot(R, V);
 	if (product <= 0) {
 		return 0;
@@ -84,12 +82,11 @@ void DirectionalLightSource::transformInWorld(const mat4 & transform) {
 
 vec3 DirectionalLightSource::computeColor(
 	const vec3& modelPosition,
-	const vec3& cameraPosition,
 	const vec3& normal,
 	const Material& material
 ) const {
 	vec3 direction = getDirection(modelPosition);
-	vec3 specularColor = computeSpecularColor(direction, modelPosition, cameraPosition, normal, material);
+	vec3 specularColor = computeSpecularColor(direction, modelPosition, normal, material);
 	vec3 diffuseColor = computeDiffuseColor(direction, normal, material);
 	return specularColor + diffuseColor;
 }

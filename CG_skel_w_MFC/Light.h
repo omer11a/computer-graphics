@@ -17,7 +17,6 @@ public:
 
 	virtual vec3 computeColor(
 		const vec3& modelPosition,
-		const vec3& cameraPosition,
 		const vec3& normal,
 		const Material& material
 	) const = 0;
@@ -31,7 +30,6 @@ public:
 
 	vec3 computeColor(
 		const vec3& modelPosition,
-		const vec3& cameraPosition,
 		const vec3& normal,
 		const Material& material
 	) const override;
@@ -42,7 +40,6 @@ private:
 	vec3 computeSpecularColor(
 		const vec3& direction,
 		const vec3& modelPosition,
-		const vec3& cameraPosition,
 		const vec3& normal,
 		const Material& material
 	) const;
@@ -67,7 +64,6 @@ public:
 
 	virtual vec3 computeColor(
 		const vec3& modelPosition,
-		const vec3& cameraPosition,
 		const vec3& normal,
 		const Material& material
 	) const override;
