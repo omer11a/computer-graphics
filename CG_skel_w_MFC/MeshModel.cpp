@@ -5,6 +5,7 @@
 #include <iostream>
 #include <fstream>
 #include <sstream>
+#include <random>
 
 using namespace std;
 
@@ -160,17 +161,18 @@ void MeshModel::computeBoundingBox() {
 }
 
 MeshModel::MeshModel() :
-	vertexPositions(), vertexNormals(), faceNormals(), colors(),
+	vertexPositions(), vertexNormals(), faceNormals(), materials(),
 	worldTransform(), modelTransform(), normalModelTransform(), normalWorldTransform(),
 	allowVertexNormals(false), allowFaceNormals(false), allowBoundingBox(false)
 { }
 
 MeshModel::MeshModel(string fileName) :
-	vertexPositions(), vertexNormals(), faceNormals(), colors(),
+	vertexPositions(), vertexNormals(), faceNormals(), materials(),
 	worldTransform(), modelTransform(), normalModelTransform(), normalWorldTransform(),
 	allowVertexNormals(false), allowFaceNormals(false), allowBoundingBox(false)
 {
 	loadFile(fileName);
+	setUniformMaterial({ 255, 255, 255, 1 });
 }
 
 void MeshModel::transformInModel(const mat4 & transform) {
@@ -209,6 +211,29 @@ void MeshModel::switchBoundingBoxVisibility() {
 	allowBoundingBox = !allowBoundingBox;
 	if (allowBoundingBox) {
 		computeBoundingBox();
+	}
+}
+
+void MeshModel::setUniformMaterial(Material material) {
+	materials.clear();
+	for (int i = 0; i < vertexPositions.size(); ++i) {
+		materials.push_back(material);
+	}
+}
+
+void MeshModel::setRandomMaterial() {
+	random_device rd;
+	mt19937 rng(rd());
+	uniform_int_distribution<int> uni(0, 255);
+
+	materials.clear();
+	for (int i = 0; i < vertexPositions.size(); ++i) {
+		materials.push_back({
+			vec3(uni(rng), uni(rng), uni(rng)),
+			vec3(uni(rng), uni(rng), uni(rng)),
+			vec3(uni(rng), uni(rng), uni(rng)),
+			(float) uni(rng)
+		});
 	}
 }
 
@@ -276,4 +301,6 @@ PrimMeshModel::PrimMeshModel() : MeshModel()
 			vertexNormals.push_back(getVecByIndex(normals, it->vn[i]));
 		}
 	}
+
+	setUniformMaterial({ 255, 255, 255, 1 });
 }

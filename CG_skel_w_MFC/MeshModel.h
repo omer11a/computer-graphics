@@ -34,12 +34,13 @@ class MeshModel
 	void computeBoundingBox();
 
 protected:
-	MeshModel();
 	vector<vec3> vertexPositions;
 	vector<vec3> vertexNormals;
 	vector<vec3> faceNormals;
-	vector<vec3> colors;
+	vector<Material> materials;
+
 	vec3 & getVecByIndex(vector<vec3> & vecs, int i);
+	MeshModel();
 
 public:
 	MeshModel(string fileName);
@@ -50,6 +51,8 @@ public:
 	void switchVertexNormalsVisibility();
 	void switchFaceNormalsVisibility();
 	void switchBoundingBoxVisibility();
+	void setUniformMaterial(Material material);
+	void setRandomMaterial();
 	void draw(Renderer * renderer) const;
 };
 
