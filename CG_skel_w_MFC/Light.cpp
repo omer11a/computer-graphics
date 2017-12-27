@@ -1,9 +1,13 @@
 #include "stdafx.h"
 #include "Light.h"
 
-Light::Light(const vec3& intensity) : intensity(intensity) {}
+Light::Light(const vec3& intensity) : intensity(intensity), transform() {}
 
-Light::Light(const Light& light) : intensity(light.intensity) {}
+Light::Light(const Light& light) : intensity(light.intensity), transform(light.transform) {}
+
+void Light::setTransform(const mat4 & transform) {
+	this->transform = transform;
+}
 
 AmbientLight::AmbientLight(const vec3& intensity) : Light(intensity) {}
 
@@ -14,9 +18,7 @@ Light * AmbientLight::clone() const {
 }
 
 vec3 AmbientLight::computeColor(
-	const mat4& transform,
 	const vec3& modelPosition,
-	const vec3& cameraPosition,
 	const vec3& normal,
 	const Material& material
 ) const {
@@ -26,12 +28,11 @@ vec3 AmbientLight::computeColor(
 vec3 DirectionalLightSource::computeSpecularColor(
 	const vec3& direction,
 	const vec3& modelPosition,
-	const vec3& cameraPosition,
 	const vec3& normal,
 	const Material& material
 ) const {
-	vec3 R = 2 * dot(direction, normal) * normal - direction;
-	vec3 V = normalize(cameraPosition - modelPosition);
+	vec3 R = normalize(2 * dot(direction, normal) * normal - direction);
+	vec3 V = normalize(-modelPosition);
 	float product = dot(R, V);
 	if (product <= 0) {
 		return 0;
@@ -80,52 +81,82 @@ void DirectionalLightSource::transformInWorld(const mat4 & transform) {
 }
 
 vec3 DirectionalLightSource::computeColor(
-	const mat4& transform,
 	const vec3& modelPosition,
-	const vec3& cameraPosition,
 	const vec3& normal,
 	const Material& material
 ) const {
-	vec3 direction = getDirection(transform, modelPosition);
-	vec3 specularColor = computeSpecularColor(direction, modelPosition, cameraPosition, normal, material);
+	vec3 direction = getDirection(modelPosition);
+	vec3 specularColor = computeSpecularColor(direction, modelPosition, normal, material);
 	vec3 diffuseColor = computeDiffuseColor(direction, normal, material);
 	return specularColor + diffuseColor;
 }
 
-vec3 PointLightSource::getDirection(
-	const mat4& transform,
-	const vec3& modelPosition
-) const {
-	return convert4dTo3d(transform * worldTransform * modelTransform * position) - modelPosition;
+void PointLightSource::updatePosition() {
+	transformedPosition = convert4dTo3d(transform * worldTransform * modelTransform * position);
+}
+
+vec3 PointLightSource::getDirection(const vec3& modelPosition) const {
+	return normalize(transformedPosition - modelPosition);
 }
 
 PointLightSource::PointLightSource(const vec3& intensity, const vec3& position)
-	: DirectionalLightSource(intensity), position(position)
+	: DirectionalLightSource(intensity), position(position), transformedPosition(position)
 {}
 
 PointLightSource::PointLightSource(const PointLightSource& light)
-	: DirectionalLightSource(light), position(light.position)
+	: DirectionalLightSource(light), position(light.position), transformedPosition(light.transformedPosition)
 {}
 
 Light * PointLightSource::clone() const {
 	return new PointLightSource(*this);
 }
 
-vec3 ParallelLightSource::getDirection(
-	const mat4& transform,
-	const vec3& modelPosition
-) const {
-	return convert4dTo3d(transform * worldTransform * modelTransform * direction);
+void PointLightSource::setTransform(const mat4 & transform) {
+	DirectionalLightSource::setTransform(transform);
+	updatePosition();
+}
+
+void PointLightSource::transformInModel(const mat4 & transform) {
+	DirectionalLightSource::transformInModel(transform);
+	updatePosition();
+}
+
+void PointLightSource::transformInWorld(const mat4 & transform) {
+	DirectionalLightSource::transformInWorld(transform);
+	updatePosition();
+}
+
+void ParallelLightSource::updateDirection() {
+	transformedDirection = normalize(convert4dTo3d(transform * worldTransform * modelTransform * direction));
+}
+
+vec3 ParallelLightSource::getDirection(const vec3& modelPosition) const {
+	return transformedDirection;
 }
 
 ParallelLightSource::ParallelLightSource(const vec3& intensity, const vec3& direction)
-	: DirectionalLightSource(intensity), direction(direction)
+	: DirectionalLightSource(intensity), direction(direction), transformedDirection(direction)
 {}
 
 ParallelLightSource::ParallelLightSource(const ParallelLightSource& light) :
-	DirectionalLightSource(light), direction(light.direction)
+	DirectionalLightSource(light), direction(light.direction), transformedDirection(light.transformedDirection)
 {}
 
 Light * ParallelLightSource::clone() const {
 	return new ParallelLightSource(*this);
+}
+
+void ParallelLightSource::setTransform(const mat4 & transform) {
+	DirectionalLightSource::setTransform(transform);
+	updateDirection();
+}
+
+void ParallelLightSource::transformInModel(const mat4 & transform) {
+	DirectionalLightSource::transformInModel(transform);
+	updateDirection();
+}
+
+void ParallelLightSource::transformInWorld(const mat4 & transform) {
+	DirectionalLightSource::transformInWorld(transform);
+	updateDirection();
 }

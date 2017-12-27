@@ -270,6 +270,10 @@ vec3 cross(const vec3& a, const vec3& b )
 		 a.x * b.y - a.y * b.x );
 }
 
+inline
+vec3 minvec(const vec3& v, GLfloat s) {
+	return vec3(min(v.x, s), min(v.y, s), min(v.z, s));
+}
 
 //////////////////////////////////////////////////////////////////////////////
 //

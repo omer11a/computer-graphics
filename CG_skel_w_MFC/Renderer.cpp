@@ -105,7 +105,14 @@ void Renderer::clip(float x0, float x1, float xmin, float xmax, float& t1, float
 	t2 = min(t2, u2);
 }
 
-bool Renderer::clipLine(const vec3& v1, const vec3& n1, const vec3& v2, const vec3& n2, vec3& start, vec3& end) const {
+bool Renderer::clipLine(
+	const vec3& v1,
+	const vec3& n1,
+	const vec3& v2,
+	const vec3& n2,
+	vec3& start,
+	vec3& end
+) const {
 	vec4 p1 = applyCameraTransformation(v1, n1);
 	vec4 p2 = applyCameraTransformation(v2, n2);
 
@@ -131,6 +138,27 @@ bool Renderer::clipLine(const vec3& v1, const vec3& n1, const vec3& v2, const ve
 	vec3 dq = q2 - q1;
 	start = q1 + t1 * dq;
 	end = q1 + t2 * dq;
+	return true;
+}
+
+bool Renderer::clipLine(
+	const vec3& v1,
+	const vec3& v2,
+	vec3& start,
+	vec3& end
+) const {
+	float t1 = 0;
+	float t2 = 1;
+	clip(v1.x, v2.x, -1, 1, t1, t2);
+	clip(v1.y, v2.y, -1, 1, t1, t2);
+	clip(v1.z, v2.z, -1, 1, t1, t2);
+	if (t1 >= t2) {
+		return false;
+	}
+
+	vec3 dv = v2 - v1;
+	start = v1 + t1 * dv;
+	end = v1 + t2 * dv;
 	return true;
 }
 
@@ -226,6 +254,26 @@ bool Renderer::DrawLine(const vec3& p1, const vec3& n1, const vec3& p2, const ve
 	}
 
 	return true;
+}
+
+void Renderer::DrawLine(const vec3& p1, const vec3& p2, const vec3& c1, const vec3& c2)
+{
+	vec3 q1, q2;
+	bool shouldDraw = clipLine(p1, p2, q1, q2);
+	if (!shouldDraw) {
+		return;
+	}
+
+	q1 = convertToScreen(q1);
+	q2 = convertToScreen(q2);
+
+	//TODO: recalculate colors
+	if (abs(q1.y - q2.y) > abs(q1.x - q2.x)) {
+		this->DrawSteepLine(q1, q2, c1, c2);
+	}
+	else {
+		this->DrawModerateLine(q1, q2, c1, c2);
+	}
 }
 
 void Renderer::DrawSteepLine(const vec3& p1, const vec3& p2, const vec3& c1, const vec3& c2) {
