@@ -140,6 +140,10 @@ void keyboard(unsigned char key, int x, int y)
 		cout << "switched active camera" << endl;
 		should_redraw = true;
 		break;
+	case 'y':
+		renderer->switchWire();
+		should_redraw = true;
+		break;
 	case 'l':
 		should_redraw = set_lookat();
 		break;

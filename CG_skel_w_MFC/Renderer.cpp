@@ -7,13 +7,13 @@
 #define INDEX(width,x,y,c) (x+y*width)*3+c
 
 Renderer::Renderer() : m_width(512), m_height(512), m_zBuffer(NULL),
-m_cTransform(), m_projection(), m_oTransform(), m_nTransform(), m_camera_multiply()
+m_cTransform(), m_projection(), m_oTransform(), m_nTransform(), m_camera_multiply(), is_wire_mode(false)
 {
 	InitOpenGLRendering();
 	CreateBuffers(512, 512);
 }
 Renderer::Renderer(int width, int height) : m_width(width), m_height(height), m_zBuffer(NULL),
-m_cTransform(), m_projection(), m_oTransform(), m_nTransform()
+m_cTransform(), m_projection(), m_oTransform(), m_nTransform(), is_wire_mode(false)
 {
 	InitOpenGLRendering();
 	CreateBuffers(width, height);
@@ -31,20 +31,19 @@ void Renderer::CreateBuffers(int width, int height)
 	CreateOpenGLBuffer(); //Do not remove this line.
 	m_outBuffer = new float[3 * m_width * m_height];
 	m_zBuffer = new float[m_width * m_height];
-	//m_paintBuffer = NULL;
+	m_paintBuffer = NULL;
 }
 
-//void Renderer::CreateLocalBuffer()
-//{
-//	if (m_paintBuffer != NULL) {
-//		delete[] m_paintBuffer;
-//	}
-//	m_paintBuffer = new bool[m_width * m_height];
-//	for (int i = 0; i < m_width * m_height; ++i) {
-//		m_paintBuffer[i] = false;
-//	}
-//}
-
+void Renderer::CreateLocalBuffer()
+{
+	if (m_paintBuffer != NULL) {
+		delete[] m_paintBuffer;
+	}
+	m_paintBuffer = new bool[m_width * m_height];
+	for (int i = 0; i < m_width * m_height; ++i) {
+		m_paintBuffer[i] = false;
+	}
+}
 
 void Renderer::DestroyBuffers()
 {
@@ -188,9 +187,9 @@ bool Renderer::PlotPixel(const int x, const int y, const float z, const vec3& co
 		m_outBuffer[INDEX(m_width, x, y, 2)] = color.z;
 		m_zBuffer[y * m_width + x] = z;
 	}
-	//if (m_paintBuffer != NULL) {
-	//	m_paintBuffer[y * m_width + x] = true;
-	//}
+	if (m_paintBuffer != NULL) {
+		m_paintBuffer[y * m_width + x] = true;
+	}
 	return true;
 }
 
@@ -198,57 +197,35 @@ vec3 Renderer::GetCenterMass(const vec3& p1, const vec3& p2, const vec3& p3) con
 	return vec3((p1.x + p2.x + p3.x) / 3, (p1.y + p2.y + p3.y) / 3, (p1.z + p2.z + p3.z) / 3);
 }
 
-//void Renderer::UpdateBCPoint(const vec3& p1, const vec3& p2, const vec3& p3, vec3& p) const
-//{
-//	vec3 first, second, third;
-//	if ((p1.x <= p.x) && (p1.y <= p.y)) {
-//		first = p1;
-//		if ((p2.x >= p.x) && (p2.y >= p.y)) {
-//			second = p2;
-//			third = p3;
-//		} else {
-//			second = p3;
-//			third = p2;
-//		}
-//	} else if ((p2.x <= p.x) && (p2.y <= p.y)) {
-//		first = p2;
-//		if ((p1.x >= p.x) && (p1.y >= p.y)) {
-//			second = p1;
-//			third = p3;
-//		} else {
-//			second = p3;
-//			third = p1;
-//		}
-//	} else if ((p3.x <= p.x) && (p3.y <= p.y)) {
-//		first = p3;
-//		if ((p2.x >= p.x) && (p2.y >= p.y)) {
-//			second = p2;
-//			third = p1;
-//		} else {
-//			second = p1;
-//			third = p2;
-//		}
-//	}
-//
-//	vec2 bc = inverse(mat2(first.x, second.x, first.y, second.y)) * vec2(p.x, p.y);
-//
-//	p = transpose(mat3(first, second, third)) * vec3(bc, 1 - bc.x - bc.y);
-//	//return vec3(bc, 1 - bc.x - bc.y);
-//}
+vec3 Renderer::GetCenterMass(const vec3 * vertices, const int length) const
+{
+	vec3 v;
+	if ((vertices == NULL) || (length == 0)) {
+		return v;
+	}
+	for (int i = 0; i < length; ++i) {
+		v += vertices[i];
+	}
+	return v / length;
+}
 
-void Renderer::DrawLine(const vec3& p1, const vec3& n1, const vec3& p2, const vec3& n2, const vec3& c1, const vec3& c2)
+bool Renderer::DrawLine(const vec3& p1, const vec3& n1, const vec3& p2, const vec3& n2, const vec3& c1, const vec3& c2)
 {
 	vec3 newP1, newP2;
 	if (!lineToScreen(p1, n1, p2, n2, newP1, newP2)) {
-		return;
+		std::cout << "skipped drawing lines" << std::endl;
+		return false;
 	}
 
 	//TODO: recalculate colors
+	std::cout << "newP1" << newP1 << "newP2" << newP2 << std::endl;
 	if (abs(newP1.y - newP2.y) > abs(newP1.x - newP2.x)) {
 		this->DrawSteepLine(newP1, newP2, c1, c2);
 	} else {
 		this->DrawModerateLine(newP1, newP2, c1, c2);
 	}
+
+	return true;
 }
 
 void Renderer::DrawSteepLine(const vec3& p1, const vec3& p2, const vec3& c1, const vec3& c2) {
@@ -340,90 +317,283 @@ void Renderer::DrawModerateLine(const vec3& p1, const vec3& p2, const vec3& c1, 
 	}
 }
 
-//void Renderer::PaintTriangle(const vec3& p1, const vec3& p2, const vec3& p3, const vec3& c1)
-//{
-//	vec3 n_p1, n_p2, n_p3;
-//	if (
-//		!pointToScreen(p1, vec3(), n_p1, false) &
-//		!pointToScreen(p2, vec3(), n_p2, false) &
-//		!pointToScreen(p3, vec3(), n_p3, false)) {
-//		return;
-//	}
-//
-//	vec3 n_cm = convertToScreen(GetCenterMass(n_p1, n_p2, n_p3));
-//
-//	PaintTriangleRecursive(n_p1, n_p2, n_p3, n_cm, c1);
-//}
-//
-//void Renderer::PaintTriangleRecursive(const vec3& p1, const vec3& p2, const vec3& p3, const vec3& p, const vec3& c1)
-//{
-//	//if already painted
-//	if (m_paintBuffer[(int)(p.y * m_width + p.x)]) {
-//		return;
-//	}
-//
-//	//Set the color of node to replacement - color.
-//	vec3 np = PixelToPoint(p);
-//	UpdateBCPoint(p1, p2, p3, np);
-//
-//	if (!PlotPixel(p.x, p.y, np.z, c1)) {
-//		return;
-//	}
-//
-//	PaintTriangleRecursive(p1, p2, p3, p + vec3(1, 0, 0), c1);
-//	PaintTriangleRecursive(p1, p2, p3, p + vec3(-1, 0, 0), c1);
-//	PaintTriangleRecursive(p1, p2, p3, p + vec3(0, 1, 0), c1);
-//	PaintTriangleRecursive(p1, p2, p3, p + vec3(-1, 0, 0), c1);
-//}
-
-
-void Renderer::PaintTriangle2(const vec3& p1, const vec3& p2, const vec3& p3, const vec3& c1, const vec3& c2, const vec3& c3)
+void Renderer::PaintTriangle(const vec3& p1, const vec3& p2, const vec3& p3, const vec3& c1)
 {
+	vec3 n_p1, n_p2, n_p3;
+	//if (
+	//	!pointToScreen(p1, vec3(), n_p1, false) &
+	//	!pointToScreen(p2, vec3(), n_p2, false) &
+	//	!pointToScreen(p3, vec3(), n_p3, false)) {
+	//	//whole triangle is outside the clipping area.
+	//	return;
+	//}
+
+	pointToScreen(p1, vec3(), n_p1, false);
+	pointToScreen(p2, vec3(), n_p2, false);
+	pointToScreen(p3, vec3(), n_p3, false);
+
+	vec3 sp1 = convertToScreen(n_p1);
+	vec3 sp2 = convertToScreen(n_p2);
+	vec3 sp3 = convertToScreen(n_p3);
+	if (((sp2.x - sp1.x) * (sp3.y - sp1.y)) - ((sp3.x - sp1.x) * (sp2.y - sp1.y)) == 0) {
+		// the 3 points perform a stright line.
+		return;
+	}
+	
+	vec3 n_cm = convertToScreen(GetCenterMass(n_p1, n_p2, n_p3));
+	std::cout << "p1=" << p1 << "\tp2=" << p2 << "\tp3=" << p3 << "\tp=" << n_cm << std::endl;
+	std::cout << "p1=" << n_p1 << "\tp2=" << n_p2 << "\tp3=" << n_p3 << "\tp=" << n_cm << std::endl;
+	std::cout << "p1=" << convertToScreen(n_p1) << "\tp2=" << convertToScreen(n_p2) << "\tp3=" << convertToScreen(n_p3) << "\tp=" << n_cm << std::endl;
+
+	PaintTriangleRecursive(n_p1, n_p2, n_p3, n_cm, c1);
+}
+
+///<summary>
+/// Determine whether a point P is inside the triangle ABC. Note, this function
+/// assumes that P is coplanar with the triangle.
+/// from https://blogs.msdn.microsoft.com/rezanour/2011/08/07/barycentric-coordinates-and-point-in-triangle-tests/
+///</summary>
+///<returns>True if the point is inside, false if it is not.</returns>
+bool PointInTriangle(const vec3& A, const vec3& B, const vec3& C, const vec3& P)
+{
+	// Prepare our barycentric variables
+
+	vec3 u = B - A;
+
+	vec3 v = C - A;
+
+	vec3 w = P - A;
+
+	vec3 vCrossW = cross(v, w);
+	vec3 vCrossU = cross(v, u);
+
+	// Test sign of r
+	if (dot(vCrossW, vCrossU) < 0)
+		return false;
+
+	vec3 uCrossW = cross(u, w);
+
+	vec3 uCrossV = cross(u, v);
+
+
+
+	// Test sign of t
+
+	if (dot(uCrossW, uCrossV) < 0)
+
+		return false;
+
+
+
+	// At this point, we know that r and t and both > 0.
+
+	// Therefore, as long as their sum is <= 1, each must be less <= 1
+
+	float denom = length(uCrossV);
+
+	float r = length(vCrossW) / denom;
+
+	float t = length(uCrossW) / denom;
+
+	return (r + t <= 1);
+
+}
+
+bool Renderer::PixelToPoint(const vec3& p1, const vec3& p2, const vec3& p3, const vec3& p, vec3& newP) const {
+
+	double min_size = min(m_height, m_width) * 0.5;
+	float x = (p.x - m_width * 0.5) / min_size;
+	float y = (p.y - m_height * 0.5) / min_size;
+	vec2 np(x, y);
+
+	mat2 a(np.x - p1.x, p2.x - p3.x,
+		np.y - p1.y, p2.y - p3.y);
+	vec2 tk = inverse(a) * vec2(p2.x - p1.x, p2.y - p1.y);
+	// p4 is the intersection of lines: p1<->p, p2<->p3
+	vec3 p4 = p2 + tk[1] * (p3 - p2);
+
+	//return p1 + (p4 - p1) / tk[0];
+	newP = p1 + (p4 - p1) / tk[0];
+	newP.x = np.x;
+	newP.y = np.y;
+	
+	if (!PointInTriangle(p1, p2, p3, newP))
+		return false;
+	if ((newP.x < -1) || (newP.x > 1) ||
+		(newP.y < -1) || (newP.y > 1) ||
+		(newP.z < -1) || (newP.z > 1)) {
+		return false;
+	} else {
+		return true;
+	}
+}
+
+void Renderer::PaintTriangleRecursive(const vec3& p1, const vec3& p2, const vec3& p3, const vec3& p, const vec3& c1)
+{
+	int min_size = min(m_height, m_width);
+	//if already painted
+	if (m_paintBuffer[(int)(p.y * m_width + p.x)]) {
+		return;
+	}
+
+	//	3. Set Q to the empty queue.
+	vector<vec3> q;
+
+	//	4. Set the color of node to replacement - color.
+	vec3 newP;
+	if (!PixelToPoint(p1, p2, p3, p, newP)) {
+		return;
+	}
+	newP = convertToScreen(newP);
+	PlotPixel(newP.x, newP.y, newP.z, c1);
+
+	//	5. Add node to the end of Q.
+	q.push_back(p);
+
+	//	6. While Q is not empty:
+	while (!q.empty()) {
+	//	7.     Set n equal to the first element of Q.
+		vec3 n = q.front();
+	//	8.     Remove first element from Q.
+		q.erase(q.begin());
+		std::cout << "r q: " << n - vec3(1, 0, 0) << std::endl;
+		
+	//	9.     If the color of the node to the west of n is target - color,
+		if ((n.x > 0) &&
+			(!m_paintBuffer[(int)((n.y) * m_width + (n.x - 1))]) &&
+			(PixelToPoint(p1, p2, p3, n - vec3(1, 0, 0), newP))) {
+	//	set the color of that node to replacement - color and add that node to the end of Q.
+			newP = convertToScreen(newP);
+			PlotPixel(newP.x, newP.y, newP.z, c1);
+			std::cout << "a q: " << n - vec3(1, 0, 0) << std::endl;
+			q.push_back(n - vec3(1, 0, 0));
+		}
+	//	10.     If the color of the node to the east of n is target - color,
+		if ((n.x + 1 < m_width) &&
+			(!m_paintBuffer[(int)((n.y) * m_width + (n.x + 1))]) &&
+			(PixelToPoint(p1, p2, p3, n + vec3(1, 0, 0), newP))) {
+	//	set the color of that node to replacement - color and add that node to the end of Q.
+			newP = convertToScreen(newP);
+			PlotPixel(newP.x, newP.y, newP.z, c1);
+			std::cout << "a q: " << n + vec3(1, 0, 0) << std::endl;
+			q.push_back(n + vec3(1, 0, 0));
+		}
+	
+	//	11.    If the color of the node to the north of n is target - color,
+		if ((n.y > 0) &&
+			(!m_paintBuffer[(int)((n.y - 1) * m_width + (n.x))]) &&
+			(PixelToPoint(p1, p2, p3, n - vec3(0, 1, 0), newP))) {
+	//	set the color of that node to replacement - color and add that node to the end of Q.
+			newP = convertToScreen(newP);
+			PlotPixel(newP.x, newP.y, newP.z, c1);
+			std::cout << "a q: " << n - vec3(0, 1, 0) << std::endl;
+			q.push_back(n - vec3(0, 1, 0));
+		}
+
+	//	12.    If the color of the node to the south of n is target - color,
+		if ((n.y + 1 < m_height) &&
+			(!m_paintBuffer[(int)((n.y + 1) * m_width + (n.x))]) &&
+			(PixelToPoint(p1, p2, p3, n + vec3(0, 1, 0), newP))) {
+	//	set the color of that node to replacement - color and add that node to the end of Q.
+			newP = convertToScreen(newP);
+			PlotPixel(newP.x, newP.y, newP.z, c1);
+			std::cout << "a q: " << n + vec3(0, 1, 0) << std::endl;
+			q.push_back(n + vec3(0, 1, 0));
+		}
+	
+	//	13. Continue looping until Q is exhausted.
+	}
+	//	14. Return.
+
+	//PaintTriangleRecursive(p1, p2, p3, p + vec3(1, 0, 0), c1);
+	//PaintTriangleRecursive(p1, p2, p3, p + vec3(-1, 0, 0), c1);
+	//PaintTriangleRecursive(p1, p2, p3, p + vec3(0, 1, 0), c1);
+	//PaintTriangleRecursive(p1, p2, p3, p + vec3(-1, 0, 0), c1);
+}
+
+
+bool GetIntersectionPoint(const vec3& p1, const vec3& p2, const float y, vec3& p) {
+	float s = p2.y - p1.y;
+
+	if (s == 0) {
+		return false;
+	}
+	float t = (y - p1.y) / s;
+	if ((t < 0) || (t > 1)) {
+		return false;
+	}
+
+	p = p1 + t * (p2 - p1);
+	return true;
+}
+
+void Renderer::PaintTriangle2(const vec3& p1, const vec3& p2, const vec3& p3, const vec3& c1)
+{
+	vec3 n_p1, n_p2, n_p3;
+	pointToScreen(p1, vec3(), n_p1, false);
+	pointToScreen(p2, vec3(), n_p2, false);
+	pointToScreen(p3, vec3(), n_p3, false);
+
+	vec3 s_p1 = convertToScreen(n_p1);
+	vec3 s_p2 = convertToScreen(n_p2);
+	vec3 s_p3 = convertToScreen(n_p3);
+	// check all in line
+
 	vec3 top, middle, bottom;
 	//sort points by height
-	if ((p1.y >= p2.y) && (p1.y >= p3.y)) {
-		// p1 is top point
-		top = p1;
-		middle = (p2.y > p3.y) ? p2 : p3;
-		bottom = (p2.y > p3.y) ? p3 : p2;
-	} else if ((p2.y >= p1.y) && (p2.y >= p3.y)) {
-		// p1 is top point
-		top = p2;
-		middle = (p1.y > p3.y) ? p1 : p3;
-		bottom = (p1.y > p3.y) ? p3 : p1;
-	} else if ((p3.y >= p2.y) && (p3.y >= p1.y)) {
-		// p1 is top point
-		top = p3;
-		middle = (p2.y > p1.y) ? p2 : p1;
-		bottom = (p2.y > p1.y) ? p1 : p2;
+	if ((s_p1.y >= s_p2.y) && (s_p1.y >= s_p3.y)) {
+		// s_p1 is top point
+		top = s_p1;
+		middle = (s_p2.y > s_p3.y) ? s_p2 : s_p3;
+		bottom = (s_p2.y > s_p3.y) ? s_p3 : s_p2;
+	} else if ((s_p2.y >= s_p1.y) && (s_p2.y >= s_p3.y)) {
+		// s_p2 is top point
+		top = s_p2;
+		middle = (s_p1.y > s_p3.y) ? s_p1 : s_p3;
+		bottom = (s_p1.y > s_p3.y) ? s_p3 : s_p1;
+	} else if ((s_p3.y >= s_p2.y) && (s_p3.y >= s_p1.y)) {
+		// s_p3 is top point
+		top = s_p3;
+		middle = (s_p2.y > s_p1.y) ? s_p2 : s_p1;
+		bottom = (s_p2.y > s_p1.y) ? s_p1 : s_p2;
 	}
 
-	vec3 s_top, s_middle, s_bottom;
-	pointToScreen(top, vec3(), s_top);
-	pointToScreen(middle, vec3(), s_middle);
-	pointToScreen(bottom, vec3(), s_bottom);
+	for (float y = bottom.y; y < top.y; ++y) {
+		vec3 q;
+		float minx, maxx;
+		minx = INFINITY;
+		maxx = -INFINITY;
 
-	float t1, t2;
-	int step_number = 2*(s_middle.y - s_bottom.y);
-	if (step_number != 0) {
-		vec3 dp1 = (middle - bottom) / step_number;
-		vec3 dp2 = (top - bottom) / (s_top.y - s_bottom.y);
-		for (int i = 0; i < step_number; ++i) {
-			t1 = 0, t2 = 1;
-			clip(bottom.y, middle.y, bottom.y, bottom.y + i * dp1.y, t1, t2);
-			vec3 end_line = bottom + t2 * (middle - bottom);
-
-			//t1 = 0, t2 = 1;
-			t2 = (end_line.y - bottom.y) / (top.y - bottom.y);
-			//clip(bottom.y, top.y, bottom.y, bottom.y + i * dp1.y, t1, t2);
-			vec3 start_line = bottom + t2 * (top - bottom);
-
-			DrawLine(start_line, vec3(), end_line, vec3(), c1, c2);
+		if (GetIntersectionPoint(n_p1, n_p2, y, q)) {
+			minx = min(minx, q.x);
+			maxx = max(maxx, q.x);
 		}
-	}
+		if (GetIntersectionPoint(n_p2, n_p3, y, q)) {
+			minx = min(minx, q.x);
+			maxx = max(maxx, q.x);
+		}
+		if (GetIntersectionPoint(n_p1, n_p3, y, q)) {
+			minx = min(minx, q.x);
+			maxx = max(maxx, q.x);
+		}
 
-	
-	
+		minx = floor(minx);
+		maxx = ceil(maxx);
+
+		vec3 minx_camera, maxx_camera;
+		PixelToPoint(n_p1, n_p2, n_p3, vec3(minx, y, 0), minx_camera);
+		PixelToPoint(n_p1, n_p2, n_p3, vec3(maxx, y, 0), maxx_camera);
+
+		for (float x = minx.x; x < maxx.x; ++x) {
+			vec3 newP;
+			if ((!m_paintBuffer[(int)(y * m_width + x)]) &&
+				(PixelToPoint(p1, p2, p3, vec3(x, y, 0), newP))) {
+				PlotPixel(x, y, newP.z, c1);
+			}
+
+		}
+		//DrawLine(p1, vec3(), p2, vec3(), vec3(1), vec3(1));
+	}
 }
 
 void Renderer::DrawTriangles(const vector<vec3>* vertices, const vector<vec3>* vertexNormals, const vector<vec3>* faceNormals) {
@@ -441,11 +611,15 @@ void Renderer::DrawTriangles(const vector<vec3>* vertices, const vector<vec3>* v
 		vec3 b = *(i++);
 		vec3 c = *(i++);
 		vec3 cm = GetCenterMass(a, b, c);
-		//CreateLocalBuffer();
+		CreateLocalBuffer();
+		std::cout << "line drawing" << std::endl;
 		DrawLine(a, vec3(), b, vec3(), white, white);
 		DrawLine(b, vec3(), c, vec3(), white, white);
 		DrawLine(c, vec3(), a, vec3(), white, white);
-		PaintTriangle2(a, b, c, white, white, white);
+
+		if (!is_wire_mode) {
+			PaintTriangle2(a, b, c, white);
+		}
 
 		if (faceNormals != NULL) {
 			f_normal = faceNormals->at(fn_index++);
@@ -567,8 +741,8 @@ void Renderer::SetDemoBuffer()
 	//CreateLocalBuffer();
 	vector<vec3> vertices0;
 	vertices0.push_back(vec3(-3.2f, 7.2f, 9));
-	vertices0.push_back(vec3(0.5f, 5.6f, 8));
 	vertices0.push_back(vec3(5.8f, 7.7f, 7));
+	vertices0.push_back(vec3(0.5f, 5.6f, 8));
 	this->DrawTriangles(&vertices0);
 
 	vector<vec3> vertices;
@@ -608,6 +782,11 @@ void Renderer::SetDemoBuffer()
 		m_outBuffer[INDEX(m_width, i, 256, 1)] = 0;
 		m_outBuffer[INDEX(m_width, i, 256, 2)] = 1;
 	}
+}
+
+void Renderer::switchWire()
+{
+	is_wire_mode = !is_wire_mode;
 }
 
 
