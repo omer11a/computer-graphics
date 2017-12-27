@@ -14,6 +14,7 @@ public:
 	virtual Light * clone() const = 0;
 
 	virtual void setTransform(const mat4 & transform);
+	virtual void draw(Renderer * r) const;
 
 	virtual vec3 computeColor(
 		const vec3& modelPosition,
@@ -85,6 +86,7 @@ public:
 	void setTransform(const mat4 & transform);
 	void transformInModel(const mat4 & transform);
 	void transformInWorld(const mat4 & transform);
+	void draw(Renderer * renderer) const override;
 };
 
 class ParallelLightSource : public DirectionalLightSource {

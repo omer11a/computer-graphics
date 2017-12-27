@@ -55,7 +55,7 @@ void FlatShader::setPolygon(
 	const vec3& faceNormal
 ) {
 	vec3 sum = vec3();
-	for (int i = 0; i < 3; ++i) {
+	for (int i = 0; i < VERTICES_NUMBER; ++i) {
 		sum += computeColor(vertices[i], faceNormal, materials[i]);
 	}
 

@@ -497,8 +497,14 @@ void CPerspectiveDialog::OnPaint()
 //    Class CLightDialog
 // ----------------------
 
-vec3 color2vec(COLORREF color) {
-	return vec3();
+vec3 ColorToVec(COLORREF color) {
+
+	return vec3(color & 0xFF, (color & 0xFF00) >> 8, (color & 0xFF0000) >> 16);
+}
+
+COLORREF VecToColor(const vec3& color) {
+
+	return (color.x) + (static_cast<int>(color.y) << 8) + (static_cast<int>(color.z) << 16);
 }
 
 void CLightDialog::choose_color() {
@@ -508,8 +514,21 @@ void CLightDialog::choose_color() {
 	}
 }
 
+void CLightDialog::radio_pressed() {
+	is_point = point_radio.GetCheck();
+	if (is_point) {
+		locxEdit.EnableWindow(true);
+		locyEdit.EnableWindow(true);
+		loczEdit.EnableWindow(true);
+	} else {
+		locxEdit.EnableWindow(false);
+		locyEdit.EnableWindow(false);
+		loczEdit.EnableWindow(false);
+	}
+}
+
 CLightDialog::CLightDialog(CString title)
-	: CInputDialog(title), l_location(), l_size(), is_point(true)
+	: CInputDialog(title), l_location(), l_direction(), is_point(true)
 { }
 
 CLightDialog::~CLightDialog()
@@ -517,17 +536,17 @@ CLightDialog::~CLightDialog()
 
 vec3 CLightDialog::GetColor() const
 {
-	return color2vec(color);
+	return ColorToVec(color);
 }
 
-vec3 CLightDialog::GetLLocation() const
+vec3 CLightDialog::GetLightLocation() const
 {
 	return l_location;
 }
 
-vec3 CLightDialog::GetLSize() const
+vec3 CLightDialog::GetLightDirection() const
 {
-	return l_size;
+	return l_direction;
 }
 
 bool CLightDialog::IsPoint() const
@@ -541,9 +560,9 @@ void CLightDialog::DoDataExchange(CDataExchange* pDX)
 	DDX_Text(pDX, IDC_X_EDIT, l_location.x);
 	DDX_Text(pDX, IDC_Y_EDIT, l_location.y);
 	DDX_Text(pDX, IDC_Z_EDIT, l_location.z);
-	DDX_Text(pDX, IDC_X_EDIT + 50, l_size.x);
-	DDX_Text(pDX, IDC_Y_EDIT + 50, l_size.y);
-	DDX_Text(pDX, IDC_Z_EDIT + 50, l_size.z);
+	DDX_Text(pDX, IDC_X_EDIT + 50, l_direction.x);
+	DDX_Text(pDX, IDC_Y_EDIT + 50, l_direction.y);
+	DDX_Text(pDX, IDC_Z_EDIT + 50, l_direction.z);
 }
 
 // CLightDialog message handlers
@@ -551,35 +570,37 @@ BEGIN_MESSAGE_MAP(CLightDialog, CInputDialog)
 	ON_WM_CREATE()
 	ON_WM_PAINT()
 	ON_BN_CLICKED(IDC_COLOR_EDIT, choose_color)
+	ON_BN_CLICKED(IDC_PARALLEL_EDIT, radio_pressed)
+	ON_BN_CLICKED(IDC_POINT_EDIT, radio_pressed)
 END_MESSAGE_MAP()
 
 int CLightDialog::OnCreate(LPCREATESTRUCT lpcs)
 {
 	int height = 110;
-	int lsx = 100, lex = 150;
-	int ssx = 300, sex = 350;
+	int ssx = 100, sex = 150;
+	int lsx = 300, lex = 350;
 
 	point_radio.Create("Point", BS_AUTORADIOBUTTON | WS_CHILD | WS_VISIBLE | WS_TABSTOP,
 		CRect(150, 10, 230, 40), this, IDC_PARALLEL_EDIT);
 	parallel_radio.Create("Parallel", BS_AUTORADIOBUTTON | WS_CHILD | WS_VISIBLE | WS_TABSTOP,
 		CRect(350, 10, 420, 40), this, IDC_POINT_EDIT);
 
+	dircetionxEdit.Create(ES_MULTILINE | WS_CHILD | WS_VISIBLE | WS_TABSTOP | WS_BORDER,
+		CRect(ssx, height, sex, height + 20), this, IDC_X_EDIT + 50);
 	locxEdit.Create(ES_MULTILINE | WS_CHILD | WS_VISIBLE | WS_TABSTOP | WS_BORDER,
 		CRect(lsx, height, lex, height + 20), this, IDC_X_EDIT);
-	sizexEdit.Create(ES_MULTILINE | WS_CHILD | WS_VISIBLE | WS_TABSTOP | WS_BORDER,
-		CRect(ssx, height, sex, height + 20), this, IDC_X_EDIT + 50);
 	height += 40;
 
+	dircetionyEdit.Create(ES_MULTILINE | WS_CHILD | WS_VISIBLE | WS_TABSTOP | WS_BORDER,
+		CRect(ssx, height, sex, height + 20), this, IDC_Y_EDIT + 50);
 	locyEdit.Create(ES_MULTILINE | WS_CHILD | WS_VISIBLE | WS_TABSTOP | WS_BORDER,
 		CRect(lsx, height, lex, height + 20), this, IDC_Y_EDIT);
-	sizeyEdit.Create(ES_MULTILINE | WS_CHILD | WS_VISIBLE | WS_TABSTOP | WS_BORDER,
-		CRect(ssx, height, sex, height + 20), this, IDC_Y_EDIT + 50);
 	height += 40;
 
+	dircetionzEdit.Create(ES_MULTILINE | WS_CHILD | WS_VISIBLE | WS_TABSTOP | WS_BORDER,
+		CRect(ssx, height, sex, height + 20), this, IDC_Z_EDIT + 50);
 	loczEdit.Create(ES_MULTILINE | WS_CHILD | WS_VISIBLE | WS_TABSTOP | WS_BORDER,
 		CRect(lsx, height, lex, height + 20), this, IDC_Z_EDIT);
-	sizezEdit.Create(ES_MULTILINE | WS_CHILD | WS_VISIBLE | WS_TABSTOP | WS_BORDER,
-		CRect(ssx, height, sex, height + 20), this, IDC_Z_EDIT + 50);
 	height += 60;
 
 	colorEdit.Create("Choose...", BS_PUSHBUTTON | WS_CHILD | WS_VISIBLE | WS_TABSTOP | WS_BORDER,
@@ -594,32 +615,149 @@ void CLightDialog::OnPaint()
 	dc.SetBkMode(TRANSPARENT);
 	int height = 72;
 
-	CRect loc_rect(50, height, 150, height + 18);
+	CRect size_rect(50, height, 150, height + 18);
+	dc.DrawText("Direction:", -1, &size_rect, DT_SINGLELINE | DT_CENTER);
+	CRect loc_rect(250, height, 350, height + 18);
 	dc.DrawText("Location:", -1, &loc_rect, DT_SINGLELINE | DT_CENTER);
-	CRect size_rect(250, height, 350, height + 18);
-	dc.DrawText("Size:", -1, &size_rect, DT_SINGLELINE | DT_CENTER);
 	height += 40;
 
-	CRect locx_rect(50, height, 80, height + 18);
-	dc.DrawText("X:", -1, &locx_rect, DT_SINGLELINE | DT_RIGHT);
-	CRect sizex_rect(250, height, 280, height + 18);
+	CRect sizex_rect(50, height, 80, height + 18);
 	dc.DrawText("X:", -1, &sizex_rect, DT_SINGLELINE | DT_RIGHT);
+	CRect locx_rect(250, height, 280, height + 18);
+	dc.DrawText("X:", -1, &locx_rect, DT_SINGLELINE | DT_RIGHT);
 	height += 40;
 
-	CRect locy_rect(50, height, 80, height + 18);
-	dc.DrawText("Y:", -1, &locy_rect, DT_SINGLELINE | DT_RIGHT);
-	CRect sizey_rect(250, height, 280, height + 18);
+	CRect sizey_rect(50, height, 80, height + 18);
 	dc.DrawText("Y:", -1, &sizey_rect, DT_SINGLELINE | DT_RIGHT);
+	CRect locy_rect(250, height, 280, height + 18);
+	dc.DrawText("Y:", -1, &locy_rect, DT_SINGLELINE | DT_RIGHT);
 	height += 40;
 
-	CRect locz_rect(50, height, 80, height + 18);
-	dc.DrawText("Z:", -1, &locz_rect, DT_SINGLELINE | DT_RIGHT);
-	CRect sizez_rect(250, height, 280, height + 18);
+	CRect sizez_rect(50, height, 80, height + 18);
 	dc.DrawText("Z:", -1, &sizez_rect, DT_SINGLELINE | DT_RIGHT);
+	CRect locz_rect(250, height, 280, height + 18);
+	dc.DrawText("Z:", -1, &locz_rect, DT_SINGLELINE | DT_RIGHT);
 	height += 60;
 
 	CRect color_rect(50, height, 100, height + 18);
 	dc.DrawText("Color:", -1, &color_rect, DT_SINGLELINE | DT_RIGHT);
 
 	locxEdit.SetFocus();
+}
+
+// ----------------------
+//    Class CEditModelDialog
+// ----------------------
+void CEditModelDialog::set_ambient() {
+	CColorDialog dlg;
+	if (dlg.DoModal() == IDOK) {
+		ambient = dlg.GetColor();
+	}
+}
+
+void CEditModelDialog::set_specular() {
+	CColorDialog dlg;
+	if (dlg.DoModal() == IDOK) {
+		specular = dlg.GetColor();
+	}
+}
+
+void CEditModelDialog::set_diffuse() {
+	CColorDialog dlg;
+	if (dlg.DoModal() == IDOK) {
+		diffuse = dlg.GetColor();
+	}
+}
+
+CEditModelDialog::CEditModelDialog(CString title)
+	: CInputDialog(title), ambient(0xFFFFFF), specular(0), diffuse(0), shininess(0)
+{ }
+
+CEditModelDialog::~CEditModelDialog()
+{ }
+
+vec3 CEditModelDialog::GetAmbientColor() const
+{
+	return ColorToVec(ambient);
+}
+
+vec3 CEditModelDialog::GetSpecularColor() const
+{
+	return ColorToVec(specular);
+}
+
+vec3 CEditModelDialog::GetDiffuseColor() const
+{
+	return ColorToVec(diffuse);
+}
+
+float CEditModelDialog::GetShininess() const
+{
+	return shininess;
+}
+
+void CEditModelDialog::DoDataExchange(CDataExchange* pDX)
+{
+	CInputDialog::DoDataExchange(pDX);
+	DDX_Text(pDX, IDC_VALUE_EDIT, shininess);
+}
+
+// CEditModelDialog message handlers
+BEGIN_MESSAGE_MAP(CEditModelDialog, CInputDialog)
+	ON_WM_CREATE()
+	ON_WM_PAINT()
+	ON_BN_CLICKED(IDC_COLOR_EDIT, set_ambient)
+	ON_BN_CLICKED(IDC_COLOR_EDIT + 1, set_specular)
+	ON_BN_CLICKED(IDC_COLOR_EDIT + 2, set_diffuse)
+END_MESSAGE_MAP()
+
+int CEditModelDialog::OnCreate(LPCREATESTRUCT lpcs)
+{
+	int height = 70;
+	int sx = 220, ex = 300;
+
+	ambientEdit.Create("Choose...", BS_PUSHBUTTON | WS_CHILD | WS_VISIBLE | WS_TABSTOP | WS_BORDER,
+		CRect(sx, height, ex, height + 20), this, IDC_COLOR_EDIT);
+	height += 40;
+
+	specularEdit.Create("Choose...", BS_PUSHBUTTON | WS_CHILD | WS_VISIBLE | WS_TABSTOP | WS_BORDER,
+		CRect(sx, height, ex, height + 20), this, IDC_COLOR_EDIT + 1);
+	height += 40;
+
+	diffuseEdit.Create("Choose...", BS_PUSHBUTTON | WS_CHILD | WS_VISIBLE | WS_TABSTOP | WS_BORDER,
+		CRect(sx, height, ex, height + 20), this, IDC_COLOR_EDIT + 2);
+	height += 40;
+
+	shininessEdit.Create(ES_MULTILINE | WS_CHILD | WS_VISIBLE | WS_TABSTOP | WS_BORDER,
+		CRect(sx, height, ex, height + 20), this, IDC_VALUE_EDIT);
+
+	return 0;
+}
+
+void CEditModelDialog::OnPaint()
+{
+	CPaintDC dc(this);
+	dc.SetBkMode(TRANSPARENT);
+	int height = 72;
+
+	CRect rect(50, height, 190, height + 18);
+	dc.DrawText("Ambient:", -1, &rect, DT_SINGLELINE);
+	height += 40;
+
+	rect.bottom += 40;
+	rect.top += 40;
+	dc.DrawText("Specular:", -1, &rect, DT_SINGLELINE);
+	height += 40;
+
+	rect.bottom += 40;
+	rect.top += 40;
+	dc.DrawText("Diffuse:", -1, &rect, DT_SINGLELINE);
+	height += 40;
+
+	rect.bottom += 40;
+	rect.top += 40;
+	dc.DrawText("Shininess:", -1, &rect, DT_SINGLELINE);
+	height += 60;
+
+	ambientEdit.SetFocus();
 }

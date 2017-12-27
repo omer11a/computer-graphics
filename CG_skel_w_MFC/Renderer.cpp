@@ -6,13 +6,13 @@
 
 #define INDEX(width,x,y,c) (x+y*width)*3+c
 
-Renderer::Renderer() : m_width(512), m_height(512), m_zBuffer(NULL),
+Renderer::Renderer() : BaseRenderer(512, 512), m_zBuffer(NULL),
 m_cTransform(), m_projection(), m_oTransform(), m_nTransform(), m_camera_multiply(), is_wire_mode(false)
 {
 	InitOpenGLRendering();
 	CreateBuffers(512, 512);
 }
-Renderer::Renderer(int width, int height) : m_width(width), m_height(height), m_zBuffer(NULL),
+Renderer::Renderer(int width, int height) : BaseRenderer(width, height), m_zBuffer(NULL),
 m_cTransform(), m_projection(), m_oTransform(), m_nTransform(), is_wire_mode(false)
 {
 	InitOpenGLRendering();
@@ -632,14 +632,14 @@ void Renderer::PaintTriangle2(const vec3& p1, const vec3& p2, const vec3& p3, co
 		PixelToPoint(n_p1, n_p2, n_p3, vec3(minx, y, 0), minx_camera);
 		PixelToPoint(n_p1, n_p2, n_p3, vec3(maxx, y, 0), maxx_camera);
 
-		for (float x = minx.x; x < maxx.x; ++x) {
+		/*for (float x = minx; x < maxx; ++x) {
 			vec3 newP;
 			if ((!m_paintBuffer[(int)(y * m_width + x)]) &&
 				(PixelToPoint(p1, p2, p3, vec3(x, y, 0), newP))) {
 				PlotPixel(x, y, newP.z, c1);
 			}
 
-		}
+		}*/
 		//DrawLine(p1, vec3(), p2, vec3(), vec3(1), vec3(1));
 	}
 }
@@ -733,6 +733,29 @@ void Renderer::DrawCamera()
 	DrawLine(vertices[1], vertices[2], color);
 	DrawLine(vertices[2], vertices[0], color);*/
 	
+	for (int i = -5; i < 5; ++i) {
+		PlotPixel(camera_location.x + i, camera_location.y, camera_location.z, color);
+		PlotPixel(camera_location.x, camera_location.y + i, camera_location.z, color);
+	}
+}
+
+void Renderer::DrawLight(const vec3& location)
+{
+	vec3 color(1, 140 / 255, 1);
+	vec3 camera_location;
+	bool in_sight = pointToScreen(vec3(), vec3(), camera_location);
+	if (!in_sight) {
+		return;
+	}
+	vector<vec3> vertices;
+	vertices.push_back(camera_location + vec3(-10, 0.0f, 20));
+	vertices.push_back(camera_location + vec3(10, 0, 30));
+	vertices.push_back(camera_location + vec3(0, 25, 0));
+	/*
+	DrawLine(vertices[0], vertices[1], color);
+	DrawLine(vertices[1], vertices[2], color);
+	DrawLine(vertices[2], vertices[0], color);*/
+
 	for (int i = -5; i < 5; ++i) {
 		PlotPixel(camera_location.x + i, camera_location.y, camera_location.z, color);
 		PlotPixel(camera_location.x, camera_location.y + i, camera_location.z, color);

@@ -12,6 +12,7 @@ m/M		->	enter model mode
 v/V		->	enter camera view mode
 c/C		->	enter camera world mode
 
+
 transformations:
 +/-		->	control scaling in current mode
 r/R		->	control rotation in current mode
@@ -29,6 +30,7 @@ TAB		->	move between models
 b		->	switch model bounding box visibility
 n		->	switch model normal visibility
 N		->	switch model face normal visibility
+y		->	switch wire view
 
 PrimMeshModels:
 1-9		-> add model
@@ -61,6 +63,9 @@ camera changes: lookat
 #include <string>
 
 #define BUFFER_OFFSET( offset )   ((GLvoid*) (offset))
+
+#define NEW_ITEM 1
+#define EDIT_ITEM 2
 
 #define FILE_OPEN 1
 #define ADD_CAMERA 2
@@ -171,7 +176,7 @@ void keyboard(unsigned char key, int x, int y)
 	case 'V':
 	case 'c': // camera world mode
 	case 'C':
-		config.mode = key;
+		config.mode = tolower(key);
 		cout << "switched mode to " << key << endl;
 		break;
 
@@ -295,21 +300,82 @@ void help()
 		"* 1-9\t\tadd model", MB_ICONINFORMATION);
 }
 
+void lightMenu(int id)
+{
+	bool should_redraw = false;
+	CColorDialog cdlg;
+	CLightDialog ldlg;
+	switch (id) {
+		case NEW_ITEM:
+			if (ldlg.DoModal() == IDOK) {
+				if (ldlg.IsPoint()) {
+					PointLightSource pls(ldlg.GetColor(), ldlg.GetLightLocation());
+					cout << "point light was loaded with ID #" << scene->getNumberOfLights() - 1 << endl;
+					config.is_demo = false;
+					should_redraw = true;
+				} else {
+					// parallel
+					ParallelLightSource pls(ldlg.GetColor(), ldlg.GetLightDirection());
+					cout << "parallel light was loaded with ID #" << scene->getNumberOfLights() - 1 << endl;
+					config.is_demo = false;
+					should_redraw = true;
+				}
+			}
+			break;
+		case EDIT_ITEM:
+			if (cdlg.DoModal() == IDOK) {
+				vec3 color = ColorToVec(cdlg.GetColor());
+				AmbientLight al(color);
+				scene->setAmbientLight(al);
+				cout << "Set Ambient color to " << color << endl;
+			}
+			break;
+	}
+	redraw(should_redraw);
+}
+
+void modelMenu(int id)
+{
+	bool should_redraw = false;
+	CFileDialog fdlg(TRUE, _T(".obj"), NULL, NULL, _T("*.obj|*.*"));
+	CEditModelDialog emdlg;
+	switch (id) {
+	case NEW_ITEM:
+		if (fdlg.DoModal() == IDOK) {
+			std::string s((LPCTSTR)fdlg.GetPathName());
+			scene->loadOBJModel((LPCTSTR)fdlg.GetPathName());
+			cout << "model " << s << " was loaded with ID #" << scene->getNumberOfModels() - 1 << endl;
+			config.is_demo = false;
+			should_redraw = true;
+		}
+		break;
+	case EDIT_ITEM:
+		if ((scene->getNumberOfModels() > 0) && (emdlg.DoModal() == IDOK)) {
+			Material m = {
+				emdlg.GetAmbientColor(),
+				emdlg.GetSpecularColor(),
+				emdlg.GetDiffuseColor(),
+				emdlg.GetShininess()
+			};
+			if (m.shininess <= 0) {
+				cout << "model properties error: shininess must be positive." << endl;
+				break;
+			}
+			scene->getActiveModel()->setUniformMaterial(m);
+			cout << "set active model properties" << endl;
+			should_redraw = true;
+		}
+		break;
+	}
+	redraw(should_redraw);
+}
+
 void fileMenu(int id)
 {
 	bool should_redraw = false;
-	CFileDialog dlg(TRUE, _T(".obj"), NULL, NULL, _T("*.obj|*.*"));
-	switch (id)
-	{
-		case FILE_OPEN:
-			if (dlg.DoModal() == IDOK) {
-				std::string s((LPCTSTR)dlg.GetPathName());
-				scene->loadOBJModel((LPCTSTR)dlg.GetPathName());
-				cout << "model " << s << " was loaded with ID #" << scene->getNumberOfModels() - 1 << endl;
-				config.is_demo = false;
-				should_redraw = true;
-			}
-			break;
+	CLightDialog ldlg;
+
+	switch (id) {
 		case ADD_CAMERA:
 			scene->addCamera();
 			cout << "camera was added with ID #" << scene->getNumberOfCameras() - 1 << endl;
@@ -356,10 +422,21 @@ void mainMenu(int id)
 
 void initMenu()
 {
+	// light sub menu
+	int menuLight = glutCreateMenu(lightMenu);
+	glutAddMenuEntry("New", NEW_ITEM);
+	glutAddMenuEntry("Ambient", EDIT_ITEM);
+
+	// model sub menu
+	int menuModel = glutCreateMenu(modelMenu);
+	glutAddMenuEntry("New", NEW_ITEM);
+	glutAddMenuEntry("Edit", EDIT_ITEM);
+
 	// file sub menu
 	int menuFile = glutCreateMenu(fileMenu);
-	glutAddMenuEntry("Open...", FILE_OPEN);
+	glutAddSubMenu("Model", menuModel);
 	glutAddMenuEntry("Camera", ADD_CAMERA);
+	glutAddSubMenu("Light", menuLight);
 
 	// setting sub menu
 	int menuSetting = glutCreateMenu(settingMenu);
@@ -369,7 +446,7 @@ void initMenu()
 	glutAddMenuEntry("Zoom...", SETTING_ZOOM);
 
 	glutCreateMenu(mainMenu);
-	glutAddSubMenu("File",menuFile);
+	glutAddSubMenu("Add/Set", menuFile);
 	glutAddSubMenu("Setting", menuSetting);
 	glutAddMenuEntry("Demo",MAIN_DEMO);
 	glutAddMenuEntry("Help", MAIN_HELP);

@@ -7,6 +7,8 @@ void reshape(int width, int height);
 void keyboard(unsigned char key, int x, int y);
 void mouse(int button, int state, int x, int y);
 void help();
+void lightMenu(int id);
+void modelMenu(int id);
 void fileMenu(int id);
 void settingMenu(int id);
 void mainMenu(int id);

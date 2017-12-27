@@ -207,35 +207,77 @@ protected:
 	DECLARE_MESSAGE_MAP()
 };
 
+// ----------------------
+//    Class CLightDialog
+// ----------------------
+vec3 ColorToVec(COLORREF color);
+COLORREF VecToColor(const vec3& color);
+
 class CLightDialog : public CInputDialog {
 public:
 	CLightDialog(CString title = "Add light Source");
 	virtual ~CLightDialog();
 
 	vec3 GetColor() const;
-	vec3 GetLLocation() const;
-	vec3 GetLSize() const;
+	vec3 GetLightLocation() const;
+	vec3 GetLightDirection() const;
 	bool IsPoint() const;
 protected:
 
 	bool is_point;
 	COLORREF color;
 	vec3 l_location;
-	vec3 l_size;
+	vec3 l_direction;
 
 	CButton point_radio;
 	CButton parallel_radio;
 	CEdit locxEdit;
 	CEdit locyEdit;
 	CEdit loczEdit;
-	CEdit sizexEdit;
-	CEdit sizeyEdit;
-	CEdit sizezEdit;
+	CEdit dircetionxEdit;
+	CEdit dircetionyEdit;
+	CEdit dircetionzEdit;
 	CButton colorEdit;
 
+	afx_msg void radio_pressed();
 	afx_msg void choose_color();
 	virtual void DoDataExchange(CDataExchange* pDX);
 	
+	afx_msg int OnCreate(LPCREATESTRUCT lpcs);
+	afx_msg void OnPaint();
+	DECLARE_MESSAGE_MAP()
+
+};
+
+// ----------------------
+//    Class CEditModelDialog
+// ----------------------
+class CEditModelDialog : public CInputDialog {
+public:
+	CEditModelDialog(CString title = "Edit Model Colors");
+	virtual ~CEditModelDialog();
+
+	vec3 GetAmbientColor() const;
+	vec3 GetSpecularColor() const;
+	vec3 GetDiffuseColor() const;
+	float GetShininess() const;
+protected:
+
+	COLORREF ambient;
+	COLORREF specular;
+	COLORREF diffuse;
+	float shininess;
+	
+	CEdit shininessEdit;
+	CButton ambientEdit;
+	CButton specularEdit;
+	CButton diffuseEdit;
+
+	afx_msg void set_ambient();
+	afx_msg void set_specular();
+	afx_msg void set_diffuse();
+	virtual void DoDataExchange(CDataExchange* pDX);
+
 	afx_msg int OnCreate(LPCREATESTRUCT lpcs);
 	afx_msg void OnPaint();
 	DECLARE_MESSAGE_MAP()

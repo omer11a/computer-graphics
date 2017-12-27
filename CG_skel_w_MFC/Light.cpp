@@ -9,6 +9,13 @@ void Light::setTransform(const mat4 & transform) {
 	this->transform = transform;
 }
 
+void Light::draw(Renderer * r) const
+{
+	if (r == NULL) {
+		throw invalid_argument("Renderer is null");
+	}
+}
+
 AmbientLight::AmbientLight(const vec3& intensity) : Light(intensity) {}
 
 AmbientLight::AmbientLight(const AmbientLight& light) : Light(light) {}
@@ -124,6 +131,16 @@ void PointLightSource::transformInModel(const mat4 & transform) {
 void PointLightSource::transformInWorld(const mat4 & transform) {
 	DirectionalLightSource::transformInWorld(transform);
 	updatePosition();
+}
+
+void PointLightSource::draw(Renderer * renderer) const
+{
+	if (renderer == NULL) {
+		throw invalid_argument("Renderer is null");
+	}
+
+	renderer->DrawLight(transformedPosition);
+
 }
 
 void ParallelLightSource::updateDirection() {

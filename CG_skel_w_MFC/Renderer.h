@@ -1,23 +1,25 @@
 #pragma once
 #include <vector>
+#include "BaseRenderer.h"
 #include "CG_skel_w_MFC.h"
 #include "vec.h"
 #include "mat.h"
 #include "GL/glew.h"
 
 using namespace std;
-class Renderer
+class Renderer : public BaseRenderer
 {
-	float *m_outBuffer; // 3*width*height
-	float *m_zBuffer; // width*height
-	bool *m_paintBuffer;
-	bool is_wire_mode;
-	int m_width, m_height;
+	float *m_outBuffer;		// width * height * 3
+	float *m_zBuffer;		// width * height
+	bool *m_paintBuffer;	// width * height
+
 	mat4 m_cTransform, m_projection, m_oTransform;
 	mat3 m_nTransform;
 	mat4 m_camera_multiply;
 	float zNear;
 	float zFar;
+
+	bool is_wire_mode;
 
 	void CreateBuffers(int width, int height);
 	void CreateLocalBuffer();
@@ -36,15 +38,13 @@ class Renderer
 	bool PlotPixel(const int x, const int y, const float z, const vec3& color);
 	vec3 GetCenterMass(const vec3& p1, const vec3& p2, const vec3& p3) const;
 	vec3 GetCenterMass(const vec3 * vertices, const int length) const;
-	//void UpdateBCPoint(const vec3& p1, const vec3& p2, const vec3& p3, vec3& p) const;
-	void DrawLine(const vec3& p1, const vec3& n1, const vec3& p2, const vec3& n2, const vec3& c1, const vec3& c2);
+	bool DrawLine(const vec3& p1, const vec3& n1, const vec3& p2, const vec3& n2, const vec3& c1, const vec3& c2);
 	void DrawLine(const vec3& p1, const vec3& p2, const vec3& c1, const vec3& c2);
 	void DrawSteepLine(const vec3& p1, const vec3& p2, const vec3& c1, const vec3& c2);
 	void DrawModerateLine(const vec3& p1, const vec3& p2, const vec3& c1, const vec3& c2);
 	void PaintTriangle(const vec3& p1, const vec3& p2, const vec3& p3, const vec3& c1);
 	void PaintTriangleRecursive(const vec3& p1, const vec3& p2, const vec3& p3, const vec3& p, const vec3& c1);
 	void PaintTriangle2(const vec3& p1, const vec3& p2, const vec3& p3, const vec3& c1);
-	//void fill_tri(const vec3& p1, const vec3& p2, const vec3& p3, const vec3& c1, const vec3& c2, const vec3& c3);
 
 	//////////////////////////////
 	// openGL stuff. Don't touch.
@@ -64,6 +64,7 @@ public:
 	void DrawSquare(const vec3& p1, const vec3& p2, const vec3& p3, const vec3& p4, const vec3& color);
 	void DrawBox(const vec3& minValues, const vec3& maxValues);
 	void DrawCamera();
+	void Renderer::DrawLight(const vec3& location);
 	void SetCameraTransform(const mat4& cTransform);
 	void SetProjection(const mat4& projection);
 	void SetZRange(float zNear, float zFar);
