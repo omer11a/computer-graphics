@@ -102,6 +102,7 @@
     <ClCompile Include="InputDialog.cpp" />
     <ClCompile Include="Light.cpp" />
     <ClCompile Include="MeshModel.cpp" />
+    <ClCompile Include="Polygon.cpp" />
     <ClCompile Include="Renderer.cpp" />
     <ClCompile Include="Scene.cpp" />
     <ClCompile Include="Shader.cpp" />
@@ -117,6 +118,7 @@
     <ClInclude Include="Light.h" />
     <ClInclude Include="mat.h" />
     <ClInclude Include="MeshModel.h" />
+    <ClInclude Include="Polygon.h" />
     <ClInclude Include="Renderer.h" />
     <ClInclude Include="Resource.h" />
     <ClInclude Include="Scene.h" />
