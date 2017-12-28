@@ -4,13 +4,18 @@
 #include "MeshModel.h"
 using namespace std;
 
-class Polygon {
+class ConvexPolygon {
 	vector<vec4> vertices;
 	vector<Material> materials;
 	vector<vec3> normals;
+	vector<vec4> interpolatedVertices;
+	vector<vec3> interpolatedNormals;
+	vector<Material> interpolatedMaterials;
 
 	template<class T>
 	T interpolate(T v1, T v2, float t) const;
+
+	bool verifyTwin(ConvexPolygon * twin) const;
 
 	template<class Compare>
 	bool clip(
@@ -24,32 +29,30 @@ class Polygon {
 		float t
 	) const;
 
-	void addInterpolatedFeatures(
-		vector<Material>& interpolatedMaterials,
-		vector<vec3>& interpolatedNormals,
-		int i,
-		int j,
-		float t
-	) const;
+	void clearInterpolatedFeatures();
+	void addInterpolatedFeatures(int i, int j, float t);
+	void setInterpolatedFeatures();
 
 public:
-	Polygon(
+	ConvexPolygon(
 		const vector<vec4> & vertices,
 		const vector<Material>& materials,
 		const vector<vec3>& normals
 	);
 
-	void transform(const mat4& transform, const mat3& normalTransform);
+	void transform(const mat4& transform);
+	void transform(const mat4& transform, const mat3& normalTransform = mat3());
 	void divide();
 
 	template<class Compare>
 	void clip(
 		int coordinate,
 		float max,
-		Compare comp
+		Compare comp,
+		ConvexPolygon * twin
 	);
 
-	void getTriangles(vector<Polygon *>& triangles) const;
+	void getTriangles(vector<ConvexPolygon *>& triangles) const;
 	const vector<vec4>& getVertices() const;
 	const vector<vec3>& getNormals() const;
 	const vector<Material>& getMaterials() const;
