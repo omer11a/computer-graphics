@@ -292,11 +292,11 @@ void Scene::setAmbientLight(const AmbientLight& ambientLight) {
 }
 
 void Scene::addLight(const DirectionalLightSource& light) {
-	Light * newLight = NULL;
+	DirectionalLightSource * newLight = NULL;
 	int newActiveLight = lights.size();
 
 	try {
-		newLight = light.clone();
+		newLight = dynamic_cast<DirectionalLightSource*>(light.clone());
 		lights.push_back(newLight);
 		activeLight = newActiveLight;
 
@@ -325,7 +325,7 @@ Camera * Scene::getActiveCamera() {
 	return cameras.at(activeCamera);
 }
 
-Light * Scene::getActiveLight() {
+DirectionalLightSource * Scene::getActiveLight() {
 	if (activeLight < 0) {
 		throw invalid_argument("No active light");
 	}
@@ -457,6 +457,10 @@ void Scene::draw() const {
 		if (i != activeCamera) {
 			cameras.at(i)->draw(renderer);
 		}
+	}
+
+	for (auto i = lights.begin(); i != lights.end(); ++i) {
+		(*i)->draw(renderer);
 	}
 
 	renderer->SwapBuffers();

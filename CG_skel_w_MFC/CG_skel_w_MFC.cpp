@@ -37,12 +37,6 @@ y		->	switch wire view
 PrimMeshModels:
 1-9		-> add model
 */
-
-/*
-TODO:
-camera changes: lookat
-*/
-
 #include "stdafx.h"
 #include "CG_skel_w_MFC.h"
 #include "InputDialog.h"
@@ -66,23 +60,33 @@ camera changes: lookat
 
 #define BUFFER_OFFSET( offset )   ((GLvoid*) (offset))
 
+// model / light menu
 #define NEW_ITEM 1
 #define EDIT_ITEM 2
 
-#define FILE_OPEN 1
-#define ADD_CAMERA 2
 
+#define ADD_CAMERA 1
+
+// main menu
 #define MAIN_DEMO 1
 #define MAIN_HELP 2
 #define MAIN_ABOUT 3
 
+// setting menu
 #define SETTING_SCALING		1
 #define SETTING_ROTATION	2
 #define SETTING_MOVEMENT	3
 #define SETTING_ZOOM	4
 
+#define MODEL_OBJECT	'm'
+#define MODEL_WORLD		'w'
+#define CAMERA_OBJECT	'v'
+#define CAMERA_WORLD	'c'
+#define LIGHT_OBJECT	'x'
+#define LIGHT_WORLD		'd'
+
 typedef struct configuration_s {
-	unsigned char mode;	// 0 - none, 'm' - model, 'w' - world, 'v' - view, 'c' - camera, 
+	unsigned char mode;	// 0 - none
 	vec3 scaling;	// must be greater or equal to 1	(decreasing scaling is 1/scaling)
 	vec3 translating;
 	vec3 rotating;
@@ -177,14 +181,18 @@ void keyboard(unsigned char key, int x, int y)
 		break;
 
 	// switch modes
-	case 'm': // model mode
+	case MODEL_OBJECT:
 	case 'M':
-	case 'w': // model world mode
+	case MODEL_WORLD:
 	case 'W':
-	case 'v': // camera view mode
+	case CAMERA_OBJECT:
 	case 'V':
-	case 'c': // camera world mode
+	case CAMERA_WORLD:
 	case 'C':
+	case LIGHT_OBJECT:
+	case 'X':
+	case LIGHT_WORLD:
+	case 'D':
 		config.mode = tolower(key);
 		cout << "switched mode to " << key << endl;
 		break;
@@ -321,12 +329,14 @@ void lightMenu(int id)
 			if (ldlg.DoModal() == IDOK) {
 				if (ldlg.IsPoint()) {
 					PointLightSource pls(ldlg.GetColor(), ldlg.GetLightLocation());
+					scene->addLight(pls);
 					cout << "point light was loaded with ID #" << scene->getNumberOfLights() - 1 << endl;
 					config.is_demo = false;
 					should_redraw = true;
 				} else {
 					// parallel
 					ParallelLightSource pls(ldlg.GetColor(), ldlg.GetLightDirection());
+					scene->addLight(pls);
 					cout << "parallel light was loaded with ID #" << scene->getNumberOfLights() - 1 << endl;
 					config.is_demo = false;
 					should_redraw = true;
@@ -630,28 +640,28 @@ bool scale(unsigned char key)
 	}
 
 	switch (config.mode) {
-	case 'm':
+	case MODEL_OBJECT:
 		if (scene->getNumberOfModels() > 0) {
 			scene->getActiveModel()->transformInModel(scaling_mat);
 			cout << "scalling model frame with " << scaling_mat << endl;
 			should_redraw = true;
 		}
 		break;
-	case 'w':
+	case MODEL_WORLD:
 		if (scene->getNumberOfModels() > 0) {
 			scene->getActiveModel()->transformInWorld(scaling_mat);
 			cout << "scalling model world frame with " << scaling_mat << endl;
 			should_redraw = true;
 		}
 		break;
-	case 'v':
+	case CAMERA_OBJECT:
 		if (scene->getNumberOfCameras() > 0) {
 			scene->getActiveCamera()->transformInView(scaling_mat);
 			cout << "scalling camera frame with " << scaling_mat << endl;
 			should_redraw = true;
 		}
 		break;
-	case 'c':
+	case CAMERA_WORLD:
 		if (scene->getNumberOfCameras() > 0) {
 			scene->getActiveCamera()->transformInWorld(scaling_mat);
 			cout << "scalling camera world with " << scaling_mat << endl;
@@ -678,7 +688,7 @@ bool rotation(unsigned char direction)
 	}
 	
 	switch (config.mode) {
-	case 'm':
+	case MODEL_OBJECT:
 		if (scene->getNumberOfModels() > 0) {
 			if (rotation_vec.x != 0) scene->getActiveModel()->transformInModel(RotateX(rotation_vec.x));
 			if (rotation_vec.y != 0) scene->getActiveModel()->transformInModel(RotateY(rotation_vec.y));
@@ -687,7 +697,7 @@ bool rotation(unsigned char direction)
 			should_redraw = true;
 		}
 		break;
-	case 'w':
+	case MODEL_WORLD:
 		if (scene->getNumberOfModels() > 0) {
 			if (rotation_vec.x != 0) scene->getActiveModel()->transformInWorld(RotateX(rotation_vec.x));
 			if (rotation_vec.y != 0) scene->getActiveModel()->transformInWorld(RotateY(rotation_vec.y));
@@ -696,7 +706,7 @@ bool rotation(unsigned char direction)
 			should_redraw = true;
 		}
 		break;
-	case 'v':
+	case CAMERA_OBJECT:
 		if (scene->getNumberOfCameras() > 0) {
 			if (rotation_vec.x != 0) scene->getActiveCamera()->transformInView(RotateX(rotation_vec.x));
 			if (rotation_vec.y != 0) scene->getActiveCamera()->transformInView(RotateY(rotation_vec.y));
@@ -705,12 +715,30 @@ bool rotation(unsigned char direction)
 			should_redraw = true;
 		}
 		break;
-	case 'c':
+	case CAMERA_WORLD:
 		if (scene->getNumberOfCameras() > 0) {
 			if (rotation_vec.x != 0) scene->getActiveCamera()->transformInWorld(RotateX(rotation_vec.x));
 			if (rotation_vec.y != 0) scene->getActiveCamera()->transformInWorld(RotateY(rotation_vec.y));
 			if (rotation_vec.z != 0) scene->getActiveCamera()->transformInWorld(RotateZ(rotation_vec.z));
 			cout << "rotating camera world frame with " << rotation_vec << endl;
+			should_redraw = true;
+		}
+		break;
+	case LIGHT_OBJECT:
+		if (scene->getNumberOfLights() > 0) {
+			if (rotation_vec.x != 0) scene->getActiveLight()->transformInModel(RotateX(rotation_vec.x));
+			if (rotation_vec.y != 0) scene->getActiveLight()->transformInModel(RotateY(rotation_vec.y));
+			if (rotation_vec.z != 0) scene->getActiveLight()->transformInModel(RotateZ(rotation_vec.z));
+			cout << "rotating light frame with " << rotation_vec << endl;
+			should_redraw = true;
+		}
+		break;
+	case LIGHT_WORLD:
+		if (scene->getNumberOfCameras() > 0) {
+			if (rotation_vec.x != 0) scene->getActiveLight()->transformInWorld(RotateX(rotation_vec.x));
+			if (rotation_vec.y != 0) scene->getActiveLight()->transformInWorld(RotateY(rotation_vec.y));
+			if (rotation_vec.z != 0) scene->getActiveLight()->transformInWorld(RotateZ(rotation_vec.z));
+			cout << "rotating light world frame with " << rotation_vec << endl;
 			should_redraw = true;
 		}
 		break;
@@ -734,31 +762,45 @@ bool translate(unsigned char direction)
 	}
 
 	switch (config.mode) {
-	case 'm':
+	case MODEL_OBJECT:
 		if (scene->getNumberOfModels() > 0) {
 			scene->getActiveModel()->transformInModel(Translate(translation_vec));
 			cout << "translating model frame with " << translation_vec << endl;
 			should_redraw = true;
 		}
 		break;
-	case 'w':
+	case MODEL_WORLD:
 		if (scene->getNumberOfModels() > 0) {
 			scene->getActiveModel()->transformInWorld(Translate(translation_vec));
 			cout << "translating model world frame with " << translation_vec << endl;
 			should_redraw = true;
 		}
 		break;
-	case 'v':
+	case CAMERA_OBJECT:
 		if (scene->getNumberOfCameras() > 0) {
 			scene->getActiveCamera()->transformInView(Translate(translation_vec));
 			cout << "translating camera frame with " << translation_vec << endl;
 			should_redraw = true;
 		}
 		break;
-	case 'c':
+	case CAMERA_WORLD:
 		if (scene->getNumberOfCameras() > 0) {
 			scene->getActiveCamera()->transformInWorld(Translate(translation_vec));
 			cout << "translating camera world frame with " << translation_vec << endl;
+			should_redraw = true;
+		}
+		break;
+	case LIGHT_OBJECT:
+		if (scene->getNumberOfLights() > 0) {
+			scene->getActiveLight()->transformInModel(Translate(translation_vec));
+			cout << "translating light object frame with " << translation_vec << endl;
+			should_redraw = true;
+		}
+		break;
+	case LIGHT_WORLD:
+		if (scene->getNumberOfLights() > 0) {
+			scene->getActiveLight()->transformInWorld(Translate(translation_vec));
+			cout << "translating light object frame with " << translation_vec << endl;
 			should_redraw = true;
 		}
 		break;

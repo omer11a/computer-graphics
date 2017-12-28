@@ -677,27 +677,6 @@ void Renderer::DrawTriangles(const vector<vec3>* vertices, const vector<vec3>* v
 			PaintTriangle(&tri_vertices, &materials, &v_normals);
 		}
 
-		// ----- old version ----
-		//vec3 a = *(i++);
-		//vec3 b = *(i++);
-		//vec3 c = *(i++);
-		//vec3 cm = GetCenterMass(a, b, c);
-		//CreateLocalBuffer();
-		//std::cout << "line drawing" << std::endl;
-		//DrawLine(a, vec3(), b, vec3(), white, white);
-		//DrawLine(b, vec3(), c, vec3(), white, white);
-		//DrawLine(c, vec3(), a, vec3(), white, white);
-
-		//if (vertexNormals != NULL) {
-		//	v_normal = vertexNormals->at(vn_index++);
-		//	DrawLine(a, vec3(), a, v_normal, yellow, yellow);
-		//	v_normal = vertexNormals->at(vn_index++);
-		//	DrawLine(b, vec3(), b, v_normal, yellow, yellow);
-		//	v_normal = vertexNormals->at(vn_index++);
-		//	DrawLine(c, vec3(), c, v_normal, yellow, yellow);
-		//}
-		// ------- end old version ----------
-
 		if (v_normals.size() > 0) {
 			DrawLine(tri_vertices[0], vec3(), tri_vertices[0], v_normals[0], yellow);
 			DrawLine(tri_vertices[1], vec3(), tri_vertices[1], v_normals[1], yellow);
@@ -750,7 +729,8 @@ void Renderer::DrawCamera()
 	if (!in_sight) {
 		return;
 	}
-	vector<vec3> vertices;
+	
+	/*vector<vec3> vertices;
 	vertices.push_back(camera_location + vec3(-10, 0, 0));
 	vertices.push_back(camera_location + vec3(10, 0, 0));
 	vertices.push_back(camera_location + vec3(0, 25, 0));
@@ -758,11 +738,11 @@ void Renderer::DrawCamera()
 	DrawLine(vertices[0], vertices[1], color);
 	DrawLine(vertices[1], vertices[2], color);
 	DrawLine(vertices[2], vertices[0], color);
-	
-	/*for (int i = -5; i < 5; ++i) {
+	*/
+	for (int i = -5; i < 5; ++i) {
 		PlotPixel(camera_location.x + i, camera_location.y, camera_location.z, color);
 		PlotPixel(camera_location.x, camera_location.y + i, camera_location.z, color);
-	}*/
+	}
 }
 
 void Renderer::DrawLight(const vec3& color)
@@ -773,10 +753,18 @@ void Renderer::DrawLight(const vec3& color)
 		return;
 	}
 	
+	for (int i = -5; i <= 5; ++i) {
+		PlotPixel(light_location.x + i, light_location.y + i, light_location.z, color);	// \ 
+		PlotPixel(light_location.x + i, light_location.y - i, light_location.z, color);	// /
+		PlotPixel(light_location.x, light_location.y + i, light_location.z, color);		// |
+		PlotPixel(light_location.x + i, light_location.y, light_location.z, color);		// -
+	}
+	/*
 	DrawLine(light_location + vec3(-10, -10, 0), light_location + vec3(10, 10, 0), color);
 	DrawLine(light_location + vec3(-10, 10, 0), light_location + vec3(10, -10, 0), color);
 	DrawLine(light_location + vec3(-10,0,0), light_location + vec3(10,0,0), color);
 	DrawLine(light_location + vec3(0,-10,0), light_location + vec3(0,10,0), color);
+	*/
 }
 
 void Renderer::SetCameraTransform(const mat4 & cTransform)

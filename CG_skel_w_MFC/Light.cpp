@@ -139,6 +139,7 @@ void PointLightSource::draw(BaseRenderer * renderer) const
 		throw invalid_argument("Renderer is null");
 	}
 
+	renderer->SetObjectMatrices(worldTransform * modelTransform);
 	renderer->DrawLight(intensity);
 
 }

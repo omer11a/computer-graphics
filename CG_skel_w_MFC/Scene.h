@@ -68,7 +68,7 @@ class Scene {
 	vector<MeshModel *> models;
 	vector<Camera *> cameras;
 	AmbientLight ambientLight;
-	vector<Light *> lights;
+	vector<DirectionalLightSource *> lights;
 
 public:
 	Scene() = delete;
@@ -85,7 +85,7 @@ public:
 	void addLight(const DirectionalLightSource& light);
 	MeshModel * getActiveModel();
 	Camera * getActiveCamera();
-	Light * getActiveLight();
+	DirectionalLightSource * getActiveLight();
 	size_t getNumberOfModels() const;
 	size_t getNumberOfCameras() const;
 	size_t getNumberOfLights() const;
