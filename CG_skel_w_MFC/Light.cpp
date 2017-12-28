@@ -9,7 +9,7 @@ void Light::setTransform(const mat4 & transform) {
 	this->transform = transform;
 }
 
-void Light::draw(Renderer * r) const
+void Light::draw(BaseRenderer * r) const
 {
 	if (r == NULL) {
 		throw invalid_argument("Renderer is null");
@@ -133,7 +133,7 @@ void PointLightSource::transformInWorld(const mat4 & transform) {
 	updatePosition();
 }
 
-void PointLightSource::draw(Renderer * renderer) const
+void PointLightSource::draw(BaseRenderer * renderer) const
 {
 	if (renderer == NULL) {
 		throw invalid_argument("Renderer is null");

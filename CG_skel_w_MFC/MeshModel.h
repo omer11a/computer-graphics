@@ -1,20 +1,12 @@
 #pragma once
 #include "vec.h"
 #include "mat.h"
-#include "Renderer.h"
+#include "BaseRenderer.h"
+#include "Material.h"
 #include <string>
 #include <vector>
 
 using namespace std;
-
-struct Material {
-	vec3 ambientReflectance;
-	vec3 specularReflectance;
-	vec3 diffuseReflectance;
-	float shininess;
-};
-
-typedef Material PolygonMaterial[3];
 
 class MeshModel
 {
@@ -53,7 +45,7 @@ public:
 	void switchBoundingBoxVisibility();
 	void setUniformMaterial(Material material);
 	void setRandomMaterial();
-	void draw(Renderer * renderer) const;
+	void draw(BaseRenderer * renderer) const;
 };
 
 class PrimMeshModel : public MeshModel

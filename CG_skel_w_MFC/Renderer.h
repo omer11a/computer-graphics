@@ -2,6 +2,7 @@
 #include <vector>
 #include "BaseRenderer.h"
 #include "CG_skel_w_MFC.h"
+#include "Material.h"
 #include "vec.h"
 #include "mat.h"
 #include "GL/glew.h"
@@ -37,14 +38,17 @@ class Renderer : public BaseRenderer
 
 	bool PlotPixel(const int x, const int y, const float z, const vec3& color);
 	vec3 GetCenterMass(const vec3& p1, const vec3& p2, const vec3& p3) const;
-	vec3 GetCenterMass(const vec3 * vertices, const int length) const;
-	bool DrawLine(const vec3& p1, const vec3& n1, const vec3& p2, const vec3& n2, const vec3& c1, const vec3& c2);
-	void DrawLine(const vec3& p1, const vec3& p2, const vec3& c1, const vec3& c2);
-	void DrawSteepLine(const vec3& p1, const vec3& p2, const vec3& c1, const vec3& c2);
-	void DrawModerateLine(const vec3& p1, const vec3& p2, const vec3& c1, const vec3& c2);
-	void PaintTriangle(const vec3& p1, const vec3& p2, const vec3& p3, const vec3& c1);
-	void PaintTriangleRecursive(const vec3& p1, const vec3& p2, const vec3& p3, const vec3& p, const vec3& c1);
-	void PaintTriangle2(const vec3& p1, const vec3& p2, const vec3& p3, const vec3& c1);
+	vec3 GetCenterMass(vector<vec3> const * const vertices) const;
+	
+	bool DrawLine(const vec3& p1, const vec3& n1, const vec3& p2, const vec3& n2, const vec3& c1);
+	void DrawLine(const vec3& p1, const vec3& p2, const vec3& c=vec3(-1));
+	void DrawSteepLine(const vec3& p1, const vec3& p2, const vec3& c);
+	void DrawModerateLine(const vec3& p1, const vec3& p2, const vec3& c);
+	
+	void PaintTriangle(const vec3& p1, const vec3& p2, const vec3& p3, const vec3& c1);	// deprecated
+	void PaintTriangle(const vector<vec3> * vertices, const vector<Material> * materials, const vector<vec3> * vertexNormals);
+	void PaintTriangleFloodFill(const vec3& p1, const vec3& p2, const vec3& p3, const vec3& p);
+	void PaintTriangleScanLines(const vec3& p1, const vec3& p2, const vec3& p3, const vec3& c1);	// deprecated
 
 	//////////////////////////////
 	// openGL stuff. Don't touch.
@@ -59,19 +63,19 @@ public:
 	Renderer(int width, int height);
 	~Renderer(void);
 
-	void DrawTriangles(const vector<vec3>* vertices, const vector<vec3>* vertexNormals = NULL, const vector<vec3>* faceNormals = NULL);
+	void DrawTriangles(const vector<vec3>* vertices, const vector<vec3>* vertexNormals = NULL, const vector<vec3>* faceNormals = NULL) override;
 	void switchWire(); 
 	void DrawSquare(const vec3& p1, const vec3& p2, const vec3& p3, const vec3& p4, const vec3& color);
-	void DrawBox(const vec3& minValues, const vec3& maxValues);
-	void DrawCamera();
-	void Renderer::DrawLight(const vec3& location);
-	void SetCameraTransform(const mat4& cTransform);
-	void SetProjection(const mat4& projection);
-	void SetZRange(float zNear, float zFar);
-	void SetObjectMatrices(const mat4& oTransform, const mat3& nTransform = mat3());
-	void UpdateBuffers(int width, int height);
-	void SwapBuffers();
-	void ClearColorBuffer();
-	void ClearDepthBuffer();
-	void SetDemoBuffer();
+	void DrawBox(const vec3& minValues, const vec3& maxValues) override;
+	void DrawCamera() override;
+	void DrawLight(const vec3& location) override;
+	void SetCameraTransform(const mat4& cTransform) override;
+	void SetProjection(const mat4& projection) override;
+	void SetZRange(float zNear, float zFar) override;
+	void SetObjectMatrices(const mat4& oTransform, const mat3& nTransform = mat3()) override;
+	void UpdateBuffers(int width, int height) override;
+	void SwapBuffers() override;
+	void ClearColorBuffer() override;
+	void ClearDepthBuffer() override;
+	void SetDemoBuffer() override;
 };

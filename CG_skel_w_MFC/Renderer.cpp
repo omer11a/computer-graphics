@@ -1,8 +1,11 @@
-#include "StdAfx.h"
+
+#include "stdafx.h"
 #include "Renderer.h"
+#include "Polygon.h"
 #include "CG_skel_w_MFC.h"
 #include "InitShader.h"
 #include "GL\freeglut.h"
+#include <functional>
 
 #define INDEX(width,x,y,c) (x+y*width)*3+c
 
@@ -163,7 +166,6 @@ bool Renderer::clipLine(
 }
 
 vec3 Renderer::convertToScreen(const vec3& p) const {
-	static const double min_size = min(m_height, m_width) * 0.5;
 	return vec3(round(m_width * 0.5 + min_size * (p.x)), round(m_height * 0.5 + min_size * (p.y)), p.z);
 }
 
@@ -225,19 +227,19 @@ vec3 Renderer::GetCenterMass(const vec3& p1, const vec3& p2, const vec3& p3) con
 	return vec3((p1.x + p2.x + p3.x) / 3, (p1.y + p2.y + p3.y) / 3, (p1.z + p2.z + p3.z) / 3);
 }
 
-vec3 Renderer::GetCenterMass(const vec3 * vertices, const int length) const
+vec3 Renderer::GetCenterMass(vector<vec3> const * const vertices) const
 {
 	vec3 v;
-	if ((vertices == NULL) || (length == 0)) {
+	if ((vertices == NULL) || (vertices->size() == 0)) {
 		return v;
 	}
-	for (int i = 0; i < length; ++i) {
-		v += vertices[i];
+	for (auto i = vertices->begin(); i != vertices->end(); ++i) {
+		v += *i;
 	}
-	return v / length;
+	return v / vertices->size();
 }
 
-bool Renderer::DrawLine(const vec3& p1, const vec3& n1, const vec3& p2, const vec3& n2, const vec3& c1, const vec3& c2)
+bool Renderer::DrawLine(const vec3& p1, const vec3& n1, const vec3& p2, const vec3& n2, const vec3& c1)
 {
 	vec3 newP1, newP2;
 	if (!lineToScreen(p1, n1, p2, n2, newP1, newP2)) {
@@ -248,65 +250,51 @@ bool Renderer::DrawLine(const vec3& p1, const vec3& n1, const vec3& p2, const ve
 	//TODO: recalculate colors
 	std::cout << "newP1" << newP1 << "newP2" << newP2 << std::endl;
 	if (abs(newP1.y - newP2.y) > abs(newP1.x - newP2.x)) {
-		this->DrawSteepLine(newP1, newP2, c1, c2);
+		this->DrawSteepLine(newP1, newP2, c1);
 	} else {
-		this->DrawModerateLine(newP1, newP2, c1, c2);
+		this->DrawModerateLine(newP1, newP2, c1);
 	}
 
 	return true;
 }
 
-void Renderer::DrawLine(const vec3& p1, const vec3& p2, const vec3& c1, const vec3& c2)
+void Renderer::DrawLine(const vec3& p1, const vec3& p2, const vec3& c)
 {
-	vec3 q1, q2;
-	bool shouldDraw = clipLine(p1, p2, q1, q2);
-	if (!shouldDraw) {
-		return;
-	}
+	vec3 q1 = convertToScreen(p1);
+	vec3 q2 = convertToScreen(p2);
 
-	q1 = convertToScreen(q1);
-	q2 = convertToScreen(q2);
-
-	//TODO: recalculate colors
 	if (abs(q1.y - q2.y) > abs(q1.x - q2.x)) {
-		this->DrawSteepLine(q1, q2, c1, c2);
-	}
-	else {
-		this->DrawModerateLine(q1, q2, c1, c2);
+		this->DrawSteepLine(q1, q2, c);
+	} else {
+		this->DrawModerateLine(q1, q2, c);
 	}
 }
 
-void Renderer::DrawSteepLine(const vec3& p1, const vec3& p2, const vec3& c1, const vec3& c2) {
-	vec3 start, start_c, end, end_c;
+void Renderer::DrawSteepLine(const vec3& p1, const vec3& p2, const vec3& c) {
+	vec3 start, end;
 
 	if (p1.y > p2.y) {
 		start = p2;
-		start_c = c2;
 		end = p1;
-		end_c = c1;
 	} else {
 		start = p1;
-		start_c = c1;
 		end = p2;
-		end_c = c2;
 	}
 
 	int x = start.x;
 	int y = start.y;
 	float z = start.z;
-	vec3 color = start_c;
 	
 	int dx = abs(end.x - start.x);
 	int dy = end.y - start.y;
 	float dz = (end.z - start.z) / dy;
-	vec3 dc = (end_c - start_c) / dy;
 
 	int de = 2 * dx;
 	int d = 2 * dx - dy;
 	int dne = 2 * dx - 2 * dy;
 	int x_change = (end.x > start.x) ? 1 : -1;
 
-	PlotPixel(x, y, z, start_c);
+	PlotPixel(x, y, z, c);
 	for (int y = start.y; y < end.y; ++y) {
 		if (d < 0) {
 			d += de;
@@ -315,42 +303,35 @@ void Renderer::DrawSteepLine(const vec3& p1, const vec3& p2, const vec3& c1, con
 			d += dne;
 		}
 		z += dz;
-		color += dc;
-		PlotPixel(x, y, z, color);
+		PlotPixel(x, y, z, c);
 	}
 }
 
-void Renderer::DrawModerateLine(const vec3& p1, const vec3& p2, const vec3& c1, const vec3& c2) {
-	vec3 start, start_c, end, end_c;
+void Renderer::DrawModerateLine(const vec3& p1, const vec3& p2, const vec3& c) {
+	vec3 start, end;
 
 	if (p1.x > p2.x) {
 		start = p2;
-		start_c = c2;
 		end = p1;
-		end_c = c1;
 	} else {
 		start = p1;
-		start_c = c1;
 		end = p2;
-		end_c = c2;
 	}
 
 	int x = start.x;
 	int y = start.y;
 	float z = start.z;
-	vec3 color = start_c;
 
 	int dx = end.x - start.x;
 	int dy = abs(end.y - start.y);
 	float dz = (end.z - start.z) / dx;
-	vec3 dc = (end_c - start_c) / dx;
 
 	int de = 2 * dy;
 	int d = 2 * dy - dx;
 	int dne = 2 * dy - 2 * dx;
 	int y_change = (end.y > start.y) ? 1 : -1;
 
-	PlotPixel(x, y, z, start_c);
+	PlotPixel(x, y, z, c);
 	for (int x = start.x; x < end.x; ++x) {
 		if (d < 0) {
 			d += de;
@@ -360,8 +341,7 @@ void Renderer::DrawModerateLine(const vec3& p1, const vec3& p2, const vec3& c1, 
 		}
 
 		z += dz;
-		color += dc;
-		PlotPixel(x, y, z, color);
+		PlotPixel(x, y, z, c);
 	}
 }
 
@@ -393,7 +373,52 @@ void Renderer::PaintTriangle(const vec3& p1, const vec3& p2, const vec3& p3, con
 	std::cout << "p1=" << n_p1 << "\tp2=" << n_p2 << "\tp3=" << n_p3 << "\tp=" << n_cm << std::endl;
 	std::cout << "p1=" << convertToScreen(n_p1) << "\tp2=" << convertToScreen(n_p2) << "\tp3=" << convertToScreen(n_p3) << "\tp=" << n_cm << std::endl;
 
-	PaintTriangleRecursive(n_p1, n_p2, n_p3, n_cm, c1);
+	PaintTriangleFloodFill(n_p1, n_p2, n_p3, n_cm);
+}
+
+//void Renderer::PaintTriangle(const vec3 & p1, const vec3 & p2, const vec3 & p3, const vec3 & n1, const vec3 & n2, const vec3 & n3)
+void Renderer::PaintTriangle(const vector<vec3> * vertices, const vector<Material> * materials, const vector<vec3>* vertexNormals)
+{
+	ConvexPolygon p(*vertices, *materials, *vertexNormals);
+	p.transform(m_oTransform, m_nTransform);
+	p.clip(3, -zNear, std::less<float>());
+	p.clip(3, -zFar, std::greater<float>());
+	
+	// TODO: duplicate the polygon to store the camera world coordinates.
+	
+	p.transform(m_projection);
+	p.divide();
+
+	// x coordinate
+	p.clip(1, 1, less<float>());
+	p.clip(1, -1, greater<float>());
+	// y coordinate
+	p.clip(2, 1, std::less<float>());
+	p.clip(2, -1, greater<float>());
+
+	vector<ConvexPolygon*> triangles;
+	p.getTriangles(triangles);
+
+	for (auto i = triangles.begin(); i != triangles.end(); ++i) {
+		vector<vec4> tri_vertex = (*i)->getVertices();
+		vec3 a = convert4dTo3d(tri_vertex[0]);
+		vec3 b = convert4dTo3d(tri_vertex[1]);
+		vec3 c = convert4dTo3d(tri_vertex[2]);
+
+		CreateLocalBuffer();
+		DrawLine(a, b);
+		DrawLine(b, c);
+		DrawLine(c, a);
+
+		vec3 cm = convertToScreen(GetCenterMass(a, b, c));
+		PaintTriangleFloodFill(a, b, c, cm);
+	}
+	
+	while (!triangles.empty()) {
+		ConvexPolygon * polygon = triangles.back();
+		triangles.pop_back();
+		delete polygon;
+	}
 }
 
 ///<summary>
@@ -405,13 +430,9 @@ void Renderer::PaintTriangle(const vec3& p1, const vec3& p2, const vec3& p3, con
 bool PointInTriangle(const vec3& A, const vec3& B, const vec3& C, const vec3& P)
 {
 	// Prepare our barycentric variables
-
 	vec3 u = B - A;
-
 	vec3 v = C - A;
-
 	vec3 w = P - A;
-
 	vec3 vCrossW = cross(v, w);
 	vec3 vCrossU = cross(v, u);
 
@@ -420,36 +441,22 @@ bool PointInTriangle(const vec3& A, const vec3& B, const vec3& C, const vec3& P)
 		return false;
 
 	vec3 uCrossW = cross(u, w);
-
 	vec3 uCrossV = cross(u, v);
 
-
-
 	// Test sign of t
-
 	if (dot(uCrossW, uCrossV) < 0)
-
 		return false;
 
-
-
 	// At this point, we know that r and t and both > 0.
-
 	// Therefore, as long as their sum is <= 1, each must be less <= 1
-
 	float denom = length(uCrossV);
-
 	float r = length(vCrossW) / denom;
-
 	float t = length(uCrossW) / denom;
-
 	return (r + t <= 1);
-
 }
 
 bool Renderer::PixelToPoint(const vec3& p1, const vec3& p2, const vec3& p3, const vec3& p, vec3& newP) const {
 
-	double min_size = min(m_height, m_width) * 0.5;
 	float x = (p.x - m_width * 0.5) / min_size;
 	float y = (p.y - m_height * 0.5) / min_size;
 	vec2 np(x, y);
@@ -476,9 +483,8 @@ bool Renderer::PixelToPoint(const vec3& p1, const vec3& p2, const vec3& p3, cons
 	}
 }
 
-void Renderer::PaintTriangleRecursive(const vec3& p1, const vec3& p2, const vec3& p3, const vec3& p, const vec3& c1)
+void Renderer::PaintTriangleFloodFill(const vec3& p1, const vec3& p2, const vec3& p3, const vec3& p)
 {
-	int min_size = min(m_height, m_width);
 	//if already painted
 	if (m_paintBuffer[(int)(p.y * m_width + p.x)]) {
 		return;
@@ -488,15 +494,12 @@ void Renderer::PaintTriangleRecursive(const vec3& p1, const vec3& p2, const vec3
 	vector<vec3> q;
 
 	//	4. Set the color of node to replacement - color.
-	vec3 newP;
-	if (!PixelToPoint(p1, p2, p3, p, newP)) {
-		return;
-	}
-	newP = convertToScreen(newP);
-	PlotPixel(newP.x, newP.y, newP.z, c1);
+	vec3 newP = convertToScreen(newP);
+	vec3 c(1);
+	PlotPixel(newP.x, newP.y, newP.z, c);
 
 	//	5. Add node to the end of Q.
-	q.push_back(p);
+	q.push_back(newP);
 
 	//	6. While Q is not empty:
 	while (!q.empty()) {
@@ -504,7 +507,6 @@ void Renderer::PaintTriangleRecursive(const vec3& p1, const vec3& p2, const vec3
 		vec3 n = q.front();
 	//	8.     Remove first element from Q.
 		q.erase(q.begin());
-		std::cout << "r q: " << n - vec3(1, 0, 0) << std::endl;
 		
 	//	9.     If the color of the node to the west of n is target - color,
 		if ((n.x > 0) &&
@@ -512,8 +514,7 @@ void Renderer::PaintTriangleRecursive(const vec3& p1, const vec3& p2, const vec3
 			(PixelToPoint(p1, p2, p3, n - vec3(1, 0, 0), newP))) {
 	//	set the color of that node to replacement - color and add that node to the end of Q.
 			newP = convertToScreen(newP);
-			PlotPixel(newP.x, newP.y, newP.z, c1);
-			std::cout << "a q: " << n - vec3(1, 0, 0) << std::endl;
+			PlotPixel(newP.x, newP.y, newP.z, c);
 			q.push_back(n - vec3(1, 0, 0));
 		}
 	//	10.     If the color of the node to the east of n is target - color,
@@ -522,8 +523,7 @@ void Renderer::PaintTriangleRecursive(const vec3& p1, const vec3& p2, const vec3
 			(PixelToPoint(p1, p2, p3, n + vec3(1, 0, 0), newP))) {
 	//	set the color of that node to replacement - color and add that node to the end of Q.
 			newP = convertToScreen(newP);
-			PlotPixel(newP.x, newP.y, newP.z, c1);
-			std::cout << "a q: " << n + vec3(1, 0, 0) << std::endl;
+			PlotPixel(newP.x, newP.y, newP.z, c);
 			q.push_back(n + vec3(1, 0, 0));
 		}
 	
@@ -533,8 +533,7 @@ void Renderer::PaintTriangleRecursive(const vec3& p1, const vec3& p2, const vec3
 			(PixelToPoint(p1, p2, p3, n - vec3(0, 1, 0), newP))) {
 	//	set the color of that node to replacement - color and add that node to the end of Q.
 			newP = convertToScreen(newP);
-			PlotPixel(newP.x, newP.y, newP.z, c1);
-			std::cout << "a q: " << n - vec3(0, 1, 0) << std::endl;
+			PlotPixel(newP.x, newP.y, newP.z, c);
 			q.push_back(n - vec3(0, 1, 0));
 		}
 
@@ -544,21 +543,14 @@ void Renderer::PaintTriangleRecursive(const vec3& p1, const vec3& p2, const vec3
 			(PixelToPoint(p1, p2, p3, n + vec3(0, 1, 0), newP))) {
 	//	set the color of that node to replacement - color and add that node to the end of Q.
 			newP = convertToScreen(newP);
-			PlotPixel(newP.x, newP.y, newP.z, c1);
-			std::cout << "a q: " << n + vec3(0, 1, 0) << std::endl;
+			PlotPixel(newP.x, newP.y, newP.z, c);
 			q.push_back(n + vec3(0, 1, 0));
 		}
 	
 	//	13. Continue looping until Q is exhausted.
 	}
 	//	14. Return.
-
-	//PaintTriangleRecursive(p1, p2, p3, p + vec3(1, 0, 0), c1);
-	//PaintTriangleRecursive(p1, p2, p3, p + vec3(-1, 0, 0), c1);
-	//PaintTriangleRecursive(p1, p2, p3, p + vec3(0, 1, 0), c1);
-	//PaintTriangleRecursive(p1, p2, p3, p + vec3(-1, 0, 0), c1);
 }
-
 
 bool GetIntersectionPoint(const vec3& p1, const vec3& p2, const float y, vec3& p) {
 	float s = p2.y - p1.y;
@@ -575,7 +567,7 @@ bool GetIntersectionPoint(const vec3& p1, const vec3& p2, const float y, vec3& p
 	return true;
 }
 
-void Renderer::PaintTriangle2(const vec3& p1, const vec3& p2, const vec3& p3, const vec3& c1)
+void Renderer::PaintTriangleScanLines(const vec3& p1, const vec3& p2, const vec3& p3, const vec3& c1)
 {
 	vec3 n_p1, n_p2, n_p3;
 	pointToScreen(p1, vec3(), n_p1, false);
@@ -644,7 +636,8 @@ void Renderer::PaintTriangle2(const vec3& p1, const vec3& p2, const vec3& p3, co
 	}
 }
 
-void Renderer::DrawTriangles(const vector<vec3>* vertices, const vector<vec3>* vertexNormals, const vector<vec3>* faceNormals) {
+void Renderer::DrawTriangles(const vector<vec3>* vertices, const vector<vec3>* vertexNormals, const vector<vec3>* faceNormals)
+{
 	vec3 white(1);
 	vec3 yellow(1, 1, 0);
 	vec3 pink(1, 140 / 255., 1);
@@ -655,42 +648,75 @@ void Renderer::DrawTriangles(const vector<vec3>* vertices, const vector<vec3>* v
 	// assuming that vertices size is a multiplication of 3
 	auto i = vertices->begin();
 	while (i != vertices->end()) {
-		vec3 a = *(i++);
-		vec3 b = *(i++);
-		vec3 c = *(i++);
-		vec3 cm = GetCenterMass(a, b, c);
-		CreateLocalBuffer();
-		std::cout << "line drawing" << std::endl;
-		DrawLine(a, vec3(), b, vec3(), white, white);
-		DrawLine(b, vec3(), c, vec3(), white, white);
-		DrawLine(c, vec3(), a, vec3(), white, white);
+		// ----- new version ----
+		vector<vec3> tri_vertices;
+		tri_vertices.insert(tri_vertices.begin(), *(i++));
+		tri_vertices.insert(tri_vertices.begin(), *(i++));
+		tri_vertices.insert(tri_vertices.begin(), *(i++));
+		vec3 cm = GetCenterMass(&tri_vertices);
 
-		if (!is_wire_mode) {
-			PaintTriangle2(a, b, c, white);
+		// TODO: get materials from scene?
+		vector<Material> materials;
+		materials.push_back({ white, white, white, 1 });
+		materials.push_back({ white, white, white, 1 });
+		materials.push_back({ white, white, white, 1 });
+
+		vector<vec3> v_normals;
+		if (vertexNormals != NULL) {
+			v_normals.insert(v_normals.begin(), vertexNormals->at(vn_index++));
+			v_normals.insert(v_normals.begin(), vertexNormals->at(vn_index++));
+			v_normals.insert(v_normals.begin(), vertexNormals->at(vn_index++));
+		}
+
+		if (is_wire_mode) {
+			std::cout << "line drawing" << std::endl;
+			DrawLine(tri_vertices[0], vec3(), tri_vertices[1], vec3(), white);
+			DrawLine(tri_vertices[1], vec3(), tri_vertices[2], vec3(), white);
+			DrawLine(tri_vertices[2], vec3(), tri_vertices[0], vec3(), white);
+		} else {
+			PaintTriangle(&tri_vertices, &materials, &v_normals);
+		}
+
+		// ----- old version ----
+		//vec3 a = *(i++);
+		//vec3 b = *(i++);
+		//vec3 c = *(i++);
+		//vec3 cm = GetCenterMass(a, b, c);
+		//CreateLocalBuffer();
+		//std::cout << "line drawing" << std::endl;
+		//DrawLine(a, vec3(), b, vec3(), white, white);
+		//DrawLine(b, vec3(), c, vec3(), white, white);
+		//DrawLine(c, vec3(), a, vec3(), white, white);
+
+		//if (vertexNormals != NULL) {
+		//	v_normal = vertexNormals->at(vn_index++);
+		//	DrawLine(a, vec3(), a, v_normal, yellow, yellow);
+		//	v_normal = vertexNormals->at(vn_index++);
+		//	DrawLine(b, vec3(), b, v_normal, yellow, yellow);
+		//	v_normal = vertexNormals->at(vn_index++);
+		//	DrawLine(c, vec3(), c, v_normal, yellow, yellow);
+		//}
+		// ------- end old version ----------
+
+		if (v_normals.size() > 0) {
+			DrawLine(tri_vertices[0], vec3(), tri_vertices[0], v_normals[0], yellow);
+			DrawLine(tri_vertices[1], vec3(), tri_vertices[1], v_normals[1], yellow);
+			DrawLine(tri_vertices[2], vec3(), tri_vertices[2], v_normals[2], yellow);
 		}
 
 		if (faceNormals != NULL) {
 			f_normal = faceNormals->at(fn_index++);
-			DrawLine(cm, vec3(), cm, f_normal, pink, pink);
-		}
-
-		if (vertexNormals != NULL) {
-			v_normal = vertexNormals->at(vn_index++);
-			DrawLine(a, vec3(), a, v_normal, yellow, yellow);
-			v_normal = vertexNormals->at(vn_index++);
-			DrawLine(b, vec3(), b, v_normal, yellow, yellow);
-			v_normal = vertexNormals->at(vn_index++);
-			DrawLine(c, vec3(), c, v_normal, yellow, yellow);
+			DrawLine(cm, vec3(), cm, f_normal, pink);
 		}
 	}
 }
 
 void Renderer::DrawSquare(const vec3& p1, const vec3& p2, const vec3& p3, const vec3& p4, const vec3& color)
 {
-	DrawLine(p1, vec3(), p2, vec3(), color, color);
-	DrawLine(p2, vec3(), p3, vec3(), color, color);
-	DrawLine(p3, vec3(), p4, vec3(), color, color);
-	DrawLine(p4, vec3(), p1, vec3(), color, color);
+	DrawLine(p1, vec3(), p2, vec3(), color);
+	DrawLine(p2, vec3(), p3, vec3(), color);
+	DrawLine(p3, vec3(), p4, vec3(), color);
+	DrawLine(p4, vec3(), p1, vec3(), color);
 }
 
 void Renderer::DrawBox(const vec3& minValues, const vec3& maxValues)
@@ -808,7 +834,7 @@ void Renderer::SetDemoBuffer()
 	DrawLine(t, t2, vec3(0, abs(i), abs(i*i)));
 	}*/
 
-	DrawLine(vec3(3.05f, 0.35, 0.05), vec3(), vec3(-3.30f, 7.70f, 0.9f), vec3(), vec3(1, 0, 0.5f), vec3(0, 1, 0.5f));
+	DrawLine(vec3(3.05f, 0.35, 0.05), vec3(), vec3(-3.30f, 7.70f, 0.9f), vec3(), vec3(1, 0, 0.5f));
 	//CreateLocalBuffer();
 	vector<vec3> vertices0;
 	vertices0.push_back(vec3(-3.2f, 7.2f, 9));

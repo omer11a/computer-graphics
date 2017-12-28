@@ -119,6 +119,7 @@
     <ClInclude Include="InputDialog.h" />
     <ClInclude Include="Light.h" />
     <ClInclude Include="mat.h" />
+    <ClInclude Include="Material.h" />
     <ClInclude Include="MeshModel.h" />
     <ClInclude Include="Polygon.h" />
     <ClInclude Include="Renderer.h" />

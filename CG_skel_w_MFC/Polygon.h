@@ -4,7 +4,7 @@
 #include "MeshModel.h"
 using namespace std;
 
-class Polygon {
+class ConvexPolygon {
 	vector<vec4> vertices;
 	vector<Material> materials;
 	vector<vec3> normals;
@@ -33,8 +33,13 @@ class Polygon {
 	) const;
 
 public:
-	Polygon(
+	ConvexPolygon(
 		const vector<vec4> & vertices,
+		const vector<Material>& materials,
+		const vector<vec3>& normals
+	);
+	ConvexPolygon(
+		const vector<vec3> & vertices,
 		const vector<Material>& materials,
 		const vector<vec3>& normals
 	);
@@ -49,7 +54,7 @@ public:
 		Compare comp
 	);
 
-	void getTriangles(vector<Polygon *>& triangles) const;
+	void getTriangles(vector<ConvexPolygon *>& triangles) const;
 	const vector<vec4>& getVertices() const;
 	const vector<vec3>& getNormals() const;
 	const vector<Material>& getMaterials() const;

@@ -3,12 +3,12 @@
 #include <functional>
 
 template<class T>
-T Polygon::interpolate(T v1, T v2, float t) const {
+T ConvexPolygon::interpolate(T v1, T v2, float t) const {
 	return (1 - t) * v1 + t * v2;
 }
 
 template<class Compare>
-bool Polygon::clip(
+bool ConvexPolygon::clip(
 	const vec4& v1,
 	const vec4& v2,
 	int coordinate,
@@ -46,7 +46,7 @@ bool Polygon::clip(
 	return true;
 }
 
-void Polygon::addInterpolatedFeatures(
+void ConvexPolygon::addInterpolatedFeatures(
 	vector<Material>& interpolatedMaterials,
 	vector<vec3>& interpolatedNormals,
 	int i,
@@ -61,19 +61,19 @@ void Polygon::addInterpolatedFeatures(
 	});
 
 	if (!normals.empty()) {
-		interpolatedNormals.push_back(interpolate(normals[i], normals[j], t));
+		interpolatedNormals.push_back(normalize(interpolate(normals[i], normals[j], t)));
 	}
 }
 
-Polygon::Polygon(
+ConvexPolygon::ConvexPolygon(
 	const vector<vec4> & vertices,
 	const vector<Material>& materials,
-	const vector<vec3>& normals)
-	: vertices(vertices), materials(materials), normals(normals) {
+	const vector<vec3>& normals
+) : vertices(vertices), materials(materials), normals(normals) {
 	int numberOfVertices = vertices.size();
 
 	if (numberOfVertices < 3) {
-		throw invalid_argument("Polygon must have at least 3 vertices");
+		throw invalid_argument("ConvexPolygon must have at least 3 vertices");
 	}
 
 	if (materials.size() != numberOfVertices) {
@@ -85,7 +85,20 @@ Polygon::Polygon(
 	}
 }
 
-void Polygon::transform(
+ConvexPolygon::ConvexPolygon(
+	const vector<vec3> & vertices,
+	const vector<Material>& materials,
+	const vector<vec3>& normals
+) {
+	vector<vec4> vertices4d;
+	for (auto i = vertices.begin(); i != vertices.end(); ++i) {
+		vertices4d.insert(vertices4d.begin(), vec4(*i));
+	}
+
+	ConvexPolygon(vertices4d, materials, normals);
+}
+
+void ConvexPolygon::transform(
 	const mat4& transform,
 	const mat3& normalTransform
 ) {
@@ -94,18 +107,18 @@ void Polygon::transform(
 	}
 
 	for (vector<vec3>::iterator it = normals.begin(); it != normals.end(); ++it) {
-		*it = normalTransform * (*it);
+		*it = normalize(normalTransform * (*it));
 	}
 }
 
-void Polygon::divide() {
+void ConvexPolygon::divide() {
 	for (vector<vec4>::iterator it = vertices.begin(); it != vertices.end(); ++it) {
 		*it = convert4dTo3d(*it);
 	}
 }
 
 template<class Compare>
-void Polygon::clip(
+void ConvexPolygon::clip(
 	int coordinate,
 	float max,
 	Compare comp
@@ -142,7 +155,7 @@ void Polygon::clip(
 	normals = interpolatedNormals;
 }
 
-void Polygon::getTriangles(vector<Polygon *>& triangles) const {
+void ConvexPolygon::getTriangles(vector<ConvexPolygon *>& triangles) const {
 	int count = 0;
 
 	try {
@@ -163,7 +176,7 @@ void Polygon::getTriangles(vector<Polygon *>& triangles) const {
 				triangleNormals.push_back(normals[i + 1]);
 			}
 
-			Polygon * triangle = new Polygon(triangleVertices, triangleMaterials, triangleNormals);
+			ConvexPolygon * triangle = new ConvexPolygon(triangleVertices, triangleMaterials, triangleNormals);
 			try {
 				triangles.push_back(triangle);
 				++count;
@@ -173,21 +186,21 @@ void Polygon::getTriangles(vector<Polygon *>& triangles) const {
 		}
 	} catch (...) {
 		for (int i = 0; i < count; ++i) {
-			Polygon * triangle = triangles.back();
+			ConvexPolygon * triangle = triangles.back();
 			triangles.pop_back();
 			delete triangle;
 		}
 	}
 }
 
-const vector<vec4>& Polygon::getVertices() const {
+const vector<vec4>& ConvexPolygon::getVertices() const {
 	return vertices;
 }
 
-const vector<vec3>& Polygon::getNormals() const {
+const vector<vec3>& ConvexPolygon::getNormals() const {
 	return normals;
 }
 
-const vector<Material>& Polygon::getMaterials() const {
+const vector<Material>& ConvexPolygon::getMaterials() const {
 	return materials;
 }

@@ -237,7 +237,7 @@ void MeshModel::setRandomMaterial() {
 	}
 }
 
-void MeshModel::draw(Renderer * renderer) const {
+void MeshModel::draw(BaseRenderer * renderer) const {
 	if (renderer == NULL) {
 		throw invalid_argument("Renderer is null");
 	}
