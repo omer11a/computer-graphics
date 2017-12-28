@@ -16,7 +16,7 @@ public:
 	virtual void DrawTriangles(const vector<vec3>* vertices, const vector<vec3>* vertexNormals = NULL, const vector<vec3>* faceNormals = NULL);
 	virtual void DrawBox(const vec3& minValues, const vec3& maxValues);
 	virtual void DrawCamera();
-	virtual void DrawLight(const vec3& location);
+	virtual void DrawLight(const vec3& color);
 
 	virtual void SetCameraTransform(const mat4& cTransform);
 	virtual void SetProjection(const mat4& projection);

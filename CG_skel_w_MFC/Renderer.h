@@ -68,7 +68,7 @@ public:
 	void DrawSquare(const vec3& p1, const vec3& p2, const vec3& p3, const vec3& p4, const vec3& color);
 	void DrawBox(const vec3& minValues, const vec3& maxValues) override;
 	void DrawCamera() override;
-	void DrawLight(const vec3& location) override;
+	void DrawLight(const vec3& color) override;
 	void SetCameraTransform(const mat4& cTransform) override;
 	void SetProjection(const mat4& projection) override;
 	void SetZRange(float zNear, float zFar) override;
