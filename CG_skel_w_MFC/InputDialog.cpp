@@ -496,15 +496,14 @@ void CPerspectiveDialog::OnPaint()
 // ----------------------
 //    Class CLightDialog
 // ----------------------
-
 vec3 ColorToVec(COLORREF color) {
 
-	return vec3(color & 0xFF, (color & 0xFF00) >> 8, (color & 0xFF0000) >> 16);
+	return vec3(color & 0xFF, (color & 0xFF00) >> 8, (color & 0xFF0000) >> 16) / 255;
 }
 
 COLORREF VecToColor(const vec3& color) {
 
-	return (color.x) + (static_cast<int>(color.y) << 8) + (static_cast<int>(color.z) << 16);
+	return ((color.x) + (static_cast<int>(color.y) << 8) + (static_cast<int>(color.z) << 16)) * 255;
 }
 
 void CLightDialog::choose_color() {

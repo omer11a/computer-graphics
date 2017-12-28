@@ -21,7 +21,7 @@ vec3 DirectShader::computeColor(
 		}
 	}
 
-	return minvec(color, 255);
+	return minvec(color, 1);
 }
 
 DirectShader::DirectShader() : Shader(), lights(NULL), transform()

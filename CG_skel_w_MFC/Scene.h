@@ -75,7 +75,7 @@ public:
 	explicit Scene(
 		Renderer * renderer,
 		const vec3& eye = vec3(),
-		const AmbientLight& ambientLight = AmbientLight(vec3(255, 255, 255))
+		const AmbientLight& ambientLight = AmbientLight(vec3(1))
 	);
 	~Scene();
 	void loadOBJModel(string fileName);

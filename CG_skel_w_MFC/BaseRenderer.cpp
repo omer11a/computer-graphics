@@ -1,5 +1,4 @@
 #pragma once
-
 #include "stdafx.h"
 #include "BaseRenderer.h"
 
@@ -13,55 +12,28 @@ BaseRenderer::BaseRenderer(int width, int height) : m_width(width), m_height(hei
 	min_size = min(m_width, m_height) * 0.5;
 }
 
-void BaseRenderer::SetObjectMatrices(const mat4 & oTransform, const mat3 & nTransform)
-{
+void BaseRenderer::SetObjectMatrices(const mat4 & oTransform, const mat3 & nTransform) { }
 
-}
+void BaseRenderer::UpdateBuffers(int width, int height) { }
 
-void BaseRenderer::UpdateBuffers(int width, int height)
-{
-}
+void BaseRenderer::SwapBuffers() { }
 
-void BaseRenderer::SwapBuffers()
-{
-}
+void BaseRenderer::ClearColorBuffer() { }
 
-void BaseRenderer::ClearColorBuffer()
-{
-}
+void BaseRenderer::ClearDepthBuffer() { }
 
-void BaseRenderer::ClearDepthBuffer()
-{
-}
+void BaseRenderer::SetDemoBuffer() { }
 
-void BaseRenderer::SetDemoBuffer()
-{
-}
+void BaseRenderer::DrawTriangles(const vector<vec3>* vertices, const vector<vec3>* vertexNormals, const vector<vec3>* faceNormals) { }
 
-void BaseRenderer::DrawTriangles(const vector<vec3>* vertices, const vector<vec3>* vertexNormals, const vector<vec3>* faceNormals)
-{
-}
+void BaseRenderer::DrawBox(const vec3 & minValues, const vec3 & maxValues) { }
 
-void BaseRenderer::DrawBox(const vec3 & minValues, const vec3 & maxValues)
-{
-}
+void BaseRenderer::DrawCamera() { }
 
-void BaseRenderer::DrawCamera()
-{
-}
+void BaseRenderer::DrawLight(const vec3 & location) { }
 
-void BaseRenderer::DrawLight(const vec3 & location)
-{
-}
+void BaseRenderer::SetCameraTransform(const mat4 & cTransform) { }
 
-void BaseRenderer::SetCameraTransform(const mat4 & cTransform)
-{
-}
+void BaseRenderer::SetProjection(const mat4 & projection) { }
 
-void BaseRenderer::SetProjection(const mat4 & projection)
-{
-}
-
-void BaseRenderer::SetZRange(float zNear, float zFar)
-{
-}
+void BaseRenderer::SetZRange(float zNear, float zFar) { }

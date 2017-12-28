@@ -24,9 +24,11 @@ l		->	set camera look at
 P/p		->	set camera perspective-Horizontal / perspective-Vertical
 o/f		->	set camera orthogonal / frustum
 Z/z		->	set zoom in/out
-s		->	set camera visibility
 
-TAB		->	move between models
+*		->	change active light
+s		->	set camera/light visibility
+
+TAB		->	change active models
 b		->	switch model bounding box visibility
 n		->	switch model normal visibility
 N		->	switch model face normal visibility
@@ -80,7 +82,7 @@ camera changes: lookat
 #define SETTING_ZOOM	4
 
 typedef struct configuration_s {
-	unsigned char mode;	// 0 - none, 'm' - model, 'w' - world, 'v' - view
+	unsigned char mode;	// 0 - none, 'm' - model, 'w' - world, 'v' - view, 'c' - camera, 
 	vec3 scaling;	// must be greater or equal to 1	(decreasing scaling is 1/scaling)
 	vec3 translating;
 	vec3 rotating;
@@ -101,7 +103,7 @@ unsigned char transformation_mode;
 
 void display(void)
 {
-//Call the scene and ask it to draw itself
+	//Call the scene and ask it to draw itself
 	redraw();
 }
 
@@ -122,7 +124,11 @@ void keyboard(unsigned char key, int x, int y)
 		break;
 	case 'a': // secret conf
 	case 'A':
-		fileMenu((key == 'a') ? FILE_OPEN : ADD_CAMERA);
+		if (key == 'a') {
+			modelMenu(NEW_ITEM);
+		} else {
+			fileMenu(ADD_CAMERA);
+		}
 		break;
 	case 127:
 		// clear screen
@@ -132,6 +138,9 @@ void keyboard(unsigned char key, int x, int y)
 		break;
 	case '\t':
 		change_active_model();
+		break;
+	case '*':
+		change_active_light();
 		break;
 
 	// camera operations
@@ -213,7 +222,7 @@ void keyboard(unsigned char key, int x, int y)
 	case 'n':
 		if (scene->getNumberOfModels() > 0) {
 			scene->getActiveModel()->switchVertexNormalsVisibility();
-			cout << "switched face normals visibility of active model." << endl;
+			cout << "switched vertex normals visibility of active model." << endl;
 			should_redraw = true;
 		}
 		break;
@@ -289,9 +298,11 @@ void help()
 		"* P/p\t\tset camera perspective - Horizontal / perspective - Vertical\n"
 		"* o/f\t\tset camera orthogonal / frustum\n"
 		"* Z/z\t\tset zoom in / out\n"
-		"* s\t\tset camera visibility"
 		"\n"
-		"* TAB\t\tmove between models\n"
+		"* *\t\tchange active light"
+		"* s\t\tset camera/light visibility"
+		"\n"
+		"* TAB\t\tchange active model\n"
 		"* b\t\tswitch model bounding box visibility\n"
 		"* n\t\tswitch model normal visibility\n"
 		"* N\t\tswitch model face normal visibility\n"
@@ -575,7 +586,7 @@ void change_active_model()
 		CValueDialog dlg("Active Model", "Model ID:", max_id - 1);
 		if (dlg.DoModal() == IDOK) {
 			int v = dlg.GetValue();
-			if ((v < 0) || (v >= scene->getNumberOfModels())) {
+			if ((v < 0) || (v >= max_id)) {
 				cout << "invalid model ID #" << v << endl;
 			} else {
 				scene->setActiveModel(v);
@@ -583,9 +594,29 @@ void change_active_model()
 			}
 		}
 	} else {
-		cout << "no model in system" << endl;
+		cout << "no models in system" << endl;
 	}
 }
+
+void change_active_light()
+{
+	int max_id = scene->getNumberOfLights();
+	if (max_id > 0) {
+		CValueDialog dlg("Active Light", "Light ID:", max_id - 1);
+		if (dlg.DoModal() == IDOK) {
+			int v = dlg.GetValue();
+			if ((v < 0) || (v >= max_id)) {
+				cout << "invalid light ID #" << v << endl;
+			} else {
+				scene->setActiveLight(v);
+				cout << "active light changed to #" << v << endl;
+			}
+		}
+	} else {
+		cout << "no lights in system" << endl;
+	}
+}
+
 
 bool scale(unsigned char key)
 {

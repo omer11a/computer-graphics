@@ -172,7 +172,7 @@ MeshModel::MeshModel(string fileName) :
 	allowVertexNormals(false), allowFaceNormals(false), allowBoundingBox(false)
 {
 	loadFile(fileName);
-	setUniformMaterial({ 255, 255, 255, 1 });
+	setUniformMaterial({ 1, 1, 1, 1 });
 }
 
 void MeshModel::transformInModel(const mat4 & transform) {
@@ -229,9 +229,9 @@ void MeshModel::setRandomMaterial() {
 	materials.clear();
 	for (int i = 0; i < vertexPositions.size(); ++i) {
 		materials.push_back({
-			vec3(uni(rng), uni(rng), uni(rng)),
-			vec3(uni(rng), uni(rng), uni(rng)),
-			vec3(uni(rng), uni(rng), uni(rng)),
+			vec3(uni(rng), uni(rng), uni(rng)) / 255,
+			vec3(uni(rng), uni(rng), uni(rng)) / 255,
+			vec3(uni(rng), uni(rng), uni(rng)) / 255,
 			(float) uni(rng)
 		});
 	}
@@ -302,5 +302,5 @@ PrimMeshModel::PrimMeshModel() : MeshModel()
 		}
 	}
 
-	setUniformMaterial({ 255, 255, 255, 1 });
+	setUniformMaterial({ 1, 1, 1, 1 });
 }

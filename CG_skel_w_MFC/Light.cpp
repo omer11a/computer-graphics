@@ -139,7 +139,7 @@ void PointLightSource::draw(BaseRenderer * renderer) const
 		throw invalid_argument("Renderer is null");
 	}
 
-	renderer->DrawLight(transformedPosition);
+	renderer->DrawLight(intensity);
 
 }
 
