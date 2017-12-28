@@ -67,7 +67,7 @@ ConvexPolygon::ConvexPolygon(
 	const vector<vec3>& normals
 ) {
 	vector<vec4> vertices4d;
-	for (unsigned int i = vertices.begin(); i != vertices.end(); ++i) {
+	for (auto i = vertices.begin(); i != vertices.end(); ++i) {
 		vertices4d.insert(vertices4d.begin(), vec4(*i));
 	}
 
@@ -95,6 +95,10 @@ void ConvexPolygon::divide() {
 
 void ConvexPolygon::getTriangles(vector<ConvexPolygon *>& triangles) const {
 	int count = 0;
+
+	if (vertices.empty()) {
+		return;
+	}
 
 	try {
 		for (unsigned int i = 1; i < vertices.size() - 1; ++i) {

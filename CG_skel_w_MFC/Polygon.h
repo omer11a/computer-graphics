@@ -86,7 +86,7 @@ public:
 		int coordinate,
 		float max,
 		Compare comp,
-		ConvexPolygon * twin
+		ConvexPolygon * twin = NULL
 	) {
 		verifyTwin(twin);
 
@@ -105,7 +105,7 @@ public:
 				}
 			}
 
-			float t = (end[coordinate] == vertices[j][coordinate]) ? 1 : t;
+			t = (end[coordinate] == vertices[j][coordinate]) ? 1 : t;
 			addInterpolatedFeatures(i, j, t);
 			if (twin != NULL) {
 				twin->addInterpolatedFeatures(i, j, t);
