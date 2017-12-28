@@ -2,55 +2,11 @@
 #include "Polygon.h"
 #include <functional>
 
-template<class T>
-T ConvexPolygon::interpolate(T v1, T v2, float t) const {
-	return (1 - t) * v1 + t * v2;
-}
-
 bool ConvexPolygon::verifyTwin(ConvexPolygon * twin) const {
 	return (
 		(twin == NULL) ||
 		((twin->vertices.size() == vertices.size()) && (twin->normals.empty() == normals.empty()))
 	);
-}
-
-template<class Compare>
-bool ConvexPolygon::clip(
-	const vec4& v1,
-	const vec4& v2,
-	int coordinate,
-	float max,
-	Compare comp,
-	vec4& start,
-	vec4& end,
-	float t
-) const {
-	start = v1;
-	end = v2;
-	float y1 = v1[coordinate];
-	float y2 = v2[coordinate];
-	float dy = y2 - y1;
-	if (dy == 0) {
-		return comp(y1, max);
-	}
-
-	t = (max - y1) / dy;
-	vec4& p = v1 + (v2 - v1) * t;
-	float y3 = p[coordinate];
-	bool y12 = comp(y1, y2);
-	bool y13 = comp(y1, y3);
-	bool y23 = comp(y2, y3);
-	if ((comp(y1, y3)) && (comp(y2, y3))) {
-		return true;
-	}
-
-	if (comp(y1, y2)) {
-		end = p;
-	} else {
-		start = p;
-	}
-
-	return true;
 }
 
 void ConvexPolygon::clearInterpolatedFeatures() {
@@ -127,43 +83,6 @@ void ConvexPolygon::transform(
 void ConvexPolygon::divide() {
 	for (vector<vec4>::iterator it = vertices.begin(); it != vertices.end(); ++it) {
 		*it = convert4dTo3d(*it);
-	}
-}
-
-template<class Compare>
-void ConvexPolygon::clip(
-	int coordinate,
-	float max,
-	Compare comp,
-	ConvexPolygon * twin
-) {
-	verifyTwin(twin);
-
-	for (unsigned int i = 0; i < vertices.size(); ++i) {
-		int j = (i + 1) % vertices.size();
-
-		vec4 start;
-		vec4 end;
-		float t;
-		clip(vertices[i], vertices[j], coordinate, max, comp, start, end, t);
-
-		if (start[coordinate] != vertices[i][coordinate]) {
-			addInterpolatedFeatures(i, j, t);
-			if (twin != NULL) {
-				twin->addInterpolatedFeatures(i, j, t);
-			}
-		}
-
-		float t = (end[coordinate] == vertices[j][coordinate]) ? 1 : t;
-		addInterpolatedFeatures(i, j, t);
-		if (twin != NULL) {
-			twin->addInterpolatedFeatures(i, j, t);
-		}
-	}
-
-	setInterpolatedFeatures();
-	if (twin != NULL) {
-		twin->setInterpolatedFeatures();
 	}
 }
 
