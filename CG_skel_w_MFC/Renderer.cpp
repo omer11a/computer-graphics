@@ -211,7 +211,7 @@ bool Renderer::PlotPixel(const int x, const int y, const float z, const vec3& co
 		return false;
 	}
 
-	if (z > m_zBuffer[y * m_width + x]) {
+	if (z < m_zBuffer[y * m_width + x]) {
 		m_outBuffer[INDEX(m_width, x, y, 0)] = color.x;
 		m_outBuffer[INDEX(m_width, x, y, 1)] = color.y;
 		m_outBuffer[INDEX(m_width, x, y, 2)] = color.z;
@@ -956,11 +956,14 @@ void Renderer::ClearColorBuffer()
 {
 	vec3 black(0);
 
-	for (int x = 0; x < m_width; ++x) {
-		for (int y = 0; y < m_height; ++y) {
-			PlotPixel(x, y, INFINITY, black);
-		}
+	for (int i = 0; i < m_width * m_height * 3; ++i) {
+		m_outBuffer[i] = 0;
 	}
+	//for (int x = 0; x < m_width; ++x) {
+	//	for (int y = 0; y < m_height; ++y) {
+	//		PlotPixel(x, y, INFINITY, black);
+	//	}
+	//}
 }
 
 void Renderer::ClearDepthBuffer()
@@ -968,7 +971,7 @@ void Renderer::ClearDepthBuffer()
 	if (m_zBuffer != NULL) {
 		for (int x = 0; x < m_width; ++x) {
 			for (int y = 0; y < m_height; ++y) {
-				m_zBuffer[m_width * y + x] = -INFINITY;//can be zFar
+				m_zBuffer[m_width * y + x] = INFINITY;//can be zFar
 			}
 		}
 	}
