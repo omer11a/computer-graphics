@@ -2,6 +2,22 @@
 #include "Polygon.h"
 #include <functional>
 
+void ConvexPolygon::verifyThis() const {
+	int numberOfVertices = vertices.size();
+
+	if (numberOfVertices < 3) {
+		throw invalid_argument("ConvexPolygon must have at least 3 vertices");
+	}
+
+	if (materials.size() != numberOfVertices) {
+		throw invalid_argument("Missing materials");
+	}
+
+	if ((!normals.empty()) && (normals.size() != numberOfVertices)) {
+		throw invalid_argument("Missing normals");
+	}
+}
+
 bool ConvexPolygon::verifyTwin(ConvexPolygon * twin) const {
 	return (
 		(twin == NULL) ||
@@ -46,32 +62,22 @@ ConvexPolygon::ConvexPolygon(
 	vertices(vertices), materials(materials), normals(normals),
 	interpolatedVertices(), interpolatedMaterials(), interpolatedNormals()
 {
-	int numberOfVertices = vertices.size();
-
-	if (numberOfVertices < 3) {
-		throw invalid_argument("ConvexPolygon must have at least 3 vertices");
-	}
-
-	if (materials.size() != numberOfVertices) {
-		throw invalid_argument("Missing materials");
-	}
-
-	if ((!normals.empty()) && (normals.size() != numberOfVertices)) {
-		throw invalid_argument("Missing normals");
-	}
+	verifyThis();
 }
 
 ConvexPolygon::ConvexPolygon(
 	const vector<vec3> & vertices,
 	const vector<Material>& materials,
 	const vector<vec3>& normals
-) {
-	vector<vec4> vertices4d;
+) :
+	vertices(), materials(materials), normals(normals),
+	interpolatedVertices(), interpolatedMaterials(), interpolatedNormals()
+{
 	for (auto i = vertices.begin(); i != vertices.end(); ++i) {
-		vertices4d.insert(vertices4d.begin(), vec4(*i));
+		this->vertices.insert(this->vertices.begin(), vec4(*i));
 	}
 
-	ConvexPolygon(vertices4d, materials, normals);
+	verifyThis();
 }
 
 void ConvexPolygon::transform(
