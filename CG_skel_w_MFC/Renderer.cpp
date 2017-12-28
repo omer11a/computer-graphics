@@ -380,9 +380,9 @@ void Renderer::PaintTriangle(const vec3& p1, const vec3& p2, const vec3& p3, con
 void Renderer::PaintTriangle(const vector<vec3> * vertices, const vector<Material> * materials, const vector<vec3>* vertexNormals)
 {
 	ConvexPolygon p(*vertices, *materials, *vertexNormals);
-	p.transform(m_oTransform, m_nTransform);
-	p.clip(3, -zNear, std::less<float>());
-	p.clip(3, -zFar, std::greater<float>());
+	p.transform(m_cTransform * m_oTransform, m_nTransform);
+	p.clip(2, -zNear, std::less<float>());
+	p.clip(2, -zFar, std::greater<float>());
 	
 	// TODO: duplicate the polygon to store the camera world coordinates.
 	
@@ -390,11 +390,11 @@ void Renderer::PaintTriangle(const vector<vec3> * vertices, const vector<Materia
 	p.divide();
 
 	// x coordinate
-	p.clip(1, 1, less<float>());
-	p.clip(1, -1, greater<float>());
+	p.clip(0, 1, less<float>());
+	p.clip(0, -1, greater<float>());
 	// y coordinate
-	p.clip(2, 1, std::less<float>());
-	p.clip(2, -1, greater<float>());
+	p.clip(1, 1, std::less<float>());
+	p.clip(1, -1, greater<float>());
 
 	vector<ConvexPolygon*> triangles;
 	p.getTriangles(triangles);
@@ -494,7 +494,7 @@ void Renderer::PaintTriangleFloodFill(const vec3& p1, const vec3& p2, const vec3
 	vector<vec3> q;
 
 	//	4. Set the color of node to replacement - color.
-	vec3 newP = convertToScreen(newP);
+	vec3 newP = p;
 	vec3 c(1);
 	PlotPixel(newP.x, newP.y, newP.z, c);
 

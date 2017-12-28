@@ -12,6 +12,8 @@ class ConvexPolygon {
 	vector<vec3> interpolatedNormals;
 	vector<Material> interpolatedMaterials;
 
+	void verifyThis() const;
+
 	template<class T>
 	T interpolate(T v1, T v2, float t) const {
 		return (1 - t) * v1 + t * v2;
@@ -28,10 +30,12 @@ class ConvexPolygon {
 		Compare comp,
 		vec4& start,
 		vec4& end,
-		float t
+		float& t
 	) const {
 		start = v1;
 		end = v2;
+		t = 0;
+
 		float y1 = v1[coordinate];
 		float y2 = v2[coordinate];
 		float dy = y2 - y1;
@@ -42,17 +46,18 @@ class ConvexPolygon {
 		t = (max - y1) / dy;
 		vec4& p = v1 + (v2 - v1) * t;
 		float y3 = p[coordinate];
-		bool y12 = comp(y1, y2);
-		bool y13 = comp(y1, y3);
-		bool y23 = comp(y2, y3);
+
 		if ((comp(y1, y3)) && (comp(y2, y3))) {
 			return true;
 		}
 
+		if ((t < 0) || (t > 1)) {
+			return false;
+		}
+
 		if (comp(y1, y2)) {
 			end = p;
-		}
-		else {
+		} else {
 			start = p;
 		}
 
@@ -96,7 +101,9 @@ public:
 			vec4 start;
 			vec4 end;
 			float t;
-			clip(vertices[i], vertices[j], coordinate, max, comp, start, end, t);
+			if (!clip(vertices[i], vertices[j], coordinate, max, comp, start, end, t)) {
+				continue;
+			}
 
 			if (start[coordinate] != vertices[i][coordinate]) {
 				addInterpolatedFeatures(i, j, t);
