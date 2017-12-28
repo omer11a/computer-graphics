@@ -72,7 +72,12 @@ public:
 		const vector<vec3>& normals
 	);
 
-	void transform(const mat4& transform);
+	ConvexPolygon(
+		const vector<vec3> & vertices,
+		const vector<Material>& materials,
+		const vector<vec3>& normals
+	);
+
 	void transform(const mat4& transform, const mat3& normalTransform = mat3());
 	void divide();
 

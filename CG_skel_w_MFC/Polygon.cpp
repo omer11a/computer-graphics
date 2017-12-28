@@ -26,7 +26,7 @@ void ConvexPolygon::addInterpolatedFeatures(int i, int j, float t) {
 	});
 
 	if (!normals.empty()) {
-		interpolatedNormals.push_back(interpolate(normals[i], normals[j], t));
+		interpolatedNormals.push_back(normalize(interpolate(normals[i], normals[j], t)));
 	}
 }
 
@@ -61,10 +61,17 @@ ConvexPolygon::ConvexPolygon(
 	}
 }
 
-void ConvexPolygon::transform(const mat4& transform) {
-	for (vector<vec4>::iterator it = vertices.begin(); it != vertices.end(); ++it) {
-		*it = transform * (*it);
+ConvexPolygon::ConvexPolygon(
+	const vector<vec3> & vertices,
+	const vector<Material>& materials,
+	const vector<vec3>& normals
+) {
+	vector<vec4> vertices4d;
+	for (unsigned int i = vertices.begin(); i != vertices.end(); ++i) {
+		vertices4d.insert(vertices4d.begin(), vec4(*i));
 	}
+
+	ConvexPolygon(vertices4d, materials, normals);
 }
 
 void ConvexPolygon::transform(
@@ -76,7 +83,7 @@ void ConvexPolygon::transform(
 	}
 
 	for (vector<vec3>::iterator it = normals.begin(); it != normals.end(); ++it) {
-		*it = normalTransform * (*it);
+		*it = normalize(normalTransform * (*it));
 	}
 }
 
