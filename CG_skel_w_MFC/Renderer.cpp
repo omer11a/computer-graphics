@@ -367,7 +367,6 @@ void Renderer::PaintTriangle(const vec3& p1, const vec3& p2, const vec3& p3, con
 	PaintTriangleFloodFill(n_p1, n_p2, n_p3, n_cm);
 }
 
-//void Renderer::PaintTriangle(const vec3 & p1, const vec3 & p2, const vec3 & p3, const vec3 & n1, const vec3 & n2, const vec3 & n3)
 void Renderer::PaintTriangle(const vector<vec3> * vertices, const vector<Material> * materials, const vector<vec3>* vertexNormals)
 {
 	ConvexPolygon p(*vertices, *materials, *vertexNormals);
@@ -402,8 +401,8 @@ void Renderer::PaintTriangle(const vector<vec3> * vertices, const vector<Materia
 		DrawLine(c, a);
 
 		vec3 cm = convertToScreen(GetCenterMass(a, b, c));
-		PaintTriangleFloodFill(a, b, c, cm);
-		//PaintTriangleScanLines(a, b, c, vec3(1)); // last is color
+		//PaintTriangleFloodFill(a, b, c, cm);
+		PaintTriangleScanLines(a, b, c, vec3(1)); // last is color
 	}
 	
 	while (!triangles.empty()) {
@@ -941,16 +940,9 @@ void Renderer::SwapBuffers()
 
 void Renderer::ClearColorBuffer()
 {
-	vec3 black(0);
-
 	for (int i = 0; i < m_width * m_height * 3; ++i) {
 		m_outBuffer[i] = 0;
 	}
-	//for (int x = 0; x < m_width; ++x) {
-	//	for (int y = 0; y < m_height; ++y) {
-	//		PlotPixel(x, y, INFINITY, black);
-	//	}
-	//}
 }
 
 void Renderer::ClearDepthBuffer()
