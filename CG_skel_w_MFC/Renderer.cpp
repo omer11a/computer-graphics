@@ -941,16 +941,9 @@ void Renderer::SwapBuffers()
 
 void Renderer::ClearColorBuffer()
 {
-	vec3 black(0);
-
 	for (int i = 0; i < m_width * m_height * 3; ++i) {
 		m_outBuffer[i] = 0;
 	}
-	//for (int x = 0; x < m_width; ++x) {
-	//	for (int y = 0; y < m_height; ++y) {
-	//		PlotPixel(x, y, INFINITY, black);
-	//	}
-	//}
 }
 
 void Renderer::ClearDepthBuffer()
