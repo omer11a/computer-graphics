@@ -372,8 +372,8 @@ void Renderer::PaintTriangle(const vector<vec3> * vertices, const vector<Materia
 {
 	ConvexPolygon p(*vertices, *materials, *vertexNormals);
 	p.transform(m_cTransform * m_oTransform, m_nTransform);
-	p.clip(2, -zNear, std::less<float>());
-	p.clip(2, -zFar, std::greater<float>());
+	p.clip(2, -zNear, std::less_equal<float>());
+	p.clip(2, -zFar, std::greater_equal<float>());
 	
 	// TODO: duplicate the polygon to store the camera world coordinates.
 	
@@ -381,11 +381,11 @@ void Renderer::PaintTriangle(const vector<vec3> * vertices, const vector<Materia
 	p.divide();
 
 	// x coordinate
-	p.clip(0, 1, less<float>());
-	p.clip(0, -1, greater<float>());
+	p.clip(0, 1, less_equal<float>());
+	p.clip(0, -1, greater_equal<float>());
 	// y coordinate
-	p.clip(1, 1, std::less<float>());
-	p.clip(1, -1, greater<float>());
+	p.clip(1, 1, std::less_equal<float>());
+	p.clip(1, -1, greater_equal<float>());
 
 	vector<ConvexPolygon*> triangles;
 	p.getTriangles(triangles);

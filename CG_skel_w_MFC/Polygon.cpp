@@ -130,6 +130,7 @@ void ConvexPolygon::getTriangles(vector<ConvexPolygon *>& triangles) const {
 				++count;
 			} catch (...) {
 				delete triangle;
+				throw;
 			}
 		}
 	} catch (...) {
@@ -138,6 +139,8 @@ void ConvexPolygon::getTriangles(vector<ConvexPolygon *>& triangles) const {
 			triangles.pop_back();
 			delete triangle;
 		}
+
+		throw;
 	}
 }
 
