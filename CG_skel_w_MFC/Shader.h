@@ -5,7 +5,7 @@ using namespace std;
 
 class Shader {
 protected:
-	const int VERTICES_NUMBER = 3;
+	static const int VERTICES_NUMBER = 3;
 
 public:
 	Shader() = default;
@@ -19,7 +19,7 @@ public:
 		const vec3& faceNormal = vec3()
 	) = 0;
 
-	virtual vec3 getColor(const vec3& position) const = 0;
+	virtual vec3 getColor(const vec3& barycentricCoordinates) const = 0;
 };
 
 class DirectShader : public Shader {
@@ -54,28 +54,10 @@ public:
 		const vec3& faceNormal = vec3()
 	) override;
 
-	vec3 getColor(const vec3& position) const override;
+	vec3 getColor(const vec3& barycentricCoordinates) const override;
 };
 
-class InterpolatedShader : public DirectShader {
-	mat3 vertices;
-	float area;
-
-protected:
-	vec3 calculateBarycentricCoordinates(const vec3& position) const;
-
-public:
-	InterpolatedShader();
-
-	void setPolygon(
-		const mat3& vertices,
-		const PolygonMaterial& materials,
-		const mat3& vertexNormals = mat3(),
-		const vec3& faceNormal = vec3()
-	) override;
-};
-
-class GouraudShader : public InterpolatedShader {
+class GouraudShader : public DirectShader {
 	mat3 colorMatrix;
 
 public:
@@ -88,10 +70,11 @@ public:
 		const vec3& faceNormal = vec3()
 	) override;
 
-	vec3 getColor(const vec3& position) const override;
+	vec3 getColor(const vec3& barycentricCoordinates) const override;
 };
 
-class PhongShader : public InterpolatedShader {
+class PhongShader : public DirectShader {
+	mat3 vertexMatrix;
 	mat3 ambientMatrix;
 	mat3 specularMatrix;
 	mat3 diffuseMatrix;
@@ -108,7 +91,7 @@ public:
 		const vec3& faceNormal = vec3()
 	) override;
 
-	vec3 getColor(const vec3& position) const override;
+	vec3 getColor(const vec3& barycentricCoordinates) const override;
 };
 
 class LayeredShader : public Shader {
@@ -132,9 +115,18 @@ public:
 
 class FogShader : public LayeredShader {
 	vec3 fogColor;
+	mat3 vertexMatrix;
 
 public:
 	FogShader(Shader * parent, const vec3& fogColor);
 	~FogShader() = default;
-	vec3 getColor(const vec3& position) const override;
+
+	void setPolygon(
+		const mat3& vertices,
+		const PolygonMaterial& materials,
+		const mat3& vertexNormals = mat3(),
+		const vec3& faceNormal = vec3()
+	) override;
+
+	vec3 getColor(const vec3& barycentricCoordinates) const override;
 };
