@@ -275,6 +275,35 @@ vec3 minvec(const vec3& v, GLfloat s) {
 	return vec3(min(v.x, s), min(v.y, s), min(v.z, s));
 }
 
+inline
+float calculateArea(const vec3& a, const vec3& b, const vec3& c) {
+	return length(cross(b - a, c - a));
+}
+
+inline
+vec3 calculateBarycentricCoordinates(
+	const vec3& a,
+	const vec3& b,
+	const vec3& c,
+	const vec3& p,
+	float areaABC = 0
+) {
+	float areaPBC = calculateArea(p, b, c);
+	float areaPCA = calculateArea(p, c, a);
+	if (areaABC == 0) {
+		areaABC = calculateArea(a, b, c);
+		if (areaABC == 0) {
+			throw std::invalid_argument("Vertices are on the same line");
+		}
+	}
+
+	vec3 result;
+	result.x = areaPBC / areaABC;
+	result.y = areaPCA / areaABC;
+	result.z = 1 - result.x - result.z;
+	return result;
+}
+
 //////////////////////////////////////////////////////////////////////////////
 //
 //  vec4 - 4D vector

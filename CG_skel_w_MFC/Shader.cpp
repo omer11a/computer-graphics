@@ -62,40 +62,11 @@ void FlatShader::setPolygon(
 	color = sum / VERTICES_NUMBER;
 }
 
-vec3 FlatShader::getColor(const vec3& position) const {
+vec3 FlatShader::getColor(const vec3& barycentricCoordinates) const {
 	return color;
 }
 
-vec3 InterpolatedShader::calculateBarycentricCoordinates(const vec3& position) const {
-	float areaPBC = length(cross(vertices[1] - position, vertices[2] - position));
-	float areaPCA = length(cross(vertices[2] - position, vertices[0] - position));
-
-	vec3 result;
-	result.x = areaPBC / area;
-	result.y = areaPCA / area;
-	result.z = 1 - result.x - result.z;
-	return result;
-}
-
-InterpolatedShader::InterpolatedShader() : DirectShader(), vertices(), area(1)
-{}
-
-void InterpolatedShader::setPolygon(
-	const mat3& vertices,
-	const PolygonMaterial& materials,
-	const mat3& vertexNormals,
-	const vec3& faceNormal
-) {
-	float areaABC = length(cross(vertices[1] - vertices[0], vertices[2] - vertices[0]));
-	if (areaABC == 0) {
-		throw invalid_argument("Vertices are on the same line");
-	}
-
-	this->vertices = vertices;
-	this->area = areaABC;
-}
-
-GouraudShader::GouraudShader() : InterpolatedShader(), colorMatrix()
+GouraudShader::GouraudShader() : DirectShader(), colorMatrix()
 {}
 
 void GouraudShader::setPolygon(
@@ -104,8 +75,6 @@ void GouraudShader::setPolygon(
 	const mat3& vertexNormals,
 	const vec3& faceNormal
 ) {
-	InterpolatedShader::setPolygon(vertices, materials, vertexNormals, faceNormal);
-
 	mat3 colors;
 	for (int i = 0; i < 3; ++i) {
 		colors[i] = computeColor(vertices[i], vertexNormals[i], materials[i]);
@@ -114,12 +83,13 @@ void GouraudShader::setPolygon(
 	colorMatrix = transpose(colors);
 }
 
-vec3 GouraudShader::getColor(const vec3& position) const {
-	return colorMatrix * calculateBarycentricCoordinates(position);
+vec3 GouraudShader::getColor(const vec3& barycentricCoordinates) const {
+	return colorMatrix * barycentricCoordinates;
 }
 
 PhongShader::PhongShader() :
-	InterpolatedShader(),
+	DirectShader(),
+	vertexMatrix(),
 	ambientMatrix(), specularMatrix(), diffuseMatrix(), shininessVector(),
 	normalMatrix()
 {}
@@ -130,8 +100,7 @@ void PhongShader::setPolygon(
 	const mat3& vertexNormals,
 	const vec3& faceNormal
 ) {
-	InterpolatedShader::setPolygon(vertices, materials, vertexNormals, faceNormal);
-
+	vertexMatrix = transpose(vertices);
 	ambientMatrix = transpose(mat3(materials[0].ambientReflectance, materials[1].ambientReflectance, materials[2].ambientReflectance));
 	specularMatrix = transpose(mat3(materials[0].specularReflectance, materials[1].specularReflectance, materials[2].specularReflectance));
 	diffuseMatrix = transpose(mat3(materials[0].diffuseReflectance, materials[1].diffuseReflectance, materials[2].diffuseReflectance));
@@ -139,8 +108,9 @@ void PhongShader::setPolygon(
 	normalMatrix = transpose(vertexNormals);
 }
 
-vec3 PhongShader::getColor(const vec3& position) const {
-	vec3 barycentricCoordinates = calculateBarycentricCoordinates(position);
+vec3 PhongShader::getColor(const vec3& barycentricCoordinates) const {
+	vec3 position = vertexMatrix * barycentricCoordinates;
+
 	Material material = {
 		ambientMatrix * barycentricCoordinates,
 		specularMatrix * barycentricCoordinates,
@@ -180,10 +150,21 @@ void LayeredShader::setPolygon(
 }
 
 FogShader::FogShader(Shader * parent, const vec3& fogColor)
-	: LayeredShader(parent), fogColor(fogColor)
+	: LayeredShader(parent), fogColor(fogColor), vertexMatrix()
 {}
 
-vec3 FogShader::getColor(const vec3& position) const {
+void FogShader::setPolygon(
+	const mat3& vertices,
+	const PolygonMaterial& materials,
+	const mat3& vertexNormals,
+	const vec3& faceNormal
+) {
+	LayeredShader::setPolygon(vertices, materials, vertexNormals, faceNormal);
+	vertexMatrix = transpose(vertices);
+}
+
+vec3 FogShader::getColor(const vec3& barycentricCoordinates) const {
+	vec3 position = vertexMatrix * position;
 	vec3 lightColor = parent->getColor(position);
 	float dist = length(position);
 	float be = fabs(position.y) * 0.004;
