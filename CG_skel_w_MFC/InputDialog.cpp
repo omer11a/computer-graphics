@@ -515,19 +515,10 @@ void CLightDialog::choose_color() {
 
 void CLightDialog::radio_pressed() {
 	is_point = point_radio.GetCheck();
-	if (is_point) {
-		locxEdit.EnableWindow(true);
-		locyEdit.EnableWindow(true);
-		loczEdit.EnableWindow(true);
-	} else {
-		locxEdit.EnableWindow(false);
-		locyEdit.EnableWindow(false);
-		loczEdit.EnableWindow(false);
-	}
 }
 
 CLightDialog::CLightDialog(CString title)
-	: CInputDialog(title), l_location(), l_direction(), is_point(true)
+	: CInputDialog(title), coordinates(), is_point(true)
 { }
 
 CLightDialog::~CLightDialog()
@@ -538,14 +529,9 @@ vec3 CLightDialog::GetColor() const
 	return ColorToVec(color);
 }
 
-vec3 CLightDialog::GetLightLocation() const
+vec3 CLightDialog::GetLightCoordinates() const
 {
-	return l_location;
-}
-
-vec3 CLightDialog::GetLightDirection() const
-{
-	return l_direction;
+	return coordinates;
 }
 
 bool CLightDialog::IsPoint() const
@@ -556,12 +542,9 @@ bool CLightDialog::IsPoint() const
 void CLightDialog::DoDataExchange(CDataExchange* pDX)
 {
 	CInputDialog::DoDataExchange(pDX);
-	DDX_Text(pDX, IDC_X_EDIT, l_location.x);
-	DDX_Text(pDX, IDC_Y_EDIT, l_location.y);
-	DDX_Text(pDX, IDC_Z_EDIT, l_location.z);
-	DDX_Text(pDX, IDC_X_EDIT + 50, l_direction.x);
-	DDX_Text(pDX, IDC_Y_EDIT + 50, l_direction.y);
-	DDX_Text(pDX, IDC_Z_EDIT + 50, l_direction.z);
+	DDX_Text(pDX, IDC_X_EDIT, coordinates.x);
+	DDX_Text(pDX, IDC_Y_EDIT, coordinates.y);
+	DDX_Text(pDX, IDC_Z_EDIT, coordinates.z);
 }
 
 // CLightDialog message handlers
@@ -576,34 +559,27 @@ END_MESSAGE_MAP()
 int CLightDialog::OnCreate(LPCREATESTRUCT lpcs)
 {
 	int height = 110;
-	int ssx = 100, sex = 150;
-	int lsx = 300, lex = 350;
+	int lsx = 220, lex = 300;
 
 	point_radio.Create("Point", BS_AUTORADIOBUTTON | WS_CHILD | WS_VISIBLE | WS_TABSTOP,
-		CRect(150, 10, 230, 40), this, IDC_PARALLEL_EDIT);
+		CRect(200, 30, 280, 45), this, IDC_POINT_EDIT);
 	parallel_radio.Create("Parallel", BS_AUTORADIOBUTTON | WS_CHILD | WS_VISIBLE | WS_TABSTOP,
-		CRect(350, 10, 420, 40), this, IDC_POINT_EDIT);
+		CRect(300, 30, 380, 45), this, IDC_PARALLEL_EDIT);
 
-	dircetionxEdit.Create(ES_MULTILINE | WS_CHILD | WS_VISIBLE | WS_TABSTOP | WS_BORDER,
-		CRect(ssx, height, sex, height + 20), this, IDC_X_EDIT + 50);
-	locxEdit.Create(ES_MULTILINE | WS_CHILD | WS_VISIBLE | WS_TABSTOP | WS_BORDER,
+	coordinatesxEdit.Create(ES_MULTILINE | WS_CHILD | WS_VISIBLE | WS_TABSTOP | WS_BORDER,
 		CRect(lsx, height, lex, height + 20), this, IDC_X_EDIT);
 	height += 40;
 
-	dircetionyEdit.Create(ES_MULTILINE | WS_CHILD | WS_VISIBLE | WS_TABSTOP | WS_BORDER,
-		CRect(ssx, height, sex, height + 20), this, IDC_Y_EDIT + 50);
-	locyEdit.Create(ES_MULTILINE | WS_CHILD | WS_VISIBLE | WS_TABSTOP | WS_BORDER,
+	coordinatesyEdit.Create(ES_MULTILINE | WS_CHILD | WS_VISIBLE | WS_TABSTOP | WS_BORDER,
 		CRect(lsx, height, lex, height + 20), this, IDC_Y_EDIT);
 	height += 40;
 
-	dircetionzEdit.Create(ES_MULTILINE | WS_CHILD | WS_VISIBLE | WS_TABSTOP | WS_BORDER,
-		CRect(ssx, height, sex, height + 20), this, IDC_Z_EDIT + 50);
-	loczEdit.Create(ES_MULTILINE | WS_CHILD | WS_VISIBLE | WS_TABSTOP | WS_BORDER,
+	coordinateszEdit.Create(ES_MULTILINE | WS_CHILD | WS_VISIBLE | WS_TABSTOP | WS_BORDER,
 		CRect(lsx, height, lex, height + 20), this, IDC_Z_EDIT);
-	height += 60;
+	height += 50;
 
 	colorEdit.Create("Choose...", BS_PUSHBUTTON | WS_CHILD | WS_VISIBLE | WS_TABSTOP | WS_BORDER,
-		CRect(120, height, 200, height + 20), this, IDC_COLOR_EDIT);
+		CRect(220, height, 300, height + 20), this, IDC_COLOR_EDIT);
 
 	return 0;
 }
@@ -612,36 +588,37 @@ void CLightDialog::OnPaint()
 {
 	CPaintDC dc(this);
 	dc.SetBkMode(TRANSPARENT);
-	int height = 72;
+	int height = 32;
 
-	CRect size_rect(50, height, 150, height + 18);
-	dc.DrawText("Direction:", -1, &size_rect, DT_SINGLELINE | DT_CENTER);
-	CRect loc_rect(250, height, 350, height + 18);
-	dc.DrawText("Location:", -1, &loc_rect, DT_SINGLELINE | DT_CENTER);
-	height += 40;
+	CRect rect(100, height, 250, height + 18);
+	dc.DrawText("Light Type:", -1, &rect, DT_SINGLELINE);
 
-	CRect sizex_rect(50, height, 80, height + 18);
-	dc.DrawText("X:", -1, &sizex_rect, DT_SINGLELINE | DT_RIGHT);
-	CRect locx_rect(250, height, 280, height + 18);
-	dc.DrawText("X:", -1, &locx_rect, DT_SINGLELINE | DT_RIGHT);
-	height += 40;
+	rect.bottom += 50;
+	rect.top += 50;
+	dc.DrawText("Location / Direction:", -1, &rect, DT_SINGLELINE);
+	/*if (is_point) {
+		dc.DrawText("Location:", -1, &rect, DT_SINGLELINE);
+	} else {
+		dc.DrawText("Direction:", -1, &rect, DT_SINGLELINE);
+	}*/
 
-	CRect sizey_rect(50, height, 80, height + 18);
-	dc.DrawText("Y:", -1, &sizey_rect, DT_SINGLELINE | DT_RIGHT);
-	CRect locy_rect(250, height, 280, height + 18);
-	dc.DrawText("Y:", -1, &locy_rect, DT_SINGLELINE | DT_RIGHT);
-	height += 40;
+	rect.bottom += 30;
+	rect.top += 30;
+	dc.DrawText("X:", -1, &rect, DT_SINGLELINE);
 
-	CRect sizez_rect(50, height, 80, height + 18);
-	dc.DrawText("Z:", -1, &sizez_rect, DT_SINGLELINE | DT_RIGHT);
-	CRect locz_rect(250, height, 280, height + 18);
-	dc.DrawText("Z:", -1, &locz_rect, DT_SINGLELINE | DT_RIGHT);
-	height += 60;
+	rect.bottom += 40;
+	rect.top += 40; 
+	dc.DrawText("Y:", -1, &rect, DT_SINGLELINE);
 
-	CRect color_rect(50, height, 100, height + 18);
-	dc.DrawText("Color:", -1, &color_rect, DT_SINGLELINE | DT_RIGHT);
+	rect.bottom += 40;
+	rect.top += 40;
+	dc.DrawText("Z:", -1, &rect, DT_SINGLELINE);
 
-	locxEdit.SetFocus();
+	rect.bottom += 50;
+	rect.top += 50;
+	dc.DrawText("Color:", -1, &rect, DT_SINGLELINE);
+
+	coordinatesxEdit.SetFocus();
 }
 
 // ----------------------

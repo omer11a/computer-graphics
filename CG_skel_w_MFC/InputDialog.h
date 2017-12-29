@@ -219,24 +219,19 @@ public:
 	virtual ~CLightDialog();
 
 	vec3 GetColor() const;
-	vec3 GetLightLocation() const;
-	vec3 GetLightDirection() const;
+	vec3 GetLightCoordinates() const;
 	bool IsPoint() const;
 protected:
 
 	bool is_point;
 	COLORREF color;
-	vec3 l_location;
-	vec3 l_direction;
+	vec3 coordinates;
 
 	CButton point_radio;
 	CButton parallel_radio;
-	CEdit locxEdit;
-	CEdit locyEdit;
-	CEdit loczEdit;
-	CEdit dircetionxEdit;
-	CEdit dircetionyEdit;
-	CEdit dircetionzEdit;
+	CEdit coordinatesxEdit;
+	CEdit coordinatesyEdit;
+	CEdit coordinateszEdit;
 	CButton colorEdit;
 
 	afx_msg void radio_pressed();

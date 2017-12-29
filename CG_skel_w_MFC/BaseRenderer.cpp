@@ -24,7 +24,7 @@ void BaseRenderer::ClearDepthBuffer() { }
 
 void BaseRenderer::SetDemoBuffer() { }
 
-void BaseRenderer::DrawTriangles(const vector<vec3>* vertices, const vector<vec3>* vertexNormals, const vector<vec3>* faceNormals) { }
+void BaseRenderer::DrawTriangles(const vector<vec3>* vertices, const vector<Material>* materials, const vector<vec3>* vertexNormals, const vector<vec3>* faceNormals) { }
 
 void BaseRenderer::DrawBox(const vec3 & minValues, const vec3 & maxValues) { }
 

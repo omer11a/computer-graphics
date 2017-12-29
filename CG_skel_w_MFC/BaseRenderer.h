@@ -3,6 +3,7 @@
 
 #include "vec.h"
 #include "mat.h"
+#include "Material.h"
 
 using namespace std;
 class BaseRenderer {
@@ -13,7 +14,7 @@ public:
 	explicit BaseRenderer();
 	explicit BaseRenderer(int width, int height);
 	
-	virtual void DrawTriangles(const vector<vec3>* vertices, const vector<vec3>* vertexNormals = NULL, const vector<vec3>* faceNormals = NULL);
+	virtual void DrawTriangles(const vector<vec3>* vertices, const vector<Material>* materials, const vector<vec3>* vertexNormals = NULL, const vector<vec3>* faceNormals = NULL);
 	virtual void DrawBox(const vec3& minValues, const vec3& maxValues);
 	virtual void DrawCamera();
 	virtual void DrawLight(const vec3& color);

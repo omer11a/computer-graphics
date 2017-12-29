@@ -63,7 +63,7 @@ public:
 	Renderer(int width, int height);
 	~Renderer(void);
 
-	void DrawTriangles(const vector<vec3>* vertices, const vector<vec3>* vertexNormals = NULL, const vector<vec3>* faceNormals = NULL) override;
+	void DrawTriangles(const vector<vec3>* vertices, const vector<Material>* materials, const vector<vec3>* vertexNormals = NULL, const vector<vec3>* faceNormals = NULL) override;
 	void switchWire(); 
 	void DrawSquare(const vec3& p1, const vec3& p2, const vec3& p3, const vec3& p4, const vec3& color);
 	void DrawBox(const vec3& minValues, const vec3& maxValues) override;

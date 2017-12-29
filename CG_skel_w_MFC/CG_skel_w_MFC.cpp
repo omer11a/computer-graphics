@@ -244,6 +244,7 @@ void keyboard(unsigned char key, int x, int y)
 
 	case '4':
 		scene->addPrimitive(key - '0');
+		cout << "added primitive object " << key << "with model id #" << scene->getNumberOfModels() << endl;
 		should_redraw = true;
 		break;
 	}
@@ -328,14 +329,14 @@ void lightMenu(int id)
 		case NEW_ITEM:
 			if (ldlg.DoModal() == IDOK) {
 				if (ldlg.IsPoint()) {
-					PointLightSource pls(ldlg.GetColor(), ldlg.GetLightLocation());
+					PointLightSource pls(ldlg.GetColor(), ldlg.GetLightCoordinates());
 					scene->addLight(pls);
 					cout << "point light was loaded with ID #" << scene->getNumberOfLights() - 1 << endl;
 					config.is_demo = false;
 					should_redraw = true;
 				} else {
 					// parallel
-					ParallelLightSource pls(ldlg.GetColor(), ldlg.GetLightDirection());
+					ParallelLightSource pls(ldlg.GetColor(), ldlg.GetLightCoordinates());
 					scene->addLight(pls);
 					cout << "parallel light was loaded with ID #" << scene->getNumberOfLights() - 1 << endl;
 					config.is_demo = false;

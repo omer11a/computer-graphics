@@ -169,15 +169,6 @@ vec3 Renderer::convertToScreen(const vec3& p) const {
 	return vec3(round(m_width * 0.5 + min_size * (p.x)), round(m_height * 0.5 + min_size * (p.y)), p.z);
 }
 
-//vec3 Renderer::PixelToPoint(const vec3 & p) const
-//{
-//	static const double min_size = min(m_height, m_width) * 0.5;
-//	float x = (p.x - m_width * 0.5) / min_size;
-//	float y = (p.y - m_height * 0.5) / min_size;
-//	return vec3(x, y, p.z);
-//}
-
-// TODO: check if extra bool is still important...
 bool Renderer::pointToScreen(const vec3& p, const vec3& n, vec3& q, bool should_screen) const
 {
 	vec4 transformed = applyCameraTransformation(p, n);
@@ -211,7 +202,7 @@ bool Renderer::PlotPixel(const int x, const int y, const float z, const vec3& co
 		return false;
 	}
 
-	if (z < m_zBuffer[y * m_width + x]) {
+	if (z > m_zBuffer[y * m_width + x]) {
 		m_outBuffer[INDEX(m_width, x, y, 0)] = color.x;
 		m_outBuffer[INDEX(m_width, x, y, 1)] = color.y;
 		m_outBuffer[INDEX(m_width, x, y, 2)] = color.z;
@@ -412,6 +403,7 @@ void Renderer::PaintTriangle(const vector<vec3> * vertices, const vector<Materia
 
 		vec3 cm = convertToScreen(GetCenterMass(a, b, c));
 		PaintTriangleFloodFill(a, b, c, cm);
+		//PaintTriangleScanLines(a, b, c, vec3(1)); // last is color
 	}
 	
 	while (!triangles.empty()) {
@@ -569,14 +561,9 @@ bool GetIntersectionPoint(const vec3& p1, const vec3& p2, const float y, vec3& p
 
 void Renderer::PaintTriangleScanLines(const vec3& p1, const vec3& p2, const vec3& p3, const vec3& c1)
 {
-	vec3 n_p1, n_p2, n_p3;
-	pointToScreen(p1, vec3(), n_p1, false);
-	pointToScreen(p2, vec3(), n_p2, false);
-	pointToScreen(p3, vec3(), n_p3, false);
-
-	vec3 s_p1 = convertToScreen(n_p1);
-	vec3 s_p2 = convertToScreen(n_p2);
-	vec3 s_p3 = convertToScreen(n_p3);
+	vec3 s_p1 = convertToScreen(p1);
+	vec3 s_p2 = convertToScreen(p2);
+	vec3 s_p3 = convertToScreen(p3);
 	// check all in line
 
 	vec3 top, middle, bottom;
@@ -604,15 +591,15 @@ void Renderer::PaintTriangleScanLines(const vec3& p1, const vec3& p2, const vec3
 		minx = INFINITY;
 		maxx = -INFINITY;
 
-		if (GetIntersectionPoint(n_p1, n_p2, y, q)) {
+		if (GetIntersectionPoint(p1, p2, y, q)) {
 			minx = min(minx, q.x);
 			maxx = max(maxx, q.x);
 		}
-		if (GetIntersectionPoint(n_p2, n_p3, y, q)) {
+		if (GetIntersectionPoint(p2, p3, y, q)) {
 			minx = min(minx, q.x);
 			maxx = max(maxx, q.x);
 		}
-		if (GetIntersectionPoint(n_p1, n_p3, y, q)) {
+		if (GetIntersectionPoint(p1, p3, y, q)) {
 			minx = min(minx, q.x);
 			maxx = max(maxx, q.x);
 		}
@@ -621,22 +608,22 @@ void Renderer::PaintTriangleScanLines(const vec3& p1, const vec3& p2, const vec3
 		maxx = ceil(maxx);
 
 		vec3 minx_camera, maxx_camera;
-		PixelToPoint(n_p1, n_p2, n_p3, vec3(minx, y, 0), minx_camera);
-		PixelToPoint(n_p1, n_p2, n_p3, vec3(maxx, y, 0), maxx_camera);
+		PixelToPoint(p1, p2, p3, vec3(minx, y, 0), minx_camera);
+		PixelToPoint(p1, p2, p3, vec3(maxx, y, 0), maxx_camera);
 
-		/*for (float x = minx; x < maxx; ++x) {
+		for (float x = minx; x <= maxx; ++x) {
 			vec3 newP;
 			if ((!m_paintBuffer[(int)(y * m_width + x)]) &&
 				(PixelToPoint(p1, p2, p3, vec3(x, y, 0), newP))) {
 				PlotPixel(x, y, newP.z, c1);
 			}
 
-		}*/
+		}
 		//DrawLine(p1, vec3(), p2, vec3(), vec3(1), vec3(1));
 	}
 }
 
-void Renderer::DrawTriangles(const vector<vec3>* vertices, const vector<vec3>* vertexNormals, const vector<vec3>* faceNormals)
+void Renderer::DrawTriangles(const vector<vec3>* vertices, const vector<Material>* materials, const vector<vec3>* vertexNormals, const vector<vec3>* faceNormals)
 {
 	vec3 white(1);
 	vec3 yellow(1, 1, 0);
@@ -819,7 +806,7 @@ void Renderer::SetDemoBuffer()
 	vertices0.push_back(vec3(-3.2f, 7.2f, 9));
 	vertices0.push_back(vec3(5.8f, 7.7f, 7));
 	vertices0.push_back(vec3(0.5f, 5.6f, 8));
-	this->DrawTriangles(&vertices0);
+	//DrawTriangles(&vertices);
 
 	vector<vec3> vertices;
 	vertices.push_back(vec3(0.2f, 0.2f, 20));
@@ -971,7 +958,7 @@ void Renderer::ClearDepthBuffer()
 	if (m_zBuffer != NULL) {
 		for (int x = 0; x < m_width; ++x) {
 			for (int y = 0; y < m_height; ++y) {
-				m_zBuffer[m_width * y + x] = INFINITY;//can be zFar
+				m_zBuffer[m_width * y + x] = -INFINITY;//can be zFar
 			}
 		}
 	}
