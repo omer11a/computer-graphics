@@ -10,13 +10,13 @@
 #define INDEX(width,x,y,c) (x+y*width)*3+c
 
 Renderer::Renderer() : BaseRenderer(512, 512), m_zBuffer(NULL),
-m_cTransform(), m_projection(), m_oTransform(), m_nTransform(), m_camera_multiply(), is_wire_mode(false)
+m_cTransform(), m_projection(), m_oTransform(), m_nTransform(), m_camera_multiply(), shader(NULL), is_wire_mode(false)
 {
 	InitOpenGLRendering();
 	CreateBuffers(512, 512);
 }
-Renderer::Renderer(int width, int height) : BaseRenderer(width, height), m_zBuffer(NULL),
-m_cTransform(), m_projection(), m_oTransform(), m_nTransform(), is_wire_mode(false)
+Renderer::Renderer(int width, int height, Shader * shader) : BaseRenderer(width, height), m_zBuffer(NULL),
+m_cTransform(), m_projection(), m_oTransform(), m_nTransform(), shader(shader), is_wire_mode(false)
 {
 	InitOpenGLRendering();
 	CreateBuffers(width, height);
@@ -367,49 +367,31 @@ void Renderer::PaintTriangle(const vec3& p1, const vec3& p2, const vec3& p3, con
 	PaintTriangleFloodFill(n_p1, n_p2, n_p3, n_cm);
 }
 
-void Renderer::PaintTriangle(const vector<vec3> * vertices, const vector<Material> * materials, const vector<vec3>* vertexNormals)
-{
-	ConvexPolygon p(*vertices, *materials, *vertexNormals);
-	p.transform(m_cTransform * m_oTransform, m_nTransform);
-	p.clip(2, -zNear, std::less_equal<float>());
-	p.clip(2, -zFar, std::greater_equal<float>());
-	
-	// TODO: duplicate the polygon to store the camera world coordinates.
-	
-	p.transform(m_projection);
-	p.divide();
+void Renderer::SetPolygonToShader(const ConvexPolygon * shader_polygon, const vec3& f_normal) {
+	vector<vec4> tri_vertex = shader_polygon->getVertices();
+	mat3 vertex(convert4dTo3d(tri_vertex[0]),
+		convert4dTo3d(tri_vertex[1]),
+		convert4dTo3d(tri_vertex[2]));
 
-	// x coordinate
-	p.clip(0, 1, less_equal<float>());
-	p.clip(0, -1, greater_equal<float>());
-	// y coordinate
-	p.clip(1, 1, std::less_equal<float>());
-	p.clip(1, -1, greater_equal<float>());
-
-	vector<ConvexPolygon*> triangles;
-	p.getTriangles(triangles);
-
-	for (auto i = triangles.begin(); i != triangles.end(); ++i) {
-		vector<vec4> tri_vertex = (*i)->getVertices();
-		vec3 a = convert4dTo3d(tri_vertex[0]);
-		vec3 b = convert4dTo3d(tri_vertex[1]);
-		vec3 c = convert4dTo3d(tri_vertex[2]);
-
-		CreateLocalBuffer();
-		DrawLine(a, b);
-		DrawLine(b, c);
-		DrawLine(c, a);
-
-		vec3 cm = convertToScreen(GetCenterMass(a, b, c));
-		//PaintTriangleFloodFill(a, b, c, cm);
-		PaintTriangleScanLines(a, b, c, vec3(1)); // last is color
+	vector<vec3> tri_normals = shader_polygon->getNormals();
+	mat3 normals(0);
+	if (tri_normals.size() != 0) {
+		normals = mat3(tri_normals[0],
+			tri_normals[1],
+			tri_normals[2]);
 	}
-	
-	while (!triangles.empty()) {
-		ConvexPolygon * polygon = triangles.back();
-		triangles.pop_back();
-		delete polygon;
-	}
+
+	vector<Material> tri_materials = shader_polygon->getMaterials();
+	PolygonMaterial pm = {tri_materials[0],
+		tri_materials[1],
+		tri_materials[2]
+	};
+	shader->setPolygon(vertex, pm, normals, f_normal);
+}
+
+vec3 Renderer::CalculatePointColor(const vec3& p1, const vec3& p2, const vec3& p3, const float abc_area, const vec3& p) {
+	vec3 b_c = calculateBarycentricCoordinates(p1, p2, p3, p, abc_area);
+	return shader->getColor(b_c);
 }
 
 ///<summary>
@@ -462,7 +444,7 @@ bool Renderer::PixelToPoint(const vec3& p1, const vec3& p2, const vec3& p3, cons
 	newP = p1 + (p4 - p1) / tk[0];
 	newP.x = np.x;
 	newP.y = np.y;
-	
+
 	if (!PointInTriangle(p1, p2, p3, newP))
 		return false;
 	if ((newP.x < -1) || (newP.x > 1) ||
@@ -471,6 +453,57 @@ bool Renderer::PixelToPoint(const vec3& p1, const vec3& p2, const vec3& p3, cons
 		return false;
 	} else {
 		return true;
+	}
+}
+
+void Renderer::PaintTriangle(const vector<vec3> * vertices, const vector<Material> * materials, const vector<vec3>* v_normals, const vec3& f_normal)
+{
+	ConvexPolygon p(*vertices, *materials, *v_normals);
+	p.transform(m_cTransform * m_oTransform, m_nTransform);
+	p.clip(2, -zNear, std::less_equal<float>());
+	p.clip(2, -zFar, std::greater_equal<float>());
+	
+	// TODO: duplicate the polygon to store the camera world coordinates.
+	ConvexPolygon shader_polygon = p;
+	
+	p.transform(m_projection);
+	p.divide();
+
+	// x coordinate
+	p.clip(0, 1, less_equal<float>(), &shader_polygon);
+	p.clip(0, -1, greater_equal<float>(), &shader_polygon);
+	// y coordinate
+	p.clip(1, 1, std::less_equal<float>(), &shader_polygon);
+	p.clip(1, -1, greater_equal<float>(), &shader_polygon);
+
+	vector<ConvexPolygon*> triangles;
+	vector<ConvexPolygon*> shader_triangles;
+	p.getTriangles(triangles);
+	shader_polygon.getTriangles(shader_triangles);
+	auto j = shader_triangles.begin();
+
+	for (auto i = triangles.begin(); (i != triangles.end()) && (j != shader_triangles.end()); ++i, ++j) {
+		vector<vec4> tri_vertex = (*i)->getVertices();
+		vec3 a = convert4dTo3d(tri_vertex[0]);
+		vec3 b = convert4dTo3d(tri_vertex[1]);
+		vec3 c = convert4dTo3d(tri_vertex[2]);
+
+		SetPolygonToShader(*j, f_normal);
+
+		CreateLocalBuffer();
+		DrawLine(a, b);
+		DrawLine(b, c);
+		DrawLine(c, a);
+
+		vec3 cm = convertToScreen(GetCenterMass(a, b, c));
+		PaintTriangleFloodFill(a, b, c, cm);
+		//PaintTriangleScanLines(a, b, c, vec3(1)); // last is color
+	}
+	
+	while (!triangles.empty()) {
+		ConvexPolygon * polygon = triangles.back();
+		triangles.pop_back();
+		delete polygon;
 	}
 }
 
@@ -483,10 +516,11 @@ void Renderer::PaintTriangleFloodFill(const vec3& p1, const vec3& p2, const vec3
 
 	//	3. Set Q to the empty queue.
 	vector<vec3> q;
+	float abc_area = calculateArea(p1, p2, p3);
 
 	//	4. Set the color of node to replacement - color.
 	vec3 newP = p;
-	vec3 c(1);
+	vec3 c = CalculatePointColor(p1, p2, p3, abc_area, newP);
 	PlotPixel(newP.x, newP.y, newP.z, c);
 
 	//	5. Add node to the end of Q.
@@ -504,6 +538,7 @@ void Renderer::PaintTriangleFloodFill(const vec3& p1, const vec3& p2, const vec3
 			(!m_paintBuffer[(int)((n.y) * m_width + (n.x - 1))]) &&
 			(PixelToPoint(p1, p2, p3, n - vec3(1, 0, 0), newP))) {
 	//	set the color of that node to replacement - color and add that node to the end of Q.
+			c = CalculatePointColor(p1, p2, p3, abc_area, newP);
 			newP = convertToScreen(newP);
 			PlotPixel(newP.x, newP.y, newP.z, c);
 			q.push_back(n - vec3(1, 0, 0));
@@ -513,6 +548,7 @@ void Renderer::PaintTriangleFloodFill(const vec3& p1, const vec3& p2, const vec3
 			(!m_paintBuffer[(int)((n.y) * m_width + (n.x + 1))]) &&
 			(PixelToPoint(p1, p2, p3, n + vec3(1, 0, 0), newP))) {
 	//	set the color of that node to replacement - color and add that node to the end of Q.
+			c = CalculatePointColor(p1, p2, p3, abc_area, newP);
 			newP = convertToScreen(newP);
 			PlotPixel(newP.x, newP.y, newP.z, c);
 			q.push_back(n + vec3(1, 0, 0));
@@ -523,6 +559,7 @@ void Renderer::PaintTriangleFloodFill(const vec3& p1, const vec3& p2, const vec3
 			(!m_paintBuffer[(int)((n.y - 1) * m_width + (n.x))]) &&
 			(PixelToPoint(p1, p2, p3, n - vec3(0, 1, 0), newP))) {
 	//	set the color of that node to replacement - color and add that node to the end of Q.
+			c = CalculatePointColor(p1, p2, p3, abc_area, newP);
 			newP = convertToScreen(newP);
 			PlotPixel(newP.x, newP.y, newP.z, c);
 			q.push_back(n - vec3(0, 1, 0));
@@ -533,6 +570,7 @@ void Renderer::PaintTriangleFloodFill(const vec3& p1, const vec3& p2, const vec3
 			(!m_paintBuffer[(int)((n.y + 1) * m_width + (n.x))]) &&
 			(PixelToPoint(p1, p2, p3, n + vec3(0, 1, 0), newP))) {
 	//	set the color of that node to replacement - color and add that node to the end of Q.
+			c = CalculatePointColor(p1, p2, p3, abc_area, newP);
 			newP = convertToScreen(newP);
 			PlotPixel(newP.x, newP.y, newP.z, c);
 			q.push_back(n + vec3(0, 1, 0));
@@ -622,7 +660,13 @@ void Renderer::PaintTriangleScanLines(const vec3& p1, const vec3& p2, const vec3
 	}
 }
 
-void Renderer::DrawTriangles(const vector<vec3>* vertices, const vector<Material>* materials, const vector<vec3>* vertexNormals, const vector<vec3>* faceNormals)
+void Renderer::DrawTriangles(
+	const vector<vec3>* vertices,
+	const vector<Material>* materials,
+	const vector<vec3>* vertexNormals,
+	const vector<vec3>* faceNormals,
+	const bool allowVertexNormals,
+	const bool allowFaceNormals)
 {
 	vec3 white(1);
 	vec3 yellow(1, 1, 0);
@@ -633,6 +677,7 @@ void Renderer::DrawTriangles(const vector<vec3>* vertices, const vector<Material
 
 	// assuming that vertices size is a multiplication of 3
 	auto i = vertices->begin();
+	auto m = materials->begin();
 	while (i != vertices->end()) {
 		// ----- new version ----
 		vector<vec3> tri_vertices;
@@ -643,15 +688,19 @@ void Renderer::DrawTriangles(const vector<vec3>* vertices, const vector<Material
 
 		// TODO: get materials from scene?
 		vector<Material> materials;
-		materials.push_back({ white, white, white, 1 });
-		materials.push_back({ white, white, white, 1 });
-		materials.push_back({ white, white, white, 1 });
+		materials.insert(materials.begin(), *(m++));
+		materials.insert(materials.begin(), *(m++));
+		materials.insert(materials.begin(), *(m++));
 
 		vector<vec3> v_normals;
-		if (vertexNormals != NULL) {
+		if ((vertexNormals != NULL) && (vertexNormals->size() != 0)) {
 			v_normals.insert(v_normals.begin(), vertexNormals->at(vn_index++));
 			v_normals.insert(v_normals.begin(), vertexNormals->at(vn_index++));
 			v_normals.insert(v_normals.begin(), vertexNormals->at(vn_index++));
+		}
+
+		if ((faceNormals != NULL) && (faceNormals->size() != 0)) {
+			f_normal = faceNormals->at(fn_index++);
 		}
 
 		if (is_wire_mode) {
@@ -660,17 +709,16 @@ void Renderer::DrawTriangles(const vector<vec3>* vertices, const vector<Material
 			DrawLine(tri_vertices[1], vec3(), tri_vertices[2], vec3(), white);
 			DrawLine(tri_vertices[2], vec3(), tri_vertices[0], vec3(), white);
 		} else {
-			PaintTriangle(&tri_vertices, &materials, &v_normals);
+			PaintTriangle(&tri_vertices, &materials, &v_normals, f_normal);
 		}
 
-		if (v_normals.size() > 0) {
+		if ((allowVertexNormals) && (v_normals.size() > 0)) {
 			DrawLine(tri_vertices[0], vec3(), tri_vertices[0], v_normals[0], yellow);
 			DrawLine(tri_vertices[1], vec3(), tri_vertices[1], v_normals[1], yellow);
 			DrawLine(tri_vertices[2], vec3(), tri_vertices[2], v_normals[2], yellow);
 		}
 
-		if (faceNormals != NULL) {
-			f_normal = faceNormals->at(fn_index++);
+		if ((allowFaceNormals) && (faceNormals != NULL)) {
 			DrawLine(cm, vec3(), cm, f_normal, pink);
 		}
 	}
@@ -753,10 +801,15 @@ void Renderer::DrawLight(const vec3& color)
 	*/
 }
 
+void Renderer::SetLights(const vector<Light *> * lights) {
+	shader->setLights(lights);
+}
+
 void Renderer::SetCameraTransform(const mat4 & cTransform)
 {
 	m_cTransform = cTransform;
 	m_camera_multiply = m_projection * m_cTransform;
+	shader->setTransform(m_cTransform * m_oTransform);//is this a must?
 }
 
 void Renderer::SetProjection(const mat4 & projection)
@@ -775,62 +828,12 @@ void Renderer::SetObjectMatrices(const mat4 & oTransform, const mat3 & nTransfor
 {
 	m_oTransform = oTransform;
 	m_nTransform = nTransform;
+
+	shader->setTransform(m_cTransform * m_oTransform);
 }
 
 void Renderer::SetDemoBuffer()
 {
-	/*for (int i = 50; i <= 150; i += 10) {
-	DrawLine(vec3(100, 100, 0), vec3(i, 150, 0), vec3(1, 0, 0));
-	}
-	for (int i = 50; i <= 150; i += 10) {
-	DrawLine(vec3(100, 100, 0), vec3(150, i, 0), vec3(0, 1, 0));
-	}
-	for (int i = 50; i <= 150; i += 10) {
-	DrawLine(vec3(100, 100, 0), vec3(i, 50, 0), vec3(0, 0, 1));
-	}
-	for (int i = 50; i <= 150; i += 10) {
-	DrawLine(vec3(100, 100, 0), vec3(50, i, 0), vec3(1, 1, 1));
-	}
-	;
-	vec3 t = this->PointToScreen(vec3(0, 0, 0));
-
-	for (float i = -1.0f; i <= 1; i += 0.1f) {
-	vec3 t2 = PointToScreen(vec3(i, 1, 0));
-	DrawLine(t, t2, vec3(0, abs(i), abs(i*i)));
-	}*/
-
-	DrawLine(vec3(3.05f, 0.35, 0.05), vec3(), vec3(-3.30f, 7.70f, 0.9f), vec3(), vec3(1, 0, 0.5f));
-	//CreateLocalBuffer();
-	vector<vec3> vertices0;
-	vertices0.push_back(vec3(-3.2f, 7.2f, 9));
-	vertices0.push_back(vec3(5.8f, 7.7f, 7));
-	vertices0.push_back(vec3(0.5f, 5.6f, 8));
-	//DrawTriangles(&vertices);
-
-	vector<vec3> vertices;
-	vertices.push_back(vec3(0.2f, 0.2f, 20));
-	vertices.push_back(vec3(0.5f, 0.6f, 30));
-	vertices.push_back(vec3(0.8f, 0.7f, 0));
-
-	vertices.push_back(vec3(-0.05f, -0.4f, 0));
-	vertices.push_back(vec3(-0.15f, -0.4f, 0));
-	vertices.push_back(vec3(-0.1f, -0.3f, 0));
-
-	vertices.push_back(vec3(-0.05f, -0.32f, 0));
-	vertices.push_back(vec3(-0.15f, -0.32f, 0));
-	vertices.push_back(vec3(-0.1f, -0.42f, 0));
-
-	vertices.push_back(vec3(-1.0f, -1.0f, 0));
-	vertices.push_back(vec3(-1.0f, 1.0f, 0));
-	vertices.push_back(vec3(1.0f, -1.0f, 0));
-
-	vertices.push_back(vec3(1.0f, 1.0f, 0));
-	vertices.push_back(vec3(-1.0f, 1.0f, 0));
-	vertices.push_back(vec3(1.0f, -1.0f, 0));
-	//this->DrawTriangles(&vertices);
-
-	//DrawBox(vec3(1), vec3(3));
-
 	//vertical line
 	for (int i = 0; i < m_height; i++) {
 

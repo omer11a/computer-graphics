@@ -54,6 +54,7 @@ PrimMeshModels:
 #include "vec.h"
 #include "mat.h"
 #include "InitShader.h"
+#include "Shader.h"
 #include "Scene.h"
 #include "Renderer.h"
 #include <string>
@@ -350,6 +351,8 @@ void lightMenu(int id)
 				AmbientLight al(color);
 				scene->setAmbientLight(al);
 				cout << "Set Ambient color to " << color << endl;
+				config.is_demo = false;
+				should_redraw = true;
 			}
 			break;
 	}
@@ -891,8 +894,8 @@ int my_main( int argc, char **argv )
 	fprintf(stdout, "Status: Using GLEW %s\n", glewGetString(GLEW_VERSION));
 
 	
-	
-	renderer = new Renderer(512,512);
+	FlatShader fs;
+	renderer = new Renderer(512, 512, &fs);
 	scene = new Scene(renderer, vec3(0, 5, 15));
 	config = { 0, vec3(1), vec3(), vec3(), 1, false};
 	//----------------------------------------------------------------------------

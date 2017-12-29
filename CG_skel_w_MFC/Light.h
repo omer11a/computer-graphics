@@ -1,6 +1,7 @@
 #pragma once
 
 #include "MeshModel.h"
+#include "BaseRenderer.h"
 using namespace std;
 
 class Light {

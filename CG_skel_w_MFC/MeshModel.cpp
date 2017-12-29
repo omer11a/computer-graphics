@@ -243,10 +243,7 @@ void MeshModel::draw(BaseRenderer * renderer) const {
 	}
 
 	renderer->SetObjectMatrices(worldTransform * modelTransform, normalWorldTransform * normalModelTransform);
-
-	const vector<vec3> * vertexNormalsToRenderer = allowVertexNormals ? &vertexNormals : NULL;
-	const vector<vec3> * faceNormalsToRenderer = allowFaceNormals ? &faceNormals : NULL;
-	renderer->DrawTriangles(&vertexPositions, &materials, vertexNormalsToRenderer, faceNormalsToRenderer);
+	renderer->DrawTriangles(&vertexPositions, &materials, &vertexNormals, &faceNormals, allowVertexNormals, allowFaceNormals);
 
 	if (allowBoundingBox) {
 		renderer->DrawBox(minValues, maxValues);

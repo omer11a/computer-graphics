@@ -1,11 +1,13 @@
 #pragma once
 #include <vector>
-#include "BaseRenderer.h"
-#include "CG_skel_w_MFC.h"
-#include "Material.h"
 #include "vec.h"
 #include "mat.h"
+#include "Material.h"
+#include "BaseRenderer.h"
+#include "Polygon.h"
+#include "Shader.h"
 #include "GL/glew.h"
+#include "CG_skel_w_MFC.h"
 
 using namespace std;
 class Renderer : public BaseRenderer
@@ -17,6 +19,7 @@ class Renderer : public BaseRenderer
 	mat4 m_cTransform, m_projection, m_oTransform;
 	mat3 m_nTransform;
 	mat4 m_camera_multiply;
+	Shader * shader;
 	float zNear;
 	float zFar;
 
@@ -24,6 +27,8 @@ class Renderer : public BaseRenderer
 
 	void CreateBuffers(int width, int height);
 	void CreateLocalBuffer();
+	void SetPolygonToShader(const ConvexPolygon * shader_polygon, const vec3& f_normal);
+	vec3 CalculatePointColor(const vec3& p1, const vec3& p2, const vec3& p3, const float abc_area, const vec3& p);
 	void DestroyBuffers();
 
 	vec4 applyCameraTransformation(const vec3& p, const vec3& n) const;
@@ -46,7 +51,7 @@ class Renderer : public BaseRenderer
 	void DrawModerateLine(const vec3& p1, const vec3& p2, const vec3& c);
 	
 	void PaintTriangle(const vec3& p1, const vec3& p2, const vec3& p3, const vec3& c1);	// deprecated
-	void PaintTriangle(const vector<vec3> * vertices, const vector<Material> * materials, const vector<vec3> * vertexNormals);
+	void PaintTriangle(const vector<vec3> * vertices, const vector<Material> * materials, const vector<vec3> * v_normals, const vec3& f_normal);
 	void PaintTriangleFloodFill(const vec3& p1, const vec3& p2, const vec3& p3, const vec3& p);
 	void PaintTriangleScanLines(const vec3& p1, const vec3& p2, const vec3& p3, const vec3& c1);	// deprecated
 
@@ -60,15 +65,22 @@ class Renderer : public BaseRenderer
 	//////////////////////////////
 public:
 	Renderer();
-	Renderer(int width, int height);
+	Renderer(int width, int height, Shader * shader);
 	~Renderer(void);
 
-	void DrawTriangles(const vector<vec3>* vertices, const vector<Material>* materials, const vector<vec3>* vertexNormals = NULL, const vector<vec3>* faceNormals = NULL) override;
+	void DrawTriangles(
+		const vector<vec3>* vertices,
+		const vector<Material>* materials,
+		const vector<vec3>* vertexNormals = NULL,
+		const vector<vec3>* faceNormals = NULL,
+		const bool allowVertexNormals = false,
+		const bool allowFaceNormals = false) override;
 	void switchWire(); 
 	void DrawSquare(const vec3& p1, const vec3& p2, const vec3& p3, const vec3& p4, const vec3& color);
 	void DrawBox(const vec3& minValues, const vec3& maxValues) override;
 	void DrawCamera() override;
 	void DrawLight(const vec3& color) override;
+	void SetLights(const vector<Light *> * lights);
 	void SetCameraTransform(const mat4& cTransform) override;
 	void SetProjection(const mat4& projection) override;
 	void SetZRange(float zNear, float zFar) override;
