@@ -112,8 +112,8 @@ void Camera::frustum(
 	projection[0][2] = (right + left) / (right - left);
 	projection[1][1] = 2 * zNear / (top - bottom);
 	projection[1][2] = (top + bottom) / (top - bottom);
-	projection[2][2] = -(zFar + zNear) / (zFar - zNear);
-	projection[2][3] = -2 * zFar * zNear / (zFar - zNear);
+	projection[2][2] = -(zFar + zNear) / (zNear - zFar);
+	projection[2][3] = -2 * zFar * zNear / (zNear - zFar);
 	projection[3][2] = -1;
 	
 	isPerspective = true;
