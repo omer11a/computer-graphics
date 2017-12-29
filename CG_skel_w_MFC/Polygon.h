@@ -38,22 +38,16 @@ class ConvexPolygon {
 
 		float y1 = v1[coordinate];
 		float y2 = v2[coordinate];
-		float dy = y2 - y1;
-		if (dy == 0) {
-			return comp(y1, max);
+		bool isV1InRange = comp(y1, max);
+		bool isV2InRange = comp(y2, max);
+		if (isV1InRange == isV2InRange) {
+			return isV1InRange;
 		}
 
+		float dy = y2 - y1;
+		ASSERT(dy != 0);
 		t = (max - y1) / dy;
 		vec4& p = v1 + (v2 - v1) * t;
-		float y3 = p[coordinate];
-
-		if ((comp(y1, y3)) && (comp(y2, y3))) {
-			return true;
-		}
-
-		if ((t < 0) || (t > 1)) {
-			return false;
-		}
 
 		if (comp(y1, y2)) {
 			end = p;
