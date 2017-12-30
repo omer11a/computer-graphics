@@ -118,7 +118,7 @@ vec3 PhongShader::getColor(const vec3& barycentricCoordinates) const {
 		dot(shininessVector, barycentricCoordinates)
 	};
 
-	vec3 normal = normalMatrix * barycentricCoordinates;
+	vec3 normal = normalize(normalMatrix * barycentricCoordinates);
 	return computeColor(position, normal, material);
 }
 
