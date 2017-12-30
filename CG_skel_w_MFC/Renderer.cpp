@@ -351,7 +351,7 @@ void Renderer::DrawModerateLine(const vec3& p1, const vec3& p2, const vec3& c, c
 	int y_change = (end.y > start.y) ? 1 : -1;
 
 	if (c.x == -1) {
-		b_c[start_idx] = t / dy;	// dx can't be 0
+		b_c[start_idx] = t / dx;	// dx can't be 0
 		b_c[end_idx] = 1 - b_c[start_idx];
 		shader_color = shader->getColor(b_c);
 	}
@@ -368,7 +368,7 @@ void Renderer::DrawModerateLine(const vec3& p1, const vec3& p2, const vec3& c, c
 		z += dz;
 		++t;
 		if (c.x == -1) {
-			b_c[start_idx] = t / dy;	// dx can't be 0
+			b_c[start_idx] = t / dx;	// dx can't be 0
 			b_c[end_idx] = 1 - b_c[start_idx];
 			shader_color = shader->getColor(b_c);
 		}
