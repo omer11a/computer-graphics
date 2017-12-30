@@ -18,7 +18,7 @@ class Renderer : public BaseRenderer
 
 	mat4 m_cTransform, m_projection, m_oTransform;
 	mat3 m_nTransform;
-	Shader * shader;
+	Shader * shader, *temp_shader;
 	float zNear;
 	float zFar;
 
@@ -49,10 +49,9 @@ class Renderer : public BaseRenderer
 	void DrawSteepLine(const vec3& p1, const vec3& p2, const vec3& c);
 	void DrawModerateLine(const vec3& p1, const vec3& p2, const vec3& c);
 	
-	void PaintTriangle(const vec3& p1, const vec3& p2, const vec3& p3, const vec3& c1);	// deprecated
 	void PaintTriangle(const vector<vec3> * vertices, const vector<Material> * materials, const vector<vec3> * v_normals, const vec3& f_normal);
 	void PaintTriangleFloodFill(const vec3& p1, const vec3& p2, const vec3& p3, const vec3& p);
-	void PaintTriangleScanLines(const vec3& p1, const vec3& p2, const vec3& p3, const vec3& c1);	// deprecated
+	void PaintTriangleScanLines(const vec3& p1, const vec3& p2, const vec3& p3);
 
 	//////////////////////////////
 	// openGL stuff. Don't touch.

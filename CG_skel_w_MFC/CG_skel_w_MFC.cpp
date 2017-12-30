@@ -250,7 +250,7 @@ void keyboard(unsigned char key, int x, int y)
 
 	case '4':
 		scene->addPrimitive(key - '0');
-		cout << "added primitive object " << key << "with model id #" << scene->getNumberOfModels() << endl;
+		cout << "added primitive object " << key << " with model id #" << scene->getNumberOfModels() << endl;
 		should_redraw = true;
 		break;
 	}
