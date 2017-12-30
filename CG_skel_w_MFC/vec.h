@@ -300,7 +300,7 @@ vec3 calculateBarycentricCoordinates(
 	vec3 result;
 	result.x = areaPBC / areaABC;
 	result.y = areaPCA / areaABC;
-	result.z = 1 - result.x - result.z;
+	result.z = 1 - result.x - result.y;
 	return result;
 }
 

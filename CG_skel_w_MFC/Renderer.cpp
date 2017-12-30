@@ -265,7 +265,7 @@ void Renderer::DrawSteepLine(const vec3& p1, const vec3& p2, const vec3& c, cons
 	int start_idx, end_idx;
 	vec3 b_c, shader_color;
 
-	if (p1.x > p2.x) {
+	if (p1.y > p2.y) {
 		start = p2;
 		start_idx = p2_idx;
 		end = p1;
