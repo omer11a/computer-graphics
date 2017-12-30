@@ -810,7 +810,7 @@ void Renderer::SetCameraTransform(const mat4 & cTransform)
 {
 	m_cTransform = cTransform;
 	m_cnTransform = convert4dTo3d(m_cTransform);
-	shader->setTransform(m_cTransform * m_oTransform);//is this a must?
+	shader->setTransform(m_cTransform);
 }
 
 void Renderer::SetProjection(const mat4 & projection)
@@ -828,8 +828,6 @@ void Renderer::SetObjectMatrices(const mat4 & oTransform, const mat3 & nTransfor
 {
 	m_oTransform = oTransform;
 	m_nTransform = nTransform;
-
-	shader->setTransform(m_cTransform * m_oTransform);
 }
 
 void Renderer::SetDemoBuffer()
