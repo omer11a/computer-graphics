@@ -336,37 +336,6 @@ void Renderer::DrawModerateLine(const vec3& p1, const vec3& p2, const vec3& c) {
 	}
 }
 
-void Renderer::PaintTriangle(const vec3& p1, const vec3& p2, const vec3& p3, const vec3& c1)
-{
-	vec3 n_p1, n_p2, n_p3;
-	//if (
-	//	!pointToScreen(p1, vec3(), n_p1, false) &
-	//	!pointToScreen(p2, vec3(), n_p2, false) &
-	//	!pointToScreen(p3, vec3(), n_p3, false)) {
-	//	//whole triangle is outside the clipping area.
-	//	return;
-	//}
-
-	pointToScreen(p1, vec3(), n_p1, false);
-	pointToScreen(p2, vec3(), n_p2, false);
-	pointToScreen(p3, vec3(), n_p3, false);
-
-	vec3 sp1 = convertToScreen(n_p1);
-	vec3 sp2 = convertToScreen(n_p2);
-	vec3 sp3 = convertToScreen(n_p3);
-	if (((sp2.x - sp1.x) * (sp3.y - sp1.y)) - ((sp3.x - sp1.x) * (sp2.y - sp1.y)) == 0) {
-		// the 3 points perform a stright line.
-		return;
-	}
-	
-	vec3 n_cm = convertToScreen(GetCenterMass(n_p1, n_p2, n_p3));
-	std::cout << "p1=" << p1 << "\tp2=" << p2 << "\tp3=" << p3 << "\tp=" << n_cm << std::endl;
-	std::cout << "p1=" << n_p1 << "\tp2=" << n_p2 << "\tp3=" << n_p3 << "\tp=" << n_cm << std::endl;
-	std::cout << "p1=" << convertToScreen(n_p1) << "\tp2=" << convertToScreen(n_p2) << "\tp3=" << convertToScreen(n_p3) << "\tp=" << n_cm << std::endl;
-
-	PaintTriangleFloodFill(n_p1, n_p2, n_p3, n_cm);
-}
-
 void Renderer::SetPolygonToShader(const ConvexPolygon * shader_polygon, const vec3& f_normal) {
 	vector<vec4> tri_vertex = shader_polygon->getVertices();
 	mat3 vertex(convert4dTo3d(tri_vertex[0]),
@@ -437,6 +406,9 @@ bool Renderer::PixelToPoint(const vec3& p1, const vec3& p2, const vec3& p3, cons
 
 	mat2 a(np.x - p1.x, p2.x - p3.x,
 		np.y - p1.y, p2.y - p3.y);
+	if (!a.isInvertible()) {
+		return false;
+	}
 	vec2 tk = inverse(a) * vec2(p2.x - p1.x, p2.y - p1.y);
 	// p4 is the intersection of lines: p1<->p, p2<->p3
 	vec3 p4 = p2 + tk[1] * (p3 - p2);
@@ -446,8 +418,9 @@ bool Renderer::PixelToPoint(const vec3& p1, const vec3& p2, const vec3& p3, cons
 	newP.x = np.x;
 	newP.y = np.y;
 
-	if (!PointInTriangle(p1, p2, p3, newP))
+	if (!PointInTriangle(p1, p2, p3, newP)) {
 		return false;
+	}
 	if ((newP.x < -1) || (newP.x > 1) ||
 		(newP.y < -1) || (newP.y > 1) ||
 		(newP.z < -1) || (newP.z > 1)) {
@@ -464,7 +437,6 @@ void Renderer::PaintTriangle(const vector<vec3> * vertices, const vector<Materia
 	p.clip(2, -zNear, std::less_equal<float>());
 	p.clip(2, -zFar, std::greater_equal<float>());
 	
-	// TODO: duplicate the polygon to store the camera world coordinates.
 	ConvexPolygon shader_polygon = p;
 	
 	p.transform(m_projection);
@@ -496,9 +468,9 @@ void Renderer::PaintTriangle(const vector<vec3> * vertices, const vector<Materia
 		DrawLine(b, c);
 		DrawLine(c, a);
 
-		vec3 cm = convertToScreen(GetCenterMass(a, b, c));
-		PaintTriangleFloodFill(a, b, c, cm);
-		//PaintTriangleScanLines(a, b, c, vec3(1)); // last is color
+		vec3 cm = GetCenterMass(a, b, c);
+		//PaintTriangleFloodFill(a, b, c, cm);
+		PaintTriangleScanLines(a, b, c);
 	}
 	
 	while (!triangles.empty()) {
@@ -510,18 +482,19 @@ void Renderer::PaintTriangle(const vector<vec3> * vertices, const vector<Materia
 
 void Renderer::PaintTriangleFloodFill(const vec3& p1, const vec3& p2, const vec3& p3, const vec3& p)
 {
+	float abc_area = calculateArea(p1, p2, p3);
+	vec3 c = CalculatePointColor(p1, p2, p3, abc_area, p);
+	vec3 newP = convertToScreen(p);
+	
 	//if already painted
-	if (m_paintBuffer[(int)(p.y * m_width + p.x)]) {
+	if (m_paintBuffer[(int)(newP.y * m_width + newP.x)]) {
 		return;
 	}
 
 	//	3. Set Q to the empty queue.
 	vector<vec3> q;
-	float abc_area = calculateArea(p1, p2, p3);
 
 	//	4. Set the color of node to replacement - color.
-	vec3 newP = p;
-	vec3 c = CalculatePointColor(p1, p2, p3, abc_area, newP);
 	PlotPixel(newP.x, newP.y, newP.z, c);
 
 	//	5. Add node to the end of Q.
@@ -597,47 +570,46 @@ bool GetIntersectionPoint(const vec3& p1, const vec3& p2, const float y, vec3& p
 	return true;
 }
 
-void Renderer::PaintTriangleScanLines(const vec3& p1, const vec3& p2, const vec3& p3, const vec3& c1)
+void Renderer::PaintTriangleScanLines(const vec3& p1, const vec3& p2, const vec3& p3)
 {
+	const vec3 * points3d[3] = { &p1, &p2, &p3 };
 	vec3 s_p1 = convertToScreen(p1);
 	vec3 s_p2 = convertToScreen(p2);
 	vec3 s_p3 = convertToScreen(p3);
-	// check all in line
+	const vec3 * points2d[3] = { &s_p1, &s_p2, &s_p3 };
+	float abc_area = calculateArea(p1, p2, p3);
 
-	vec3 top, middle, bottom;
+	int top_idx, bottom_idx;
 	//sort points by height
 	if ((s_p1.y >= s_p2.y) && (s_p1.y >= s_p3.y)) {
 		// s_p1 is top point
-		top = s_p1;
-		middle = (s_p2.y > s_p3.y) ? s_p2 : s_p3;
-		bottom = (s_p2.y > s_p3.y) ? s_p3 : s_p2;
+		top_idx = 0;
+		bottom_idx = (s_p2.y > s_p3.y) ? 2 : 1;
 	} else if ((s_p2.y >= s_p1.y) && (s_p2.y >= s_p3.y)) {
 		// s_p2 is top point
-		top = s_p2;
-		middle = (s_p1.y > s_p3.y) ? s_p1 : s_p3;
-		bottom = (s_p1.y > s_p3.y) ? s_p3 : s_p1;
+		top_idx = 1;
+		bottom_idx = (s_p1.y > s_p3.y) ? 2 : 0;
 	} else if ((s_p3.y >= s_p2.y) && (s_p3.y >= s_p1.y)) {
 		// s_p3 is top point
-		top = s_p3;
-		middle = (s_p2.y > s_p1.y) ? s_p2 : s_p1;
-		bottom = (s_p2.y > s_p1.y) ? s_p1 : s_p2;
+		top_idx = 2;
+		bottom_idx = (s_p2.y > s_p1.y) ? 0 : 1;
 	}
 
-	for (float y = bottom.y; y < top.y; ++y) {
+	for (float y = points2d[bottom_idx]->y; y < points2d[top_idx]->y; ++y) {
 		vec3 q;
 		float minx, maxx;
 		minx = INFINITY;
 		maxx = -INFINITY;
 
-		if (GetIntersectionPoint(p1, p2, y, q)) {
+		if (GetIntersectionPoint(s_p1, s_p2, y, q)) {
 			minx = min(minx, q.x);
 			maxx = max(maxx, q.x);
 		}
-		if (GetIntersectionPoint(p2, p3, y, q)) {
+		if (GetIntersectionPoint(s_p2, s_p3, y, q)) {
 			minx = min(minx, q.x);
 			maxx = max(maxx, q.x);
 		}
-		if (GetIntersectionPoint(p1, p3, y, q)) {
+		if (GetIntersectionPoint(s_p1, s_p3, y, q)) {
 			minx = min(minx, q.x);
 			maxx = max(maxx, q.x);
 		}
@@ -645,15 +617,13 @@ void Renderer::PaintTriangleScanLines(const vec3& p1, const vec3& p2, const vec3
 		minx = floor(minx);
 		maxx = ceil(maxx);
 
-		vec3 minx_camera, maxx_camera;
-		PixelToPoint(p1, p2, p3, vec3(minx, y, 0), minx_camera);
-		PixelToPoint(p1, p2, p3, vec3(maxx, y, 0), maxx_camera);
-
-		for (float x = minx; x <= maxx; ++x) {
+		for (float x = minx; x < maxx; ++x) {
 			vec3 newP;
 			if ((!m_paintBuffer[(int)(y * m_width + x)]) &&
 				(PixelToPoint(p1, p2, p3, vec3(x, y, 0), newP))) {
-				PlotPixel(x, y, newP.z, c1);
+				vec3 c = CalculatePointColor(p1, p2, p3, abc_area, vec3(x, y, newP.z));
+				//vec3 c = CalculatePointColor(p1, p2, p3, abc_area, newP);
+				PlotPixel(x, y, newP.z, c);
 			}
 
 		}
@@ -687,7 +657,6 @@ void Renderer::DrawTriangles(
 		tri_vertices.push_back(*(i++));
 		vec3 cm = GetCenterMass(&tri_vertices);
 
-		// TODO: get materials from scene?
 		vector<Material> materials;
 		materials.push_back(*(m++));
 		materials.push_back(*(m++));
