@@ -238,7 +238,6 @@ bool Renderer::DrawLine(const vec3& p1, const vec3& n1, const vec3& p2, const ve
 		return false;
 	}
 
-	//TODO: recalculate colors
 	std::cout << "newP1" << newP1 << "newP2" << newP2 << std::endl;
 	if (abs(newP1.y - newP2.y) > abs(newP1.x - newP2.x)) {
 		this->DrawSteepLine(newP1, newP2, c1);
@@ -249,27 +248,33 @@ bool Renderer::DrawLine(const vec3& p1, const vec3& n1, const vec3& p2, const ve
 	return true;
 }
 
-void Renderer::DrawLine(const vec3& p1, const vec3& p2, const vec3& c)
+void Renderer::DrawLine(const vec3& p1, const vec3& p2, const vec3& c, const int p1_idx, const int p2_idx)
 {
 	vec3 q1 = convertToScreen(p1);
 	vec3 q2 = convertToScreen(p2);
 
 	if (abs(q1.y - q2.y) > abs(q1.x - q2.x)) {
-		this->DrawSteepLine(q1, q2, c);
+		this->DrawSteepLine(q1, q2, c, p1_idx, p2_idx);
 	} else {
-		this->DrawModerateLine(q1, q2, c);
+		this->DrawModerateLine(q1, q2, c, p1_idx, p2_idx);
 	}
 }
 
-void Renderer::DrawSteepLine(const vec3& p1, const vec3& p2, const vec3& c) {
+void Renderer::DrawSteepLine(const vec3& p1, const vec3& p2, const vec3& c, const int p1_idx, const int p2_idx) {
 	vec3 start, end;
+	int start_idx, end_idx;
+	vec3 b_c, shader_color;
 
-	if (p1.y > p2.y) {
+	if (p1.x > p2.x) {
 		start = p2;
+		start_idx = p2_idx;
 		end = p1;
+		end_idx = p1_idx;
 	} else {
 		start = p1;
+		start_idx = p1_idx;
 		end = p2;
+		end_idx = p2_idx;
 	}
 
 	int x = start.x;
@@ -279,13 +284,19 @@ void Renderer::DrawSteepLine(const vec3& p1, const vec3& p2, const vec3& c) {
 	int dx = abs(end.x - start.x);
 	int dy = end.y - start.y;
 	float dz = (end.z - start.z) / dy;
+	float t = dy;
 
 	int de = 2 * dx;
 	int d = 2 * dx - dy;
 	int dne = 2 * dx - 2 * dy;
 	int x_change = (end.x > start.x) ? 1 : -1;
 
-	PlotPixel(x, y, z, c);
+	if (c.x == -1) {
+		b_c[start_idx] = t / dy;	// dy can't be 0
+		b_c[end_idx] = 1 - b_c[start_idx];
+		shader_color = shader->getColor(b_c);
+	}
+	PlotPixel(x, y, z, ((c.x == -1) ? shader_color : c));
 	for (int y = start.y; y < end.y; ++y) {
 		if (d < 0) {
 			d += de;
@@ -294,19 +305,31 @@ void Renderer::DrawSteepLine(const vec3& p1, const vec3& p2, const vec3& c) {
 			d += dne;
 		}
 		z += dz;
-		PlotPixel(x, y, z, c);
+		++t;
+		if (c.x == -1) {
+			b_c[start_idx] = t / dy;	// dy can't be 0
+			b_c[end_idx] = 1 - b_c[start_idx];
+			shader_color = shader->getColor(b_c);
+		}
+		PlotPixel(x, y, z, ((c.x == -1) ? shader_color : c));
 	}
 }
 
-void Renderer::DrawModerateLine(const vec3& p1, const vec3& p2, const vec3& c) {
+void Renderer::DrawModerateLine(const vec3& p1, const vec3& p2, const vec3& c, const int p1_idx, const int p2_idx) {
 	vec3 start, end;
+	int start_idx, end_idx;
+	vec3 b_c, shader_color;
 
 	if (p1.x > p2.x) {
 		start = p2;
+		start_idx = p2_idx;
 		end = p1;
+		end_idx = p1_idx;
 	} else {
 		start = p1;
+		start_idx = p1_idx;
 		end = p2;
+		end_idx = p2_idx;
 	}
 
 	int x = start.x;
@@ -316,12 +339,19 @@ void Renderer::DrawModerateLine(const vec3& p1, const vec3& p2, const vec3& c) {
 	int dx = end.x - start.x;
 	int dy = abs(end.y - start.y);
 	float dz = (end.z - start.z) / dx;
+	float t = dx;
 
 	int de = 2 * dy;
 	int d = 2 * dy - dx;
 	int dne = 2 * dy - 2 * dx;
 	int y_change = (end.y > start.y) ? 1 : -1;
 
+	if (c.x == -1) {
+		b_c[start_idx] = t / dy;	// dx can't be 0
+		b_c[end_idx] = 1 - b_c[start_idx];
+		shader_color = shader->getColor(b_c);
+	}
+	PlotPixel(x, y, z, ((c.x == -1) ? shader_color : c));
 	PlotPixel(x, y, z, c);
 	for (int x = start.x; x < end.x; ++x) {
 		if (d < 0) {
@@ -332,7 +362,13 @@ void Renderer::DrawModerateLine(const vec3& p1, const vec3& p2, const vec3& c) {
 		}
 
 		z += dz;
-		PlotPixel(x, y, z, c);
+		++t;
+		if (c.x == -1) {
+			b_c[start_idx] = t / dy;	// dx can't be 0
+			b_c[end_idx] = 1 - b_c[start_idx];
+			shader_color = shader->getColor(b_c);
+		}
+		PlotPixel(x, y, z, ((c.x == -1) ? shader_color : c));
 	}
 }
 
@@ -417,9 +453,9 @@ bool Renderer::PixelToPoint(const vec3& p1, const vec3& p2, const vec3& p3, cons
 	newP.x = np.x;
 	newP.y = np.y;
 
-	if (!PointInTriangle(p1, p2, p3, newP)) {
+	/*if (!PointInTriangle(p1, p2, p3, newP)) {
 		return false;
-	}
+	}*/
 	if ((newP.x < -1) || (newP.x > 1) ||
 		(newP.y < -1) || (newP.y > 1) ||
 		(newP.z < -1) || (newP.z > 1)) {
@@ -463,9 +499,9 @@ void Renderer::PaintTriangle(const vector<vec3> * vertices, const vector<Materia
 		SetPolygonToShader(*j, f_normal);
 
 		CreateLocalBuffer();
-		DrawLine(a, b);
-		DrawLine(b, c);
-		DrawLine(c, a);
+		DrawLine(a, b, vec3(-1), 0, 1);
+		DrawLine(b, c, vec3(-1), 1, 2);
+		DrawLine(c, a, vec3(-1), 2, 0);
 
 		vec3 cm = GetCenterMass(a, b, c);
 		//PaintTriangleFloodFill(a, b, c, cm);
