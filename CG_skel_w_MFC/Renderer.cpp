@@ -10,7 +10,7 @@
 #define INDEX(width,x,y,c) (x+y*width)*3+c
 
 Renderer::Renderer() : BaseRenderer(512, 512), m_zBuffer(NULL),
-m_cTransform(), m_projection(), m_oTransform(), m_nTransform(), m_camera_multiply(), shader(NULL), is_wire_mode(false)
+m_cTransform(), m_projection(), m_oTransform(), m_nTransform(), shader(NULL), is_wire_mode(false)
 {
 	InitOpenGLRendering();
 	CreateBuffers(512, 512);
@@ -808,14 +808,12 @@ void Renderer::SetLights(const vector<Light *> * lights) {
 void Renderer::SetCameraTransform(const mat4 & cTransform)
 {
 	m_cTransform = cTransform;
-	m_camera_multiply = m_projection * m_cTransform;
 	shader->setTransform(m_cTransform * m_oTransform);//is this a must?
 }
 
 void Renderer::SetProjection(const mat4 & projection)
 {
 	m_projection = projection;
-	m_camera_multiply = m_projection * m_cTransform;
 }
 
 void Renderer::SetZRange(float zNear, float zFar)
@@ -849,14 +847,27 @@ void Renderer::SetDemoBuffer()
 	}
 }
 
-void Renderer::switchWire()
+void Renderer::SwitchWire()
 {
 	is_wire_mode = !is_wire_mode;
 }
 
+void Renderer::SetBaseShader(Shader * s) {
+	if (shader != NULL) {
+		delete shader;
+	}
 
+	shader = s;
+}
 
-
+void Renderer::SetFog(const vec3& color)
+{
+	if (shader != NULL) {
+		shader = new FogShader(shader, color);
+	} else {
+		shader = new FogShader(new FlatShader(), color);
+	}
+}
 
 /////////////////////////////////////////////////////
 //OpenGL stuff. Don't touch.

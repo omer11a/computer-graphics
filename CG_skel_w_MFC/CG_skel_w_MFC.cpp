@@ -65,6 +65,11 @@ PrimMeshModels:
 #define NEW_ITEM 1
 #define EDIT_ITEM 2
 
+// shaders menu
+#define FLAT 1
+#define GOURAUD 2
+#define PHONG 3
+#define FOG 4
 
 #define ADD_CAMERA 1
 
@@ -160,7 +165,7 @@ void keyboard(unsigned char key, int x, int y)
 		should_redraw = true;
 		break;
 	case 'y':
-		renderer->switchWire();
+		renderer->SwitchWire();
 		should_redraw = true;
 		break;
 	case 'l':
@@ -359,11 +364,41 @@ void lightMenu(int id)
 	redraw(should_redraw);
 }
 
+void shaderMenu(int id)
+{
+	bool should_redraw = true;
+	CColorDialog cdlg;
+	switch (id) {
+	case FLAT:
+		renderer->SetBaseShader(new FlatShader());
+		cout << "set flat shader" << endl;
+		break;
+	case GOURAUD:
+		renderer->SetBaseShader(new GouraudShader());
+		cout << "set gourued shader" << endl;
+		break;
+	case PHONG:
+		renderer->SetBaseShader(new PhongShader());
+		cout << "set phong shader" << endl;
+		break;
+	case FOG:
+		if (cdlg.DoModal() == IDOK) {
+			renderer->SetFog(ColorToVec(cdlg.GetColor()));
+			cout << "set fog" << endl;
+		} else {
+			should_redraw = false;
+		}
+		break;
+	}
+
+	redraw(should_redraw);
+}
+
 void modelMenu(int id)
 {
 	bool should_redraw = false;
 	CFileDialog fdlg(TRUE, _T(".obj"), NULL, NULL, _T("*.obj|*.*"));
-	CEditModelDialog emdlg;
+
 	switch (id) {
 	case NEW_ITEM:
 		if (fdlg.DoModal() == IDOK) {
@@ -375,20 +410,27 @@ void modelMenu(int id)
 		}
 		break;
 	case EDIT_ITEM:
-		if ((scene->getNumberOfModels() > 0) && (emdlg.DoModal() == IDOK)) {
-			Material m = {
-				emdlg.GetAmbientColor(),
-				emdlg.GetSpecularColor(),
-				emdlg.GetDiffuseColor(),
-				emdlg.GetShininess()
-			};
-			if (m.shininess <= 0) {
-				cout << "model properties error: shininess must be positive." << endl;
-				break;
+		if (scene->getNumberOfModels() > 0) {
+			CEditModelDialog emdlg;
+			if (emdlg.DoModal() == IDOK) {
+				if (emdlg.ShouldRandom()) {
+					scene->getActiveModel()->setRandomMaterial();
+				} else {
+					Material m = {
+						emdlg.GetAmbientColor(),
+						emdlg.GetSpecularColor(),
+						emdlg.GetDiffuseColor(),
+						emdlg.GetShininess()
+					};
+					if (m.shininess <= 0) {
+						cout << "model properties error: shininess must be positive." << endl;
+						break;
+					}
+					scene->getActiveModel()->setUniformMaterial(m);
+				}
+				cout << "set active model properties" << endl;
+				should_redraw = true;
 			}
-			scene->getActiveModel()->setUniformMaterial(m);
-			cout << "set active model properties" << endl;
-			should_redraw = true;
 		}
 		break;
 	}
@@ -447,20 +489,28 @@ void mainMenu(int id)
 
 void initMenu()
 {
-	// light sub menu
-	int menuLight = glutCreateMenu(lightMenu);
-	glutAddMenuEntry("New", NEW_ITEM);
-	glutAddMenuEntry("Ambient", EDIT_ITEM);
-
 	// model sub menu
 	int menuModel = glutCreateMenu(modelMenu);
 	glutAddMenuEntry("New", NEW_ITEM);
 	glutAddMenuEntry("Edit", EDIT_ITEM);
 
+	// light sub menu
+	int menuLight = glutCreateMenu(lightMenu);
+	glutAddMenuEntry("New", NEW_ITEM);
+	glutAddMenuEntry("Ambient", EDIT_ITEM);
+
+	// shader sub menu
+	int menuShader = glutCreateMenu(shaderMenu);
+	glutAddMenuEntry("Flat", FLAT);
+	glutAddMenuEntry("Gouraud", GOURAUD);
+	glutAddMenuEntry("Phong", PHONG);
+	glutAddMenuEntry("Fog", FOG);
+
 	// file sub menu
 	int menuFile = glutCreateMenu(fileMenu);
 	glutAddSubMenu("Model", menuModel);
 	glutAddMenuEntry("Camera", ADD_CAMERA);
+	glutAddSubMenu("Shader", menuShader);
 	glutAddSubMenu("Light", menuLight);
 
 	// setting sub menu
@@ -894,8 +944,8 @@ int my_main( int argc, char **argv )
 	fprintf(stdout, "Status: Using GLEW %s\n", glewGetString(GLEW_VERSION));
 
 	
-	FlatShader fs;
-	renderer = new Renderer(512, 512, &fs);
+	FlatShader * fs = new FlatShader();
+	renderer = new Renderer(512, 512, fs);
 	scene = new Scene(renderer, vec3(0, 5, 15));
 	config = { 0, vec3(1), vec3(), vec3(), 1, false};
 	//----------------------------------------------------------------------------

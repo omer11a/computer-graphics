@@ -256,21 +256,25 @@ public:
 	vec3 GetSpecularColor() const;
 	vec3 GetDiffuseColor() const;
 	float GetShininess() const;
+	bool ShouldRandom() const;
 protected:
 
 	COLORREF ambient;
 	COLORREF specular;
 	COLORREF diffuse;
 	float shininess;
+	bool should_random;
 	
 	CEdit shininessEdit;
 	CButton ambientEdit;
 	CButton specularEdit;
 	CButton diffuseEdit;
+	CButton randomEdit;
 
 	afx_msg void set_ambient();
 	afx_msg void set_specular();
 	afx_msg void set_diffuse();
+	afx_msg void update_random();
 	virtual void DoDataExchange(CDataExchange* pDX);
 
 	afx_msg int OnCreate(LPCREATESTRUCT lpcs);

@@ -645,8 +645,12 @@ void CEditModelDialog::set_diffuse() {
 	}
 }
 
+void CEditModelDialog::update_random() {
+	should_random = randomEdit.GetCheck();
+}
+
 CEditModelDialog::CEditModelDialog(CString title)
-	: CInputDialog(title), ambient(0xFFFFFF), specular(0), diffuse(0), shininess(0)
+	: CInputDialog(title), ambient(0xFFFFFF), specular(0), diffuse(0), shininess(1), should_random(false)
 { }
 
 CEditModelDialog::~CEditModelDialog()
@@ -672,6 +676,11 @@ float CEditModelDialog::GetShininess() const
 	return shininess;
 }
 
+bool CEditModelDialog::ShouldRandom() const
+{
+	return should_random;
+}
+
 void CEditModelDialog::DoDataExchange(CDataExchange* pDX)
 {
 	CInputDialog::DoDataExchange(pDX);
@@ -685,6 +694,7 @@ BEGIN_MESSAGE_MAP(CEditModelDialog, CInputDialog)
 	ON_BN_CLICKED(IDC_COLOR_EDIT, set_ambient)
 	ON_BN_CLICKED(IDC_COLOR_EDIT + 1, set_specular)
 	ON_BN_CLICKED(IDC_COLOR_EDIT + 2, set_diffuse)
+	ON_BN_CLICKED(IDC_VALUE_EDIT + 1, update_random)
 END_MESSAGE_MAP()
 
 int CEditModelDialog::OnCreate(LPCREATESTRUCT lpcs)
@@ -706,6 +716,10 @@ int CEditModelDialog::OnCreate(LPCREATESTRUCT lpcs)
 
 	shininessEdit.Create(ES_MULTILINE | WS_CHILD | WS_VISIBLE | WS_TABSTOP | WS_BORDER,
 		CRect(sx, height, ex, height + 20), this, IDC_VALUE_EDIT);
+	height += 40;
+
+	randomEdit.Create("Choose...", BS_AUTOCHECKBOX | WS_CHILD | WS_VISIBLE | WS_TABSTOP | WS_BORDER,
+		CRect(sx, height, ex, height + 20), this, IDC_VALUE_EDIT + 1);
 
 	return 0;
 }
@@ -716,24 +730,24 @@ void CEditModelDialog::OnPaint()
 	dc.SetBkMode(TRANSPARENT);
 	int height = 72;
 
-	CRect rect(50, height, 190, height + 18);
+	CRect rect(50, height, 200, height + 18);
 	dc.DrawText("Ambient:", -1, &rect, DT_SINGLELINE);
-	height += 40;
 
 	rect.bottom += 40;
 	rect.top += 40;
 	dc.DrawText("Specular:", -1, &rect, DT_SINGLELINE);
-	height += 40;
 
 	rect.bottom += 40;
 	rect.top += 40;
 	dc.DrawText("Diffuse:", -1, &rect, DT_SINGLELINE);
-	height += 40;
 
 	rect.bottom += 40;
 	rect.top += 40;
 	dc.DrawText("Shininess:", -1, &rect, DT_SINGLELINE);
-	height += 60;
+
+	rect.bottom += 40;
+	rect.top += 40;
+	dc.DrawText("Use Random Materials:", -1, &rect, DT_SINGLELINE);
 
 	ambientEdit.SetFocus();
 }

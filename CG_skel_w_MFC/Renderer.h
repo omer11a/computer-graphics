@@ -18,7 +18,6 @@ class Renderer : public BaseRenderer
 
 	mat4 m_cTransform, m_projection, m_oTransform;
 	mat3 m_nTransform;
-	mat4 m_camera_multiply;
 	Shader * shader;
 	float zNear;
 	float zFar;
@@ -75,7 +74,10 @@ public:
 		const vector<vec3>* faceNormals = NULL,
 		const bool allowVertexNormals = false,
 		const bool allowFaceNormals = false) override;
-	void switchWire(); 
+	void SwitchWire(); 
+	void SetBaseShader(Shader * s);
+	void SetFog(const vec3& color);
+
 	void DrawSquare(const vec3& p1, const vec3& p2, const vec3& p3, const vec3& p4, const vec3& color);
 	void DrawBox(const vec3& minValues, const vec3& maxValues) override;
 	void DrawCamera() override;
