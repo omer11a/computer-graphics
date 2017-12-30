@@ -24,7 +24,7 @@ public:
 		const bool allowFaceNormals = false);
 	virtual void DrawBox(const vec3& minValues, const vec3& maxValues);
 	virtual void DrawCamera();
-	virtual void DrawLight(const vec3& color);
+	virtual void DrawLight(const vec3& color, const vec3& position);
 
 	virtual void SetCameraTransform(const mat4& cTransform);
 	virtual void SetProjection(const mat4& projection);

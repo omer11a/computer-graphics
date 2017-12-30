@@ -22,7 +22,6 @@ class MeshModel
 
 	void loadFile(string fileName);
 	mat3 convertToNormalTransform(const mat4 & transform) const;
-	void computeFaceNormals();
 	void computeBoundingBox();
 
 protected:
@@ -32,6 +31,7 @@ protected:
 	vector<Material> materials;
 
 	vec3 & getVecByIndex(vector<vec3> & vecs, int i);
+	void computeFaceNormals();
 	MeshModel();
 
 public:

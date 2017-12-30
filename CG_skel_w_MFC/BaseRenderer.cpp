@@ -36,7 +36,7 @@ void BaseRenderer::DrawBox(const vec3 & minValues, const vec3 & maxValues) { }
 
 void BaseRenderer::DrawCamera() { }
 
-void BaseRenderer::DrawLight(const vec3 & location) { }
+void BaseRenderer::DrawLight(const vec3& color, const vec3 & position) { }
 
 void BaseRenderer::SetCameraTransform(const mat4 & cTransform) { }
 

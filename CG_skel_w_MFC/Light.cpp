@@ -38,9 +38,14 @@ vec3 DirectionalLightSource::computeSpecularColor(
 	const vec3& normal,
 	const Material& material
 ) const {
-	vec3 R = normalize(2 * dot(direction, normal) * normal - direction);
+	float product = dot(direction, normal);
+	if (product <= 0) {
+		return 0;
+	}
+
+	vec3 R = normalize(2 * product * normal - direction);
 	vec3 V = normalize(-modelPosition);
-	float product = dot(R, V);
+	product = dot(R, V);
 	if (product <= 0) {
 		return 0;
 	}
@@ -140,16 +145,16 @@ void PointLightSource::draw(BaseRenderer * renderer) const
 	}
 
 	renderer->SetObjectMatrices(worldTransform * modelTransform);
-	renderer->DrawLight(intensity);
+	renderer->DrawLight(intensity, position);
 
 }
 
 void ParallelLightSource::updateDirection() {
-	transformedDirection = normalize(convert4dTo3d(transform * worldTransform * modelTransform * direction));
+	transformedDirection = normalize(convert4dTo3d(transform * worldTransform * modelTransform) * direction);
 }
 
 vec3 ParallelLightSource::getDirection(const vec3& modelPosition) const {
-	return transformedDirection;
+	return -transformedDirection;
 }
 
 ParallelLightSource::ParallelLightSource(const vec3& intensity, const vec3& direction)
