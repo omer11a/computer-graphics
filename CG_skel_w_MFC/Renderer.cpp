@@ -10,13 +10,13 @@
 #define INDEX(width,x,y,c) (x+y*width)*3+c
 
 Renderer::Renderer() : BaseRenderer(512, 512), m_zBuffer(NULL),
-m_cTransform(), m_projection(), m_oTransform(), m_nTransform(), shader(NULL), is_wire_mode(false)
+m_cTransform(), m_projection(), m_oTransform(), m_nTransform(), m_cnTransform(), shader(NULL), is_wire_mode(false)
 {
 	InitOpenGLRendering();
 	CreateBuffers(512, 512);
 }
 Renderer::Renderer(int width, int height, Shader * shader) : BaseRenderer(width, height), m_zBuffer(NULL),
-m_cTransform(), m_projection(), m_oTransform(), m_nTransform(), shader(shader), is_wire_mode(false)
+m_cTransform(), m_projection(), m_oTransform(), m_nTransform(), m_cnTransform(), shader(shader), is_wire_mode(false)
 {
 	InitOpenGLRendering();
 	CreateBuffers(width, height);
@@ -391,6 +391,7 @@ void Renderer::SetPolygonToShader(const ConvexPolygon * shader_polygon, const ve
 		tri_materials[1],
 		tri_materials[2]
 	};
+
 	shader->setPolygon(vertex, pm, normals, f_normal);
 }
 
@@ -468,7 +469,7 @@ bool Renderer::PixelToPoint(const vec3& p1, const vec3& p2, const vec3& p3, cons
 void Renderer::PaintTriangle(const vector<vec3> * vertices, const vector<Material> * materials, const vector<vec3>* v_normals, const vec3& f_normal)
 {
 	ConvexPolygon p(*vertices, *materials, *v_normals);
-	p.transform(m_cTransform * m_oTransform, m_nTransform);
+	p.transform(m_cTransform * m_oTransform, m_cnTransform * m_nTransform);
 	p.clip(2, -zNear, std::less_equal<float>());
 	p.clip(2, -zFar, std::greater_equal<float>());
 	
@@ -656,8 +657,7 @@ void Renderer::PaintTriangleScanLines(const vec3& p1, const vec3& p2, const vec3
 			vec3 newP;
 			if ((!m_paintBuffer[(int)(y * m_width + x)]) &&
 				(PixelToPoint(p1, p2, p3, vec3(x, y, 0), newP))) {
-				vec3 c = CalculatePointColor(p1, p2, p3, abc_area, vec3(x, y, newP.z));
-				//vec3 c = CalculatePointColor(p1, p2, p3, abc_area, newP);
+				vec3 c = CalculatePointColor(p1, p2, p3, abc_area, newP);
 				PlotPixel(x, y, newP.z, c);
 			}
 
@@ -687,21 +687,21 @@ void Renderer::DrawTriangles(
 	while (i != vertices->end()) {
 		// ----- new version ----
 		vector<vec3> tri_vertices;
-		tri_vertices.insert(tri_vertices.begin(), *(i++));
-		tri_vertices.insert(tri_vertices.begin(), *(i++));
-		tri_vertices.insert(tri_vertices.begin(), *(i++));
+		tri_vertices.push_back(*(i++));
+		tri_vertices.push_back(*(i++));
+		tri_vertices.push_back(*(i++));
 		vec3 cm = GetCenterMass(&tri_vertices);
 
 		vector<Material> materials;
-		materials.insert(materials.begin(), *(m++));
-		materials.insert(materials.begin(), *(m++));
-		materials.insert(materials.begin(), *(m++));
+		materials.push_back(*(m++));
+		materials.push_back(*(m++));
+		materials.push_back(*(m++));
 
 		vector<vec3> v_normals;
 		if ((vertexNormals != NULL) && (vertexNormals->size() != 0)) {
-			v_normals.insert(v_normals.begin(), vertexNormals->at(vn_index++));
-			v_normals.insert(v_normals.begin(), vertexNormals->at(vn_index++));
-			v_normals.insert(v_normals.begin(), vertexNormals->at(vn_index++));
+			v_normals.push_back(vertexNormals->at(vn_index++));
+			v_normals.push_back(vertexNormals->at(vn_index++));
+			v_normals.push_back(vertexNormals->at(vn_index++));
 		}
 
 		if ((faceNormals != NULL) && (faceNormals->size() != 0)) {
@@ -714,7 +714,8 @@ void Renderer::DrawTriangles(
 			DrawLine(tri_vertices[1], vec3(), tri_vertices[2], vec3(), white);
 			DrawLine(tri_vertices[2], vec3(), tri_vertices[0], vec3(), white);
 		} else {
-			PaintTriangle(&tri_vertices, &materials, &v_normals, f_normal);
+			vec3 transformed_f_normal = normalize(m_cnTransform * m_nTransform * f_normal);
+			PaintTriangle(&tri_vertices, &materials, &v_normals, transformed_f_normal);
 		}
 
 		if ((allowVertexNormals) && (v_normals.size() > 0)) {
@@ -784,10 +785,10 @@ void Renderer::DrawCamera()
 	}
 }
 
-void Renderer::DrawLight(const vec3& color)
+void Renderer::DrawLight(const vec3& color, const vec3& position)
 {
 	vec3 light_location;
-	bool in_sight = pointToScreen(vec3(), vec3(), light_location);
+	bool in_sight = pointToScreen(position, vec3(), light_location);
 	if (!in_sight) {
 		return;
 	}
@@ -813,7 +814,8 @@ void Renderer::SetLights(const vector<Light *> * lights) {
 void Renderer::SetCameraTransform(const mat4 & cTransform)
 {
 	m_cTransform = cTransform;
-	shader->setTransform(m_cTransform * m_oTransform);//is this a must?
+	m_cnTransform = convert4dTo3d(m_cTransform);
+	shader->setTransform(m_cTransform);
 }
 
 void Renderer::SetProjection(const mat4 & projection)
@@ -831,8 +833,6 @@ void Renderer::SetObjectMatrices(const mat4 & oTransform, const mat3 & nTransfor
 {
 	m_oTransform = oTransform;
 	m_nTransform = nTransform;
-
-	shader->setTransform(m_cTransform * m_oTransform);
 }
 
 void Renderer::SetDemoBuffer()

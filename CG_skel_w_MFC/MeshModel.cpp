@@ -173,6 +173,7 @@ MeshModel::MeshModel(string fileName) :
 {
 	loadFile(fileName);
 	setUniformMaterial({ 1, 1, 1, 1 });
+	computeFaceNormals();
 }
 
 void MeshModel::transformInModel(const mat4 & transform) {
@@ -202,9 +203,6 @@ void MeshModel::switchVertexNormalsVisibility() {
 
 void MeshModel::switchFaceNormalsVisibility() {
 	allowFaceNormals = !allowFaceNormals;
-	if (allowFaceNormals) {
-		computeFaceNormals();
-	}
 }
 
 void MeshModel::switchBoundingBoxVisibility() {
@@ -300,4 +298,5 @@ PrimMeshModel::PrimMeshModel() : MeshModel()
 	}
 
 	setUniformMaterial({ 1, 1, 1, 1 });
+	computeFaceNormals();
 }

@@ -17,8 +17,8 @@ class Renderer : public BaseRenderer
 	bool *m_paintBuffer;	// width * height
 
 	mat4 m_cTransform, m_projection, m_oTransform;
-	mat3 m_nTransform;
-	Shader * shader, *temp_shader;
+	mat3 m_cnTransform, m_nTransform;
+	Shader * shader;
 	float zNear;
 	float zFar;
 
@@ -80,7 +80,7 @@ public:
 	void DrawSquare(const vec3& p1, const vec3& p2, const vec3& p3, const vec3& p4, const vec3& color);
 	void DrawBox(const vec3& minValues, const vec3& maxValues) override;
 	void DrawCamera() override;
-	void DrawLight(const vec3& color) override;
+	void DrawLight(const vec3& color, const vec3& position) override;
 	void SetLights(const vector<Light *> * lights);
 	void SetCameraTransform(const mat4& cTransform) override;
 	void SetProjection(const mat4& projection) override;
