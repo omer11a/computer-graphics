@@ -621,8 +621,7 @@ void Renderer::PaintTriangleScanLines(const vec3& p1, const vec3& p2, const vec3
 			vec3 newP;
 			if ((!m_paintBuffer[(int)(y * m_width + x)]) &&
 				(PixelToPoint(p1, p2, p3, vec3(x, y, 0), newP))) {
-				vec3 c = CalculatePointColor(p1, p2, p3, abc_area, vec3(x, y, newP.z));
-				//vec3 c = CalculatePointColor(p1, p2, p3, abc_area, newP);
+				vec3 c = CalculatePointColor(p1, p2, p3, abc_area, newP);
 				PlotPixel(x, y, newP.z, c);
 			}
 
