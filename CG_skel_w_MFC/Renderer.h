@@ -18,7 +18,7 @@ class Renderer : public BaseRenderer
 
 	mat4 m_cTransform, m_projection, m_oTransform;
 	mat3 m_cnTransform, m_nTransform;
-	Shader * shader;
+	Shader * shader, * default_shader;
 	float zNear;
 	float zFar;
 

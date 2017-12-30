@@ -12,18 +12,22 @@
 Renderer::Renderer() : BaseRenderer(512, 512), m_zBuffer(NULL),
 m_cTransform(), m_projection(), m_oTransform(), m_nTransform(), m_cnTransform(), shader(NULL), is_wire_mode(false)
 {
+	default_shader = new FlatShader();
 	InitOpenGLRendering();
 	CreateBuffers(512, 512);
 }
 Renderer::Renderer(int width, int height, Shader * shader) : BaseRenderer(width, height), m_zBuffer(NULL),
 m_cTransform(), m_projection(), m_oTransform(), m_nTransform(), m_cnTransform(), shader(shader), is_wire_mode(false)
 {
+	default_shader = new FlatShader();
 	InitOpenGLRendering();
 	CreateBuffers(width, height);
 }
 
 Renderer::~Renderer(void)
 {
+	delete default_shader;
+	delete shader;
 	DestroyBuffers();
 }
 
@@ -400,40 +404,6 @@ vec3 Renderer::CalculatePointColor(const vec3& p1, const vec3& p2, const vec3& p
 	return shader->getColor(b_c);
 }
 
-///<summary>
-/// Determine whether a point P is inside the triangle ABC. Note, this function
-/// assumes that P is coplanar with the triangle.
-/// from https://blogs.msdn.microsoft.com/rezanour/2011/08/07/barycentric-coordinates-and-point-in-triangle-tests/
-///</summary>
-///<returns>True if the point is inside, false if it is not.</returns>
-bool PointInTriangle(const vec3& A, const vec3& B, const vec3& C, const vec3& P)
-{
-	// Prepare our barycentric variables
-	vec3 u = B - A;
-	vec3 v = C - A;
-	vec3 w = P - A;
-	vec3 vCrossW = cross(v, w);
-	vec3 vCrossU = cross(v, u);
-
-	// Test sign of r
-	if (dot(vCrossW, vCrossU) < 0)
-		return false;
-
-	vec3 uCrossW = cross(u, w);
-	vec3 uCrossV = cross(u, v);
-
-	// Test sign of t
-	if (dot(uCrossW, uCrossV) < 0)
-		return false;
-
-	// At this point, we know that r and t and both > 0.
-	// Therefore, as long as their sum is <= 1, each must be less <= 1
-	float denom = length(uCrossV);
-	float r = length(vCrossW) / denom;
-	float t = length(uCrossW) / denom;
-	return (r + t <= 1);
-}
-
 bool Renderer::PixelToPoint(const vec3& p1, const vec3& p2, const vec3& p3, const vec3& p, vec3& newP) const {
 
 	float x = (p.x - m_width * 0.5) / min_size;
@@ -449,14 +419,10 @@ bool Renderer::PixelToPoint(const vec3& p1, const vec3& p2, const vec3& p3, cons
 	// p4 is the intersection of lines: p1<->p, p2<->p3
 	vec3 p4 = p2 + tk[1] * (p3 - p2);
 
-	//return p1 + (p4 - p1) / tk[0];
 	newP = p1 + (p4 - p1) / tk[0];
 	newP.x = np.x;
 	newP.y = np.y;
 
-	/*if (!PointInTriangle(p1, p2, p3, newP)) {
-		return false;
-	}*/
 	if ((newP.x < -1) || (newP.x > 1) ||
 		(newP.y < -1) || (newP.y > 1) ||
 		(newP.z < -1) || (newP.z > 1)) {
@@ -608,6 +574,12 @@ bool GetIntersectionPoint(const vec3& p1, const vec3& p2, const float y, vec3& p
 
 void Renderer::PaintTriangleScanLines(const vec3& p1, const vec3& p2, const vec3& p3)
 {
+	if ((length(p1 - p2) == 0) ||
+		(length(p2 - p3) == 0) || 
+		(length(p3 - p1) == 0)) {
+		return;
+	}
+
 	const vec3 * points3d[3] = { &p1, &p2, &p3 };
 	vec3 s_p1 = convertToScreen(p1);
 	vec3 s_p2 = convertToScreen(p2);
@@ -681,6 +653,14 @@ void Renderer::DrawTriangles(
 	int vn_index = 0;
 	vec3 v_normal, f_normal;
 
+	// if there are no normals, use the flat shader
+	Shader * temp = NULL;
+	if ((vertexNormals == NULL) || (vertexNormals->size() == 0) ||
+		(faceNormals == NULL) || (faceNormals->size() == 0)) {
+		temp = shader;
+		shader = default_shader;
+	}
+
 	// assuming that vertices size is a multiplication of 3
 	auto i = vertices->begin();
 	auto m = materials->begin();
@@ -727,6 +707,10 @@ void Renderer::DrawTriangles(
 		if ((allowFaceNormals) && (faceNormals != NULL)) {
 			DrawLine(cm, vec3(), cm, f_normal, pink);
 		}
+	}
+
+	if (temp != NULL) {
+		shader = temp;
 	}
 }
 
@@ -809,6 +793,7 @@ void Renderer::DrawLight(const vec3& color, const vec3& position)
 
 void Renderer::SetLights(const vector<Light *> * lights) {
 	shader->setLights(lights);
+	default_shader->setLights(lights);
 }
 
 void Renderer::SetCameraTransform(const mat4 & cTransform)
@@ -816,6 +801,7 @@ void Renderer::SetCameraTransform(const mat4 & cTransform)
 	m_cTransform = cTransform;
 	m_cnTransform = convert4dTo3d(m_cTransform);
 	shader->setTransform(m_cTransform);
+	default_shader->setTransform(m_cTransform);
 }
 
 void Renderer::SetProjection(const mat4 & projection)

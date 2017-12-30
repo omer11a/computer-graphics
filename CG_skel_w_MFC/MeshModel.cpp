@@ -123,7 +123,9 @@ void MeshModel::loadFile(string fileName)
 		for (int i = 0; i < 3; i++)
 		{
 			vertexPositions.push_back(getVecByIndex(vertices, it->v[i]));
-			vertexNormals.push_back(getVecByIndex(normals, it->vn[i]));
+			if (normals.size() != 0) {
+				vertexNormals.push_back(getVecByIndex(normals, it->vn[i]));
+			}
 		}
 	}
 }
