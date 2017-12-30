@@ -386,6 +386,7 @@ void Renderer::SetPolygonToShader(const ConvexPolygon * shader_polygon, const ve
 		tri_materials[1],
 		tri_materials[2]
 	};
+
 	shader->setPolygon(vertex, pm, normals, f_normal);
 }
 
@@ -709,8 +710,8 @@ void Renderer::DrawTriangles(
 			DrawLine(tri_vertices[1], vec3(), tri_vertices[2], vec3(), white);
 			DrawLine(tri_vertices[2], vec3(), tri_vertices[0], vec3(), white);
 		} else {
-			vec3 transform_f_normal = normalize(m_cnTransform * m_nTransform * f_normal);
-			PaintTriangle(&tri_vertices, &materials, &v_normals, transform_f_normal);
+			vec3 transformed_f_normal = normalize(m_cnTransform * m_nTransform * f_normal);
+			PaintTriangle(&tri_vertices, &materials, &v_normals, transformed_f_normal);
 		}
 
 		if ((allowVertexNormals) && (v_normals.size() > 0)) {
