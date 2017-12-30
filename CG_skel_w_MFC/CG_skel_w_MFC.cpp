@@ -146,6 +146,10 @@ void keyboard(unsigned char key, int x, int y)
 		config.is_demo = false;
 		should_redraw = true;
 		break;
+	case '\b':
+		// clear active object
+		should_redraw = delete_active_object();
+		break;
 	case '\t':
 		change_active_model();
 		break;
@@ -422,8 +426,8 @@ void modelMenu(int id)
 						emdlg.GetDiffuseColor(),
 						emdlg.GetShininess()
 					};
-					if (m.shininess <= 0) {
-						cout << "model properties error: shininess must be positive." << endl;
+					if (m.shininess < 0) {
+						cout << "model properties error: shininess must be non-negative." << endl;
 						break;
 					}
 					scene->getActiveModel()->setUniformMaterial(m);
@@ -679,6 +683,38 @@ void change_active_light()
 	} else {
 		cout << "no lights in system" << endl;
 	}
+}
+
+bool delete_active_object()
+{
+	bool should_redraw = false;
+	switch (config.mode) {
+	case MODEL_OBJECT:
+	case MODEL_WORLD:
+		if (scene->getNumberOfModels() > 0) {
+			scene->removeActiveModel();
+			cout << "deleted active model" << endl;
+			should_redraw = true;
+		}
+		break;
+	case CAMERA_OBJECT:
+	case CAMERA_WORLD:
+		if (scene->getNumberOfCameras() > 1) {
+			scene->removeActiveCamera();
+			cout << "deleted active camera" << endl;
+			should_redraw = true;
+		}
+		break;
+	case LIGHT_OBJECT:
+	case LIGHT_WORLD:
+		if (scene->getNumberOfLights() > 0) {
+			scene->removeActiveLight();
+			cout << "deleted active light" << endl;
+			should_redraw = true;
+		}
+		break;
+	}
+	return should_redraw;
 }
 
 
