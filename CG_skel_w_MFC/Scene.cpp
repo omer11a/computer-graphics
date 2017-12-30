@@ -405,8 +405,8 @@ void Scene::removeActiveCamera() {
 		throw invalid_argument("No active camera");
 	}
 
-	if (activeCamera == 0) {
-		throw invalid_argument("Can't remove main camera");
+	if (cameras.size() < 2) {
+		throw invalid_argument("Can't remove all cameras");
 	}
 
 	Camera * camera = cameras.at(activeCamera);
