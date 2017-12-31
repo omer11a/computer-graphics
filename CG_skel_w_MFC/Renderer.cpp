@@ -761,16 +761,7 @@ void Renderer::DrawCamera()
 		return;
 	}
 	
-	/*vector<vec3> vertices;
-	vertices.push_back(camera_location + vec3(-10, 0, 0));
-	vertices.push_back(camera_location + vec3(10, 0, 0));
-	vertices.push_back(camera_location + vec3(0, 25, 0));
-	
-	DrawLine(vertices[0], vertices[1], color);
-	DrawLine(vertices[1], vertices[2], color);
-	DrawLine(vertices[2], vertices[0], color);
-	*/
-	for (int i = -5; i < 5; ++i) {
+	for (int i = -5 * anti_factor; i < 5 * anti_factor; ++i) {
 		PlotPixel(camera_location.x + i, camera_location.y, camera_location.z, color);
 		PlotPixel(camera_location.x, camera_location.y + i, camera_location.z, color);
 	}
@@ -784,7 +775,7 @@ void Renderer::DrawLight(const vec3& color, const vec3& position)
 		return;
 	}
 	
-	for (int i = -5; i <= 5; ++i) {
+	for (int i = -5 * anti_factor; i <= 5 * anti_factor; ++i) {
 		PlotPixel(light_location.x + i, light_location.y + i, light_location.z, color);	// \ 
 		PlotPixel(light_location.x + i, light_location.y - i, light_location.z, color);	// /
 		PlotPixel(light_location.x, light_location.y + i, light_location.z, color);		// |
