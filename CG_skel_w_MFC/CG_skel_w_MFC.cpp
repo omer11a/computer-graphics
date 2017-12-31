@@ -82,7 +82,8 @@ PrimMeshModels:
 #define SETTING_SCALING		1
 #define SETTING_ROTATION	2
 #define SETTING_MOVEMENT	3
-#define SETTING_ZOOM	4
+#define SETTING_ZOOM		4
+#define SETTING_AA			5
 
 #define MODEL_OBJECT	'm'
 #define MODEL_WORLD		'w'
@@ -458,6 +459,7 @@ void fileMenu(int id)
 
 void settingMenu(int id)
 {
+	CValueDialog dlg("Anti-Aliasing Setting", "Factor", 1);
 	switch (id) {
 	case SETTING_SCALING:
 		set_scale_vector();
@@ -470,6 +472,16 @@ void settingMenu(int id)
 		break;
 	case SETTING_ZOOM:
 		set_zoom_value();
+		break;
+	case SETTING_AA:
+		if (dlg.DoModal() == IDOK) {
+			int factor = dlg.GetValue();
+			if (factor >= 1) {
+				renderer->SetAntiAliasing(factor);
+				cout << "set anti aliasing with factor " << factor << endl;
+				redraw();
+			}
+		}
 		break;
 	}
 }
@@ -523,6 +535,7 @@ void initMenu()
 	glutAddMenuEntry("Rotation...", SETTING_ROTATION);
 	glutAddMenuEntry("Movement...", SETTING_MOVEMENT);
 	glutAddMenuEntry("Zoom...", SETTING_ZOOM);
+	glutAddMenuEntry("Anti-Aliasing...", SETTING_AA);
 
 	glutCreateMenu(mainMenu);
 	glutAddSubMenu("Add/Set", menuFile);
@@ -540,7 +553,6 @@ void redraw(bool should_redraw)
 		if (config.is_demo) {
 			scene->drawDemo();
 		} else {
-			renderer->ClearColorBuffer();
 			renderer->ClearDepthBuffer();
 			scene->draw();
 		};
