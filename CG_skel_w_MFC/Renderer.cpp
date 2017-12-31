@@ -316,7 +316,7 @@ void Renderer::DrawSteepLine(const vec3& p1, const vec3& p2, const vec3& c, cons
 			d += dne;
 		}
 		z += dz;
-		++t;
+		--t;
 		if (c.x == -1) {
 			b_c[start_idx] = t / dy;	// dy can't be 0
 			b_c[end_idx] = 1 - b_c[start_idx];
@@ -373,7 +373,7 @@ void Renderer::DrawModerateLine(const vec3& p1, const vec3& p2, const vec3& c, c
 		}
 
 		z += dz;
-		++t;
+		--t;
 		if (c.x == -1) {
 			b_c[start_idx] = t / dx;	// dx can't be 0
 			b_c[end_idx] = 1 - b_c[start_idx];
@@ -485,6 +485,12 @@ void Renderer::PaintTriangle(const vector<vec3> * vertices, const vector<Materia
 	while (!triangles.empty()) {
 		ConvexPolygon * polygon = triangles.back();
 		triangles.pop_back();
+		delete polygon;
+	}
+
+	while (!shader_triangles.empty()) {
+		ConvexPolygon * polygon = shader_triangles.back();
+		shader_triangles.pop_back();
 		delete polygon;
 	}
 }
