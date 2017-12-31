@@ -149,8 +149,15 @@ void LayeredShader::setPolygon(
 	parent->setPolygon(vertices, materials, vertexNormals, faceNormal);
 }
 
-FogShader::FogShader(Shader * parent, const vec3& fogColor)
-	: LayeredShader(parent), fogColor(fogColor), vertexMatrix()
+FogShader::FogShader(
+	Shader * parent,
+	const vec3& fogColor,
+	float extinctionCoefficient,
+	float inScatteringCoefficient
+) :
+	LayeredShader(parent),
+	fogColor(fogColor), extinctionCoefficient(extinctionCoefficient), inScatteringCoefficient(inScatteringCoefficient),
+	vertexMatrix()
 {}
 
 void FogShader::setPolygon(
@@ -164,12 +171,13 @@ void FogShader::setPolygon(
 }
 
 vec3 FogShader::getColor(const vec3& barycentricCoordinates) const {
-	vec3 position = vertexMatrix * position;
-	vec3 lightColor = parent->getColor(position);
+	vec3 position = vertexMatrix * barycentricCoordinates;
+	vec3 lightColor = parent->getColor(barycentricCoordinates);
 	float dist = length(position);
-	float be = fabs(position.y) * 0.004;
-	float bi = fabs(position.y) * 0.001;
+	float be = fabs(position.y) * extinctionCoefficient;
+	float bi = fabs(position.y) * inScatteringCoefficient;
 	float ext = exp(-dist * be);
 	float insc = exp(-dist * bi);
-	return lightColor * ext + fogColor * (1 - insc);
+	vec3 finalColor = lightColor * ext + fogColor * (1 - insc);
+	return minvec(finalColor, 1);
 }
