@@ -861,9 +861,9 @@ void Renderer::SetBaseShader(Shader * s) {
 void Renderer::SetFog(const vec3& color, const float extinction, const float scattering)
 {
 	if (shader != NULL) {
-		shader = new FogShader(shader, color);
+		shader = new FogShader(shader, color, extinction, scattering);
 	} else {
-		shader = new FogShader(new FlatShader(), color);
+		shader = new FogShader(new FlatShader(), color, extinction, scattering);
 	}
 }
 
