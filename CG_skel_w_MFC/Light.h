@@ -14,6 +14,7 @@ public:
 	Light(const Light& light);
 	virtual Light * clone() const = 0;
 
+	void setIntensity(const vec3& intensity);
 	virtual void setTransform(const mat4 & transform);
 	virtual void draw(BaseRenderer * r) const;
 

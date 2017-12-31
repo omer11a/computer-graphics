@@ -35,7 +35,7 @@ Camera::Camera() :
 	isVisible(true), isPerspective(true),
 	viewTransform(), worldTransform(), inverseViewTransform(), inverseWorldTransform()
 {
-	frustum(-5, 5, -5, 5, 5, 15);
+	frustum(-5, 5, -5, 5, 5, 20);
 }
 
 void Camera::transformInView(const mat4& transform) {

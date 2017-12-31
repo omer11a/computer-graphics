@@ -5,6 +5,10 @@ Light::Light(const vec3& intensity) : intensity(intensity), transform() {}
 
 Light::Light(const Light& light) : intensity(light.intensity), transform(light.transform) {}
 
+void Light::setIntensity(const vec3& intensity) {
+	this->intensity = intensity;
+}
+
 void Light::setTransform(const mat4 & transform) {
 	this->transform = transform;
 }
