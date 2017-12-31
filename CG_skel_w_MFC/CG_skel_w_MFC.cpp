@@ -300,6 +300,7 @@ void help()
 		"GENERAL:\n"
 		"ESC/q\t\texit\n"
 		"DEL\t\tclear screen\n"
+		"BS\t\tdelete active object\n"
 		"\n"
 		"MODES:\n"
 		"* w/W\t\tenter world mode\n"
@@ -319,8 +320,8 @@ void help()
 		"* o/f\t\tset camera orthogonal / frustum\n"
 		"* Z/z\t\tset zoom in / out\n"
 		"\n"
-		"* *\t\tchange active light"
-		"* s\t\tset camera/light visibility"
+		"* *\t\tchange active light\n"
+		"* s\t\tset camera/light visibility\n"
 		"\n"
 		"* TAB\t\tchange active model\n"
 		"* b\t\tswitch model bounding box visibility\n"
@@ -372,7 +373,7 @@ void lightMenu(int id)
 void shaderMenu(int id)
 {
 	bool should_redraw = true;
-	CColorDialog cdlg;
+	CFogDialog fdlg;
 	switch (id) {
 	case FLAT:
 		renderer->SetBaseShader(new FlatShader());
@@ -387,9 +388,15 @@ void shaderMenu(int id)
 		cout << "set phong shader" << endl;
 		break;
 	case FOG:
-		if (cdlg.DoModal() == IDOK) {
-			renderer->SetFog(ColorToVec(cdlg.GetColor()));
+		if (fdlg.DoModal() == IDOK) {
+			float extinction = fdlg.GetExtinction();
+			float scattering = fdlg.GetScattering();
+			if ((extinction >= 0) && (extinction <= 1) && (scattering >= 0) && (scattering <= 1)) {
+			renderer->SetFog(fdlg.GetColor(), extinction, scattering);
 			cout << "set fog" << endl;
+			} else {
+				cout << "fog error! parameters must be in [0,1] range." << endl;
+			}
 		} else {
 			should_redraw = false;
 		}

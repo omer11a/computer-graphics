@@ -596,12 +596,7 @@ void CLightDialog::OnPaint()
 	rect.bottom += 50;
 	rect.top += 50;
 	dc.DrawText("Location / Direction:", -1, &rect, DT_SINGLELINE);
-	/*if (is_point) {
-		dc.DrawText("Location:", -1, &rect, DT_SINGLELINE);
-	} else {
-		dc.DrawText("Direction:", -1, &rect, DT_SINGLELINE);
-	}*/
-
+	
 	rect.bottom += 30;
 	rect.top += 30;
 	dc.DrawText("X:", -1, &rect, DT_SINGLELINE);
@@ -750,4 +745,89 @@ void CEditModelDialog::OnPaint()
 	dc.DrawText("Use Random Materials:", -1, &rect, DT_SINGLELINE);
 
 	ambientEdit.SetFocus();
+}
+
+// ----------------------
+//    Class CFogDialog
+// ----------------------
+void CFogDialog::choose_color() {
+	CColorDialog dlg;
+	if (dlg.DoModal() == IDOK) {
+		color = dlg.GetColor();
+	}
+}
+
+CFogDialog::CFogDialog(CString title)
+	: CInputDialog(title), v1(0.004), v2(0.008)
+{ }
+
+CFogDialog::~CFogDialog()
+{ }
+
+vec3 CFogDialog::GetColor() const
+{
+	return ColorToVec(color);
+}
+
+float CFogDialog::GetExtinction() const
+{
+	return v1;
+}
+
+float CFogDialog::GetScattering() const
+{
+	return v2;
+}
+
+void CFogDialog::DoDataExchange(CDataExchange* pDX)
+{
+	CInputDialog::DoDataExchange(pDX);
+	DDX_Text(pDX, IDC_X_EDIT, v1);
+	DDX_Text(pDX, IDC_Y_EDIT, v2);
+}
+
+// CFogDialog message handlers
+BEGIN_MESSAGE_MAP(CFogDialog, CInputDialog)
+	ON_WM_CREATE()
+	ON_WM_PAINT()
+	ON_BN_CLICKED(IDC_COLOR_EDIT, choose_color)
+END_MESSAGE_MAP()
+
+int CFogDialog::OnCreate(LPCREATESTRUCT lpcs)
+{
+	int height = 80;
+	int lsx = 250, lex = 330;
+
+	v1Edit.Create(ES_MULTILINE | WS_CHILD | WS_VISIBLE | WS_TABSTOP | WS_BORDER,
+		CRect(lsx, height, lex, height + 20), this, IDC_X_EDIT);
+	height += 60;
+
+	v2Edit.Create(ES_MULTILINE | WS_CHILD | WS_VISIBLE | WS_TABSTOP | WS_BORDER,
+		CRect(lsx, height, lex, height + 20), this, IDC_Y_EDIT);
+	height += 60;
+
+	colorEdit.Create("Choose...", BS_PUSHBUTTON | WS_CHILD | WS_VISIBLE | WS_TABSTOP | WS_BORDER,
+		CRect(lsx, height, lex, height + 20), this, IDC_COLOR_EDIT);
+
+	return 0;
+}
+
+void CFogDialog::OnPaint()
+{
+	CPaintDC dc(this);
+	dc.SetBkMode(TRANSPARENT);
+	int height = 82;
+
+	CRect rect(50, height, 250, height + 18);
+	dc.DrawText("Extinction Coefficient:", -1, &rect, DT_SINGLELINE);
+
+	rect.bottom += 60;
+	rect.top += 60;
+	dc.DrawText("Scattering Coefficient:", -1, &rect, DT_SINGLELINE);
+
+	rect.bottom += 60;
+	rect.top += 60;
+	dc.DrawText("Color:", -1, &rect, DT_SINGLELINE);
+
+	v1Edit.SetFocus();
 }

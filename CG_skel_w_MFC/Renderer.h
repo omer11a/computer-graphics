@@ -79,7 +79,7 @@ public:
 	void SwitchWire(); 
 	void SetAntiAliasing(int new_factor);
 	void SetBaseShader(Shader * s);
-	void SetFog(const vec3& color);
+	void SetFog(const vec3& color, const float extinction, const float scattering);
 
 	void DrawSquare(const vec3& p1, const vec3& p2, const vec3& p3, const vec3& p4, const vec3& color);
 	void DrawBox(const vec3& minValues, const vec3& maxValues) override;

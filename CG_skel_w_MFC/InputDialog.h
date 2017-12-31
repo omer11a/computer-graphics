@@ -282,3 +282,34 @@ protected:
 	DECLARE_MESSAGE_MAP()
 
 };
+
+// ----------------------
+//    Class CFogDialog
+// ----------------------
+class CFogDialog : public CInputDialog {
+public:
+	CFogDialog(CString title = "Add light Source");
+	virtual ~CFogDialog();
+
+	float GetExtinction() const;
+	float GetScattering() const;
+	vec3 GetColor() const;
+
+protected:
+
+	float v1;
+	float v2;
+	COLORREF color;
+
+	CEdit v1Edit;
+	CEdit v2Edit;
+	CButton colorEdit;
+
+	afx_msg void choose_color();
+	virtual void DoDataExchange(CDataExchange* pDX);
+
+	afx_msg int OnCreate(LPCREATESTRUCT lpcs);
+	afx_msg void OnPaint();
+	DECLARE_MESSAGE_MAP()
+
+};
