@@ -7,13 +7,14 @@
 #include "GL\freeglut.h"
 #include <functional>
 
-#define INDEX(width,x,y,c) (x+y*width)*3+c
+#define INDEX(width,x,y,c) ((x)+(y)*(width))*3+(c)
 
 Renderer::Renderer() : BaseRenderer(512, 512), m_zBuffer(NULL),
 m_cTransform(), m_projection(), m_oTransform(), m_nTransform(), m_cnTransform(), shader(NULL), is_wire_mode(false)
 {
 	default_shader = new FlatShader();
 	InitOpenGLRendering();
+	anti_factor = 1;
 	CreateBuffers(512, 512);
 }
 Renderer::Renderer(int width, int height, Shader * shader) : BaseRenderer(width, height), m_zBuffer(NULL),
@@ -21,6 +22,7 @@ m_cTransform(), m_projection(), m_oTransform(), m_nTransform(), m_cnTransform(),
 {
 	default_shader = new FlatShader();
 	InitOpenGLRendering();
+	anti_factor = 1;
 	CreateBuffers(width, height);
 }
 
@@ -33,10 +35,14 @@ Renderer::~Renderer(void)
 
 void Renderer::CreateBuffers(int width, int height)
 {
-	m_width = width;
-	m_height = height;
+	m_width = anti_factor * width;
+	m_height = anti_factor * height;
+	m_screen_width = width;
+	m_screen_height = height;
+	min_size = min(m_width, m_height) * 0.5;
 	CreateOpenGLBuffer(); //Do not remove this line.
 	m_outBuffer = new float[3 * m_width * m_height];
+	m_screenBuffer = new float[3 * m_screen_width * m_screen_height];
 	m_zBuffer = new float[m_width * m_height];
 	m_paintBuffer = NULL;
 }
@@ -55,6 +61,7 @@ void Renderer::CreateLocalBuffer()
 void Renderer::DestroyBuffers()
 {
 	delete[] m_outBuffer;
+	delete[] m_screenBuffer;
 	if (m_zBuffer != NULL) {
 		delete[] m_zBuffer;
 	}
@@ -754,16 +761,7 @@ void Renderer::DrawCamera()
 		return;
 	}
 	
-	/*vector<vec3> vertices;
-	vertices.push_back(camera_location + vec3(-10, 0, 0));
-	vertices.push_back(camera_location + vec3(10, 0, 0));
-	vertices.push_back(camera_location + vec3(0, 25, 0));
-	
-	DrawLine(vertices[0], vertices[1], color);
-	DrawLine(vertices[1], vertices[2], color);
-	DrawLine(vertices[2], vertices[0], color);
-	*/
-	for (int i = -5; i < 5; ++i) {
+	for (int i = -5 * anti_factor; i < 5 * anti_factor; ++i) {
 		PlotPixel(camera_location.x + i, camera_location.y, camera_location.z, color);
 		PlotPixel(camera_location.x, camera_location.y + i, camera_location.z, color);
 	}
@@ -777,7 +775,7 @@ void Renderer::DrawLight(const vec3& color, const vec3& position)
 		return;
 	}
 	
-	for (int i = -5; i <= 5; ++i) {
+	for (int i = -5 * anti_factor; i <= 5 * anti_factor; ++i) {
 		PlotPixel(light_location.x + i, light_location.y + i, light_location.z, color);	// \ 
 		PlotPixel(light_location.x + i, light_location.y - i, light_location.z, color);	// /
 		PlotPixel(light_location.x, light_location.y + i, light_location.z, color);		// |
@@ -841,6 +839,15 @@ void Renderer::SetDemoBuffer()
 void Renderer::SwitchWire()
 {
 	is_wire_mode = !is_wire_mode;
+}
+
+void Renderer::SetAntiAliasing(int new_factor)
+{
+	if (new_factor < 1) return;
+
+	anti_factor = new_factor;
+	DestroyBuffers();
+	CreateBuffers(m_screen_width, m_screen_height);
 }
 
 void Renderer::SetBaseShader(Shader * s) {
@@ -913,8 +920,8 @@ void Renderer::CreateOpenGLBuffer()
 {
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_2D, gScreenTex);
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB8, m_width, m_height, 0, GL_RGB, GL_FLOAT, NULL);
-	glViewport(0, 0, m_width, m_height);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB8, m_screen_width, m_screen_height, 0, GL_RGB, GL_FLOAT, NULL);
+	glViewport(0, 0, m_screen_width, m_screen_height);
 }
 
 void Renderer::UpdateBuffers(int width, int height)
@@ -925,13 +932,13 @@ void Renderer::UpdateBuffers(int width, int height)
 
 void Renderer::SwapBuffers()
 {
-
+	FillAntiAliasingBuffer();
 	int a = glGetError();
 	glActiveTexture(GL_TEXTURE0);
 	a = glGetError();
 	glBindTexture(GL_TEXTURE_2D, gScreenTex);
 	a = glGetError();
-	glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, m_width, m_height, GL_RGB, GL_FLOAT, m_outBuffer);
+	glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, m_screen_width, m_screen_height, GL_RGB, GL_FLOAT, m_screenBuffer);
 	glGenerateMipmap(GL_TEXTURE_2D);
 	a = glGetError();
 
@@ -941,6 +948,33 @@ void Renderer::SwapBuffers()
 	a = glGetError();
 	glutSwapBuffers();
 	a = glGetError();
+}
+
+void Renderer::FillAntiAliasingBuffer() {
+	int sq_factor = anti_factor * anti_factor;
+
+	for (int x = 0; x < m_screen_width; ++x) {
+		for (int y = 0; y < m_screen_height; ++y) {
+			float r_sum = 0, g_sum = 0, b_sum = 0;
+
+			int starting_x = anti_factor * x;
+			int starting_y = anti_factor * y;
+			for (int i = 0; i < anti_factor; ++i) {
+				for (int j = 0; j < anti_factor; ++j) {
+					r_sum += m_outBuffer[INDEX(m_width, starting_x + i, starting_y + j, 0)];
+					m_outBuffer[INDEX(m_width, starting_x + i, starting_y + j, 0)] = 0;
+					g_sum += m_outBuffer[INDEX(m_width, starting_x + i, starting_y + j, 1)];
+					m_outBuffer[INDEX(m_width, starting_x + i, starting_y + j, 1)] = 0;
+					b_sum += m_outBuffer[INDEX(m_width, starting_x + i, starting_y + j, 2)];
+					m_outBuffer[INDEX(m_width, starting_x + i, starting_y + j, 2)] = 0;
+				}
+			}
+
+			m_screenBuffer[INDEX(m_screen_width, x, y, 0)] = r_sum / sq_factor;
+			m_screenBuffer[INDEX(m_screen_width, x, y, 1)] = g_sum / sq_factor;
+			m_screenBuffer[INDEX(m_screen_width, x, y, 2)] = b_sum / sq_factor;
+		}
+	}
 }
 
 void Renderer::ClearColorBuffer()

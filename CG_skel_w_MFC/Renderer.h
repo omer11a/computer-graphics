@@ -13,8 +13,10 @@ using namespace std;
 class Renderer : public BaseRenderer
 {
 	float *m_outBuffer;		// width * height * 3
+	float *m_screenBuffer;		// screen_width * screen_height * 3
 	float *m_zBuffer;		// width * height
 	bool *m_paintBuffer;	// width * height
+	int m_screen_width, m_screen_height, anti_factor;
 
 	mat4 m_cTransform, m_projection, m_oTransform;
 	mat3 m_cnTransform, m_nTransform;
@@ -53,6 +55,7 @@ class Renderer : public BaseRenderer
 	void PaintTriangleFloodFill(const vec3& p1, const vec3& p2, const vec3& p3, const vec3& p);
 	void PaintTriangleScanLines(const vec3& p1, const vec3& p2, const vec3& p3);
 
+	void FillAntiAliasingBuffer();
 	//////////////////////////////
 	// openGL stuff. Don't touch.
 
@@ -74,6 +77,7 @@ public:
 		const bool allowVertexNormals = false,
 		const bool allowFaceNormals = false) override;
 	void SwitchWire(); 
+	void SetAntiAliasing(int new_factor);
 	void SetBaseShader(Shader * s);
 	void SetFog(const vec3& color);
 
