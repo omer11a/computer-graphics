@@ -65,6 +65,8 @@ PrimMeshModels:
 #define NEW_ITEM 1
 #define EDIT_ITEM 2
 
+#define AMBIENT 3
+
 // shaders menu
 #define FLAT 1
 #define GOURAUD 2
@@ -358,6 +360,13 @@ void lightMenu(int id)
 			}
 			break;
 		case EDIT_ITEM:
+			if (scene->getNumberOfLights() > 0) {
+				if (cdlg.DoModal() == IDOK) {
+					scene->getActiveLight();
+				}
+			}
+			if (cdlg.)
+		case AMBIENT:
 			if (cdlg.DoModal() == IDOK) {
 				vec3 color = ColorToVec(cdlg.GetColor());
 				AmbientLight al(color);
@@ -521,7 +530,8 @@ void initMenu()
 	// light sub menu
 	int menuLight = glutCreateMenu(lightMenu);
 	glutAddMenuEntry("New", NEW_ITEM);
-	glutAddMenuEntry("Ambient", EDIT_ITEM);
+	glutAddMenuEntry("Edit", EDIT_ITEM);
+	glutAddMenuEntry("Ambient", AMBIENT);
 
 	// shader sub menu
 	int menuShader = glutCreateMenu(shaderMenu);
