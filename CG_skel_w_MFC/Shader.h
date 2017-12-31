@@ -116,9 +116,17 @@ public:
 class FogShader : public LayeredShader {
 	vec3 fogColor;
 	mat3 vertexMatrix;
+	float extinctionCoefficient;
+	float inScatteringCoefficient;
 
 public:
-	FogShader(Shader * parent, const vec3& fogColor);
+	FogShader(
+		Shader * parent,
+		const vec3& fogColor,
+		float extinctionCoefficient = 0.004,
+		float inScatteringCoefficient = 0.008
+	);
+
 	~FogShader() = default;
 
 	void setPolygon(
