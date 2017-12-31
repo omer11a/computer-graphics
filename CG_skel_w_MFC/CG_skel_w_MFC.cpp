@@ -362,10 +362,14 @@ void lightMenu(int id)
 		case EDIT_ITEM:
 			if (scene->getNumberOfLights() > 0) {
 				if (cdlg.DoModal() == IDOK) {
-					scene->getActiveLight();
+					vec3 color = ColorToVec(cdlg.GetColor());
+					scene->getActiveLight()->setIntensity(color);
+					cout << "Set light color to " << color << endl;
+					config.is_demo = false;
+					should_redraw = true;
 				}
 			}
-			if (cdlg.)
+			break;
 		case AMBIENT:
 			if (cdlg.DoModal() == IDOK) {
 				vec3 color = ColorToVec(cdlg.GetColor());
