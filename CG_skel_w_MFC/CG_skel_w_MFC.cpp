@@ -341,7 +341,8 @@ void lightMenu(int id)
 		case NEW_ITEM:
 			if (ldlg.DoModal() == IDOK) {
 				if (ldlg.IsPoint()) {
-					PointLightSource pls(ldlg.GetColor(), ldlg.GetLightCoordinates());
+					PointLightSource pls(ldlg.GetColor(), vec3());
+					pls.transformInWorld(Translate(ldlg.GetLightCoordinates()));
 					scene->addLight(pls);
 					cout << "point light was loaded with ID #" << scene->getNumberOfLights() - 1 << endl;
 					config.is_demo = false;
@@ -843,7 +844,7 @@ bool rotation(unsigned char direction)
 		}
 		break;
 	case LIGHT_WORLD:
-		if (scene->getNumberOfCameras() > 0) {
+		if (scene->getNumberOfLights() > 0) {
 			if (rotation_vec.x != 0) scene->getActiveLight()->transformInWorld(RotateX(rotation_vec.x));
 			if (rotation_vec.y != 0) scene->getActiveLight()->transformInWorld(RotateY(rotation_vec.y));
 			if (rotation_vec.z != 0) scene->getActiveLight()->transformInWorld(RotateZ(rotation_vec.z));
@@ -909,7 +910,7 @@ bool translate(unsigned char direction)
 	case LIGHT_WORLD:
 		if (scene->getNumberOfLights() > 0) {
 			scene->getActiveLight()->transformInWorld(Translate(translation_vec));
-			cout << "translating light object frame with " << translation_vec << endl;
+			cout << "translating light world frame with " << translation_vec << endl;
 			should_redraw = true;
 		}
 		break;
