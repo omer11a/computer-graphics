@@ -135,8 +135,12 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="fshader.glsl" />
+    <None Include="fshader_basic.glsl" />
+    <None Include="fshader_transform.glsl" />
     <None Include="vshader.glsl" />
     <None Include="ReadMe.txt" />
+    <None Include="vshader_basic.glsl" />
+    <None Include="vshader_transform.glsl" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\freeglut\freeglut.vcxproj">

@@ -115,5 +115,17 @@
       <Filter>Shaders</Filter>
     </None>
     <None Include="ReadMe.txt" />
+    <None Include="fshader_basic.glsl">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="vshader_basic.glsl">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="vshader_transform.glsl">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="fshader_transform.glsl">
+      <Filter>Shaders</Filter>
+    </None>
   </ItemGroup>
 </Project>

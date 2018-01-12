@@ -60,7 +60,8 @@ class Renderer : public BaseRenderer
 	// openGL stuff. Don't touch.
 
 	GLuint gScreenTex;
-	GLuint gScreenVtc;
+	GLuint gScreenVtc;	// VertexArrayID in tutorials
+	GLuint programID;
 	void CreateOpenGLBuffer();
 	void InitOpenGLRendering();
 	//////////////////////////////

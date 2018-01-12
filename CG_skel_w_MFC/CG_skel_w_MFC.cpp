@@ -53,7 +53,7 @@ PrimMeshModels:
 #include "GL/freeglut_ext.h"
 #include "vec.h"
 #include "mat.h"
-#include "InitShader.h"
+//#include "InitShader.h"
 #include "Shader.h"
 #include "Scene.h"
 #include "Renderer.h"
@@ -575,6 +575,7 @@ void redraw(bool should_redraw)
 		if (config.is_demo) {
 			scene->drawDemo();
 		} else {
+			renderer->ClearColorBuffer();
 			renderer->ClearDepthBuffer();
 			scene->draw();
 		};
@@ -1034,8 +1035,6 @@ int my_main( int argc, char **argv )
 	delete renderer;
 	return 0;
 }
-
-CWinApp theApp;
 
 using namespace std;
 

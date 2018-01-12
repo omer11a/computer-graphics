@@ -1,4 +1,3 @@
-
 #include "stdafx.h"
 #include "Renderer.h"
 #include "Polygon.h"
@@ -674,53 +673,47 @@ void Renderer::DrawTriangles(
 		shader = default_shader;
 	}
 
-	// assuming that vertices size is a multiplication of 3
-	auto i = vertices->begin();
-	auto m = materials->begin();
-	while (i != vertices->end()) {
-		// ----- new version ----
-		vector<vec3> tri_vertices;
-		tri_vertices.push_back(*(i++));
-		tri_vertices.push_back(*(i++));
-		tri_vertices.push_back(*(i++));
-		vec3 cm = GetCenterMass(&tri_vertices);
+	// Get a handle for our "MVP" uniform
+	GLuint MatrixID = glGetUniformLocation(programID, "MVP");
+	//GLfloat * vertices_copy = new GLfloat(vertices->size() * 3);
+	//int idx = 0;
+	//for (auto i = vertices->begin(); i != vertices->end(); ++i) {
+	//	vertices_copy[idx++] = (*i).x;
+	//	vertices_copy[idx++] = (*i).y;
+	//	vertices_copy[idx++] = (*i).z;
+	//}
 
-		vector<Material> materials;
-		materials.push_back(*(m++));
-		materials.push_back(*(m++));
-		materials.push_back(*(m++));
+	GLuint vertexbuffer;
+	glGenBuffers(1, &vertexbuffer);
+	glBindBuffer(GL_ARRAY_BUFFER, vertexbuffer);
+	glBufferData(GL_ARRAY_BUFFER, vertices->size() * 3, &vertices[0], GL_STATIC_DRAW);
 
-		vector<vec3> v_normals;
-		if ((vertexNormals != NULL) && (vertexNormals->size() != 0)) {
-			v_normals.push_back(vertexNormals->at(vn_index++));
-			v_normals.push_back(vertexNormals->at(vn_index++));
-			v_normals.push_back(vertexNormals->at(vn_index++));
-		}
+	mat4 MVP;// = m_projection * m_cTransform * m_oTransform;
+	glUniformMatrix4fv(MatrixID, 1, GL_FALSE, &MVP[0][0]);
 
-		if ((faceNormals != NULL) && (faceNormals->size() != 0)) {
-			f_normal = faceNormals->at(fn_index++);
-		}
+	// first attribute buffer : vertices
+	glEnableVertexAttribArray(0);
+	glBindBuffer(GL_ARRAY_BUFFER, vertexbuffer);
+	glVertexAttribPointer(
+		0,                  // attribute 0. No particular reason for 0, but must match the layout in the shader.
+		3,                  // size
+		GL_FLOAT,           // type
+		GL_FALSE,           // normalized?
+		0,                  // stride
+		(void*)0            // array buffer offset
+	);
 
-		if (is_wire_mode) {
-			std::cout << "line drawing" << std::endl;
-			DrawLine(tri_vertices[0], vec3(), tri_vertices[1], vec3(), white);
-			DrawLine(tri_vertices[1], vec3(), tri_vertices[2], vec3(), white);
-			DrawLine(tri_vertices[2], vec3(), tri_vertices[0], vec3(), white);
-		} else {
-			vec3 transformed_f_normal = normalize(m_cnTransform * m_nTransform * f_normal);
-			PaintTriangle(&tri_vertices, &materials, &v_normals, transformed_f_normal);
-		}
-
-		if ((allowVertexNormals) && (v_normals.size() > 0)) {
-			DrawLine(tri_vertices[0], vec3(), tri_vertices[0], v_normals[0], yellow);
-			DrawLine(tri_vertices[1], vec3(), tri_vertices[1], v_normals[1], yellow);
-			DrawLine(tri_vertices[2], vec3(), tri_vertices[2], v_normals[2], yellow);
-		}
-
-		if ((allowFaceNormals) && (faceNormals != NULL)) {
-			DrawLine(cm, vec3(), cm, f_normal, pink);
-		}
+	// Draw the triangle !
+	if (is_wire_mode) {
+		glDrawArrays(GL_LINES, 0, vertices->size());
+	} else {
+		glDrawArrays(GL_TRIANGLES, 0, vertices->size());
 	}
+
+	glDisableVertexAttribArray(0);
+
+	//delete[] vertices_copy;
+
 
 	if (temp != NULL) {
 		shader = temp;
@@ -826,20 +819,39 @@ void Renderer::SetObjectMatrices(const mat4 & oTransform, const mat3 & nTransfor
 }
 
 void Renderer::SetDemoBuffer()
-{
-	//vertical line
-	for (int i = 0; i < m_height; i++) {
+{	
+	GLuint MatrixID = glGetUniformLocation(programID, "MVP");
+	mat4 MVP;
+	glUniformMatrix4fv(MatrixID, 1, GL_FALSE, &MVP[0][0]);
 
-		m_outBuffer[INDEX(m_width, m_width / 2, i, 0)] = 1;
-		m_outBuffer[INDEX(m_width, m_width / 2, i, 1)] = 0;
-		m_outBuffer[INDEX(m_width, m_width / 2, i, 2)] = 0;
-	}
-	//horizontal line
-	for (int i = 0; i < m_width; i++) {
-		m_outBuffer[INDEX(m_width, i, 256, 0)] = 1;
-		m_outBuffer[INDEX(m_width, i, 256, 1)] = 0;
-		m_outBuffer[INDEX(m_width, i, 256, 2)] = 1;
-	}
+	static const GLfloat g_vertex_buffer_data[] = {
+		-1.0f, -1.0f, 0.0f,
+		1.0f, -1.0f, 0.0f,
+		0.0f,  1.0f, 0.0f,
+	};
+
+	GLuint vertexbuffer;
+	glGenBuffers(1, &vertexbuffer);
+	glBindBuffer(GL_ARRAY_BUFFER, vertexbuffer);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(g_vertex_buffer_data), g_vertex_buffer_data, GL_STATIC_DRAW);
+
+	// first attribute buffer : vertices
+	glEnableVertexAttribArray(0);
+	glBindBuffer(GL_ARRAY_BUFFER, vertexbuffer);
+	glVertexAttribPointer(
+		0,                  // attribute 0. No particular reason for 0, but must match the layout in the shader.
+		3,                  // size
+		GL_FLOAT,           // type
+		GL_FALSE,           // normalized?
+		0,                  // stride
+		(void*)0            // array buffer offset
+	);
+
+	// Draw the triangle !
+	glDrawArrays(GL_TRIANGLES, 0, 3); // 3 indices starting at 0 -> 1 triangle
+
+	glDisableVertexAttribArray(0);
+
 }
 
 void Renderer::SwitchWire()
@@ -879,55 +891,71 @@ void Renderer::SetFog(const vec3& color, const float extinction, const float sca
 void Renderer::InitOpenGLRendering()
 {
 	int a = glGetError();
-	a = glGetError();
-	glGenTextures(1, &gScreenTex);
-	a = glGetError();
+	//a = glGetError();
+	//glGenTextures(1, &gScreenTex);
+	//a = glGetError();
 	glGenVertexArrays(1, &gScreenVtc);
-	GLuint buffer;
 	glBindVertexArray(gScreenVtc);
-	glGenBuffers(1, &buffer);
-	const GLfloat vtc[] = {
-		-1, -1,
-		1, -1,
-		-1, 1,
-		-1, 1,
-		1, -1,
-		1, 1
-	};
-	const GLfloat tex[] = {
-		0,0,
-		1,0,
-		0,1,
-		0,1,
-		1,0,
-		1,1 };
-	glBindBuffer(GL_ARRAY_BUFFER, buffer);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(vtc) + sizeof(tex), NULL, GL_STATIC_DRAW);
-	glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(vtc), vtc);
-	glBufferSubData(GL_ARRAY_BUFFER, sizeof(vtc), sizeof(tex), tex);
+	
+	//const GLfloat vtc[] = {
+	//	-1, -1,
+	//	1, -1,
+	//	-1, 1,
+	//	-1, 1,
+	//	1, -1,
+	//	1, 1
+	//};
+	//const GLfloat tex[] = {
+	//	0,0,
+	//	1,0,
+	//	0,1,
+	//	0,1,
+	//	1,0,
+	//	1,1 };
+	//
+	//GLuint buffer;
+	//glGenBuffers(1, &buffer);
+	//glBindBuffer(GL_ARRAY_BUFFER, buffer);
+	//glBufferData(GL_ARRAY_BUFFER, sizeof(vtc) + sizeof(tex), NULL, GL_STATIC_DRAW);
 
-	GLuint program = InitShader("vshader.glsl", "fshader.glsl");
-	glUseProgram(program);
-	GLint  vPosition = glGetAttribLocation(program, "vPosition");
+	//glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(vtc), vtc);
+	//glBufferSubData(GL_ARRAY_BUFFER, sizeof(vtc), sizeof(tex), tex);
 
-	glEnableVertexAttribArray(vPosition);
-	glVertexAttribPointer(vPosition, 2, GL_FLOAT, GL_FALSE, 0,
-		0);
+	//GLuint program = InitShader("vshader.glsl", "fshader.glsl");
+	//glUseProgram(program);
+	//GLint  vPosition = glGetAttribLocation(program, "vPosition");
 
-	GLint  vTexCoord = glGetAttribLocation(program, "vTexCoord");
-	glEnableVertexAttribArray(vTexCoord);
-	glVertexAttribPointer(vTexCoord, 2, GL_FLOAT, GL_FALSE, 0,
-		(GLvoid *) sizeof(vtc));
-	glProgramUniform1i(program, glGetUniformLocation(program, "texture"), 0);
-	a = glGetError();
+	//glEnableVertexAttribArray(vPosition);
+	//glVertexAttribPointer(vPosition, 2, GL_FLOAT, GL_FALSE, 0,
+	//	0);
+
+	//GLint  vTexCoord = glGetAttribLocation(program, "vTexCoord");
+	//glEnableVertexAttribArray(vTexCoord);
+	//glVertexAttribPointer(vTexCoord, 2, GL_FLOAT, GL_FALSE, 0,
+	//	(GLvoid *) sizeof(vtc));
+	//glProgramUniform1i(program, glGetUniformLocation(program, "texture"), 0);
+	//a = glGetError();
+
+	// shai's code
+	// Create and compile our GLSL program from the shaders
+	programID = InitShader("vshader_transform.glsl", "fshader_transform.glsl");
+	//programID = InitShader("vshader_basic.glsl", "fshader_basic.glsl");
+	// Use our shader
+	glUseProgram(programID);
+
+	glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
+	
+	/*glEnable(GL_DEPTH_TEST);
+	glDepthFunc(GL_LESS);
+	glEnable(GL_CULL_FACE);*/
 }
 
 void Renderer::CreateOpenGLBuffer()
 {
-	glActiveTexture(GL_TEXTURE0);
-	glBindTexture(GL_TEXTURE_2D, gScreenTex);
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB8, m_screen_width, m_screen_height, 0, GL_RGB, GL_FLOAT, NULL);
-	glViewport(0, 0, m_screen_width, m_screen_height);
+	//glActiveTexture(GL_TEXTURE0);
+	//glBindTexture(GL_TEXTURE_2D, gScreenTex);
+	//glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB8, m_screen_width, m_screen_height, 0, GL_RGB, GL_FLOAT, NULL);
+	//glViewport(0, 0, m_screen_width, m_screen_height);
 }
 
 void Renderer::UpdateBuffers(int width, int height)
@@ -938,20 +966,20 @@ void Renderer::UpdateBuffers(int width, int height)
 
 void Renderer::SwapBuffers()
 {
-	FillAntiAliasingBuffer();
+	//FillAntiAliasingBuffer();
 	int a = glGetError();
-	glActiveTexture(GL_TEXTURE0);
-	a = glGetError();
-	glBindTexture(GL_TEXTURE_2D, gScreenTex);
-	a = glGetError();
-	glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, m_screen_width, m_screen_height, GL_RGB, GL_FLOAT, m_screenBuffer);
-	glGenerateMipmap(GL_TEXTURE_2D);
-	a = glGetError();
+	//glActiveTexture(GL_TEXTURE0);
+	//a = glGetError();
+	//glBindTexture(GL_TEXTURE_2D, gScreenTex);
+	//a = glGetError();
+	//glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, m_screen_width, m_screen_height, GL_RGB, GL_FLOAT, m_screenBuffer);
+	//glGenerateMipmap(GL_TEXTURE_2D);
+	//a = glGetError();
 
-	glBindVertexArray(gScreenVtc);
-	a = glGetError();
-	glDrawArrays(GL_TRIANGLES, 0, 6);
-	a = glGetError();
+	//glBindVertexArray(gScreenVtc);
+	//a = glGetError();
+	//glDrawArrays(GL_TRIANGLES, 0, 6);
+	//a = glGetError();
 	glutSwapBuffers();
 	a = glGetError();
 }
@@ -985,9 +1013,8 @@ void Renderer::FillAntiAliasingBuffer() {
 
 void Renderer::ClearColorBuffer()
 {
-	for (int i = 0; i < m_width * m_height * 3; ++i) {
-		m_outBuffer[i] = 0;
-	}
+	glClear(GL_COLOR_BUFFER_BIT);
+	//glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 }
 
 void Renderer::ClearDepthBuffer()
