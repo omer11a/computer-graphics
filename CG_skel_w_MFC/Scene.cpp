@@ -1,5 +1,6 @@
 #include "stdafx.h"
 #include "Scene.h"
+#include "GL\glew.h"
 #include <string>
 
 using namespace std;
@@ -86,6 +87,7 @@ void Camera::ortho(
 	this->zNear = zNear;
 	this->zFar = zFar;
 
+	//glOrtho(left, right, bottom, top, zNear, zFar);
 	mat4 t = Translate(-(right + left) / 2, -(bottom + top) / 2, (zNear + zFar) / 2);
 	mat4 s = Scale(2 / (right - left), 2 / (top - bottom), 2 / (zNear - zFar));
 	mat4 m = Scale(1, 1, 0);
@@ -107,6 +109,7 @@ void Camera::frustum(
 	this->zNear = zNear;
 	this->zFar = zFar;
 
+	//glFrustum(left, right, bottom, top, zNear, zFar);
 	projection = mat4();
 	projection[0][0] = 2 * zNear / (right - left);
 	projection[0][2] = (right + left) / (right - left);

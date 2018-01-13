@@ -257,14 +257,14 @@ PrimMeshModel::PrimMeshModel() : MeshModel()
 	vector<vec3> normals;
 
 	// cube with center mass at (0,0,0), edge legnth is 2
-	vertices.push_back(vec3(-1, -1, -1));
-	vertices.push_back(vec3(-1, -1, 1));
-	vertices.push_back(vec3(-1, 1, -1));
-	vertices.push_back(vec3(-1, 1, 1));
-	vertices.push_back(vec3(1, -1, -1));
-	vertices.push_back(vec3(1, -1, 1));
-	vertices.push_back(vec3(1, 1, -1));
-	vertices.push_back(vec3(1, 1, 1));
+	vertices.push_back(vec3(-1, -1, -1));	// 1
+	vertices.push_back(vec3(-1, -1, 1));	// 2
+	vertices.push_back(vec3(-1, 1, -1));	// 3
+	vertices.push_back(vec3(-1, 1, 1));		// 4
+	vertices.push_back(vec3(1, -1, -1));	// 5
+	vertices.push_back(vec3(1, -1, 1));		// 6
+	vertices.push_back(vec3(1, 1, -1));		// 7
+	vertices.push_back(vec3(1, 1, 1));		// 8
 
 	normals.push_back(vec3(0, 0, 1));
 	normals.push_back(vec3(0, 0, -1));

@@ -675,20 +675,38 @@ void Renderer::DrawTriangles(
 
 	// Get a handle for our "MVP" uniform
 	GLuint MatrixID = glGetUniformLocation(programID, "MVP");
-	//GLfloat * vertices_copy = new GLfloat(vertices->size() * 3);
-	//int idx = 0;
-	//for (auto i = vertices->begin(); i != vertices->end(); ++i) {
-	//	vertices_copy[idx++] = (*i).x;
-	//	vertices_copy[idx++] = (*i).y;
-	//	vertices_copy[idx++] = (*i).z;
-	//}
+	mat4 MVP;// = m_projection * m_cTransform * m_oTransform;
+	MVP[0].x = 1.08639598;
+	MVP[0].y = 0.993682027;
+	MVP[0].z = 0.687367737;
+	MVP[0].w = 0.685994387;
+	MVP[1].x = 0.000000000;
+	MVP[1].y = 2.07017088;
+	MVP[1].z = 0.515525818;
+	MVP[1].w = 0.514495790;
+	MVP[2].x = 1.44852805;
+	MVP[2].y = 0.745261550;
+	MVP[2].z = 0.515525818;
+	MVP[2].w = 0.514495790;
+	MVP[3].x = 0.000000000;
+	MVP[3].y = 0.000000000;
+	MVP[3].z = 5.64242601;
+	MVP[3].w = 5.83095264;
+	MVP = transpose(MVP);
+
+	vector<vec4> vertices_copy;
+	for (auto i = vertices->begin(); i != vertices->end(); ++i) {
+		vertices_copy.push_back((*i));
+	}
 
 	GLuint vertexbuffer;
 	glGenBuffers(1, &vertexbuffer);
 	glBindBuffer(GL_ARRAY_BUFFER, vertexbuffer);
-	glBufferData(GL_ARRAY_BUFFER, vertices->size() * 3, &vertices[0], GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, vertices_copy.size() * sizeof(vec3), &vertices_copy[0], GL_STATIC_DRAW);
 
-	mat4 MVP;// = m_projection * m_cTransform * m_oTransform;
+	
+
+
 	glUniformMatrix4fv(MatrixID, 1, GL_FALSE, &MVP[0][0]);
 
 	// first attribute buffer : vertices
@@ -705,9 +723,9 @@ void Renderer::DrawTriangles(
 
 	// Draw the triangle !
 	if (is_wire_mode) {
-		glDrawArrays(GL_LINES, 0, vertices->size());
+		glDrawArrays(GL_LINES, 0, vertices_copy.size());
 	} else {
-		glDrawArrays(GL_TRIANGLES, 0, vertices->size());
+		glDrawArrays(GL_TRIANGLES, 0, vertices_copy.size());
 	}
 
 	glDisableVertexAttribArray(0);

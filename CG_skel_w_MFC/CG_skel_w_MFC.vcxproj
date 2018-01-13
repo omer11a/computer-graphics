@@ -66,6 +66,8 @@
       <PrecompiledHeader>Use</PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
+      <SDLCheck>
+      </SDLCheck>
     </ClCompile>
     <Link>
       <AdditionalDependencies>../freeglut/lib/freeglut_static.lib;../glew/lib/glew.lib;%(AdditionalDependencies)</AdditionalDependencies>
