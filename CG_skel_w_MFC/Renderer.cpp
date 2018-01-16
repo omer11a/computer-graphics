@@ -15,7 +15,7 @@ using namespace glm;
 #define INDEX(width,x,y,c) ((x)+(y)*(width))*3+(c)
 
 Renderer::Renderer() : BaseRenderer(512, 512), m_zBuffer(NULL),
-m_cTransform(), m_projection(), m_oTransform(), m_nTransform(), m_cnTransform(), shader(NULL), is_wire_mode(false)
+m_cTransform(1), m_projection(1), m_oTransform(1), m_nTransform(1), m_cnTransform(1), shader(NULL), is_wire_mode(false)
 {
 	default_shader = new FlatShader();
 	InitOpenGLRendering();
@@ -23,7 +23,7 @@ m_cTransform(), m_projection(), m_oTransform(), m_nTransform(), m_cnTransform(),
 	CreateBuffers(512, 512);
 }
 Renderer::Renderer(int width, int height, Shader * shader) : BaseRenderer(width, height), m_zBuffer(NULL),
-m_cTransform(), m_projection(), m_oTransform(), m_nTransform(), m_cnTransform(), shader(shader), is_wire_mode(false)
+m_cTransform(1), m_projection(1), m_oTransform(1), m_nTransform(1), m_cnTransform(1), shader(shader), is_wire_mode(false)
 {
 	default_shader = new FlatShader();
 	InitOpenGLRendering();
@@ -73,6 +73,7 @@ void Renderer::DestroyBuffers()
 }
 
 vec4 Renderer::applyCameraTransformation(const vec3& p, const vec3& n) const {
+	// TODO: do we need this?!
 	//vec4 pTransformed;
 	//vec4 nTransformed;
 
@@ -237,7 +238,7 @@ vec3 Renderer::GetCenterMass(const vec3& p1, const vec3& p2, const vec3& p3) con
 
 vec3 Renderer::GetCenterMass(vector<vec3> const * const vertices) const
 {
-	vec3 v;
+	vec3 v(0);
 	if ((vertices == NULL) || (vertices->size() == 0)) {
 		return v;
 	}
@@ -792,10 +793,10 @@ void Renderer::DrawTriangles(
 
 void Renderer::DrawSquare(const vec3& p1, const vec3& p2, const vec3& p3, const vec3& p4, const vec3& color)
 {
-	DrawLine(p1, vec3(), p2, vec3(), color);
-	DrawLine(p2, vec3(), p3, vec3(), color);
-	DrawLine(p3, vec3(), p4, vec3(), color);
-	DrawLine(p4, vec3(), p1, vec3(), color);
+	DrawLine(p1, vec3(0), p2, vec3(0), color);
+	DrawLine(p2, vec3(0), p3, vec3(0), color);
+	DrawLine(p3, vec3(0), p4, vec3(0), color);
+	DrawLine(p4, vec3(0), p1, vec3(0), color);
 }
 
 void Renderer::DrawBox(const vec3& minValues, const vec3& maxValues)
@@ -912,16 +913,13 @@ void Renderer::SetDemoBuffer()
 		0,                  // attribute 0. No particular reason for 0, but must match the layout in the shader.
 		3,                  // size
 		GL_FLOAT,           // type
-		GL_FALSE,           // normalized?
+		GL_FALSE,           // dont normalized
 		0,                  // stride
 		(void*)0            // array buffer offset
 	);
 
-	// Draw the triangle !
 	glDrawArrays(GL_TRIANGLES, 0, 3); // 3 indices starting at 0 -> 1 triangle
-
 	glDisableVertexAttribArray(0);
-
 }
 
 void Renderer::SwitchWire()

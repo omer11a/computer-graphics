@@ -34,7 +34,7 @@ void Camera::updateProjection() {
 
 Camera::Camera() :
 	isVisible(true), isPerspective(true),
-	viewTransform(), worldTransform(), inverseViewTransform(), inverseWorldTransform()
+	viewTransform(1), worldTransform(1), inverseViewTransform(1), inverseWorldTransform(1)
 {
 	frustum(-5, 5, -5, 5, 5, 20);
 }
@@ -59,7 +59,7 @@ void Camera::transformInWorld(const mat4& transform) {
 }
 
 void Camera::lookAt(const vec3 & eye, const vec3 & at, const vec3 & up) {
-	viewTransform = mat4();
+	viewTransform = mat4(1);
 	inverseViewTransform = viewTransform;
 
 	inverseWorldTransform = glm::lookAt(eye, at, up);
