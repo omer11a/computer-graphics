@@ -58,7 +58,7 @@
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
       <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>../glew/include; ../freeglut/include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>../glew/include;C:\Users\omer\source\repos\computer-graphics\glm-master;../freeglut/include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>FREEGLUT_STATIC;GLEW_STATIC;WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <MinimalRebuild>true</MinimalRebuild>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
@@ -138,10 +138,12 @@
   <ItemGroup>
     <None Include="fshader.glsl" />
     <None Include="fshader_basic.glsl" />
+    <None Include="fshader_shading.glsl" />
     <None Include="fshader_transform.glsl" />
     <None Include="vshader.glsl" />
     <None Include="ReadMe.txt" />
     <None Include="vshader_basic.glsl" />
+    <None Include="vshader_shading.glsl" />
     <None Include="vshader_transform.glsl" />
   </ItemGroup>
   <ItemGroup>
