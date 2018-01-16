@@ -109,7 +109,7 @@ void Renderer::clip(float x0, float x1, float xmin, float xmax, float& t1, float
 
 		return;
 	}
-	
+
 	float u1 = 0;
 	float u2 = 0;
 	float r1 = q1 / p1;
@@ -147,7 +147,7 @@ bool Renderer::clipLine(
 	vec4 dp = p2 - p1;
 	vec3 q1 = applyProjection(p1 + t1 * dp);
 	vec3 q2 = applyProjection(p1 + t2 * dp);
-	
+
 	t1 = 0;
 	t2 = 1;
 	clip(q1.x, q2.x, -1, 1, t1, t2);
@@ -232,6 +232,7 @@ bool Renderer::PlotPixel(const int x, const int y, const float z, const vec3& co
 	return true;
 }
 
+
 bool Renderer::DrawLine(const vec3& p1, const vec3& n1, const vec3& p2, const vec3& n2, const vec3& c1)
 {
 	vec3 newP1, newP2;
@@ -281,7 +282,7 @@ void Renderer::DrawSteepLine(const vec3& p1, const vec3& p2, const vec3& c, cons
 	int x = start.x;
 	int y = start.y;
 	float z = start.z;
-	
+
 	int dx = abs(end.x - start.x);
 	int dy = end.y - start.y;
 	float dz = (end.z - start.z) / dy;
@@ -373,6 +374,7 @@ void Renderer::DrawModerateLine(const vec3& p1, const vec3& p2, const vec3& c, c
 	}
 }
 
+
 bool Renderer::PixelToPoint(const vec3& p1, const vec3& p2, const vec3& p3, const vec3& p, vec3& newP) const {
 
 	float x = (p.x - m_width * 0.5) / min_size;
@@ -402,6 +404,22 @@ bool Renderer::PixelToPoint(const vec3& p1, const vec3& p2, const vec3& p3, cons
 }
 
 
+bool GetIntersectionPoint(const vec3& p1, const vec3& p2, const float y, vec3& p) {
+	float s = p2.y - p1.y;
+
+	if (s == 0) {
+		return false;
+	}
+	float t = (y - p1.y) / s;
+	if ((t < 0) || (t > 1)) {
+		return false;
+	}
+
+	p = p1 + t * (p2 - p1);
+	return true;
+}
+
+
 void Renderer::DrawTriangles(
 	const vector<vec3>* vertices,
 	const vector<Material>* materials,
@@ -425,28 +443,89 @@ void Renderer::DrawTriangles(
 		shader = default_shader;
 	}
 
-	// uniform parameters
-	GLuint id = glGetUniformLocation(programID, "modelMatrix");
-	glUniformMatrix4fv(id, 1, GL_FALSE, &m_oTransform[0][0]);
-	id = glGetUniformLocation(programID, "normalMatrix");
-	glUniformMatrix4fv(id, 1, GL_FALSE, &m_nTransform[0][0]);
-	id = glGetUniformLocation(programID, "modelViewProjectionMatrix");
-	glUniformMatrix4fv(id, 1, GL_FALSE, &mvp[0][0]);
+	// Get a handle for our "MVP" uniform
+	GLuint MatrixID = glGetUniformLocation(programID, "MVP");
+	/*m_cTransform[0].x = -0.599999964;
+	m_cTransform[0].y =- 0.411596596;
+	m_cTransform[0].z =	0.685994387;
+	m_cTransform[0].w =	0.000000000;
+	m_cTransform[1].x = 0.000000000;
+	m_cTransform[1].y = 0.857492924;
+	m_cTransform[1].z = 0.514495790;
+	m_cTransform[1].w = 0.000000000;
+	m_cTransform[2].x = -0.799999952;
+	m_cTransform[2].y = 0.308697462;
+	m_cTransform[2].z = -0.514495790;
+	m_cTransform[2].w = 0.000000000;
+	m_cTransform[3].x = - 0.00000000;
+	m_cTransform[3].y = - 0.00000000;
+	m_cTransform[3].z = - 5.83095264;
+	m_cTransform[3].w = 1.00000000;
+
+	m_projection[0].x = 1.81066012;
+	m_projection[0].y = 0.000000000;
+	m_projection[0].z = 0.000000000;
+	m_projection[0].w = 0.000000000;
+	m_projection[1].x = 0.000000000;
+	m_projection[1].y = 2.41421342;
+	m_projection[1].z = 0.000000000;
+	m_projection[1].w = 0.000000000;
+	m_projection[2].x = 0.000000000;
+	m_projection[2].y = 0.000000000;
+	m_projection[2].z = -1.00200200;
+	m_projection[2].w = -1.00000000;
+	m_projection[3].x =	0.000000000;
+	m_projection[3].y =	0.000000000;
+	m_projection[3].z = -0.200200200;
+	m_projection[3].w = 0.000000000;
+	*/
+	//mat4 mul1 = m_cTransform * m_oTransform;
+
+	//glm::mat4 MVP2; //= m_projection * m_cTransform * m_oTransform;
+	//mat4 MVP = mul1 * m_projection;
+	//std::cout << m_oTransform << std::endl;
+	//std::cout << m_cTransform << std::endl;
+	//std::cout << m_projection << std::endl;
+	//std::cout << mul1 << std::endl;
+	//std::cout << MVP << std::endl;
+	mat4 MVP = m_projection * m_cTransform * m_oTransform;
+	//MVP[0].x = -1.08639598;
+	//MVP[0].y = -0.993682027;
+	//MVP[0].z = -0.687367737;
+	//MVP[0].w = -0.685994387;
+	//MVP[1].x = 0.000000000;
+	//MVP[1].y = 2.07017088;
+	//MVP[1].z = -0.515525818;
+	//MVP[1].w = -0.514495790;
+	//MVP[2].x = -1.44852805;
+	//MVP[2].y = 0.745261550;
+	//MVP[2].z = 0.515525818;
+	//MVP[2].w = 0.514495790;
+	//MVP[3].x = 0.000000000;
+	//MVP[3].y = 0.000000000;
+	//MVP[3].z = 5.64242601;
+	//MVP[3].w = 5.83095264;
+	//MVP = transpose(MVP);
+	//std::cout << MVP << std::endl;
+	//vector<glm::vec3> vertices_copy;
+	vector<vec3> vertices_copy;
+	vector<vec4> vertices_copy2;
+	for (auto i = vertices->begin(); i != vertices->end(); ++i) {
+		//vertices_copy.push_back(glm::vec3((*i).x, (*i).y, (*i).z));
+		vertices_copy.push_back(vec3((*i).x, (*i).y, (*i).z));
+		//vertices_copy2.push_back(MVP * vec4((*i), 1));
+	}
 
 	GLuint vertexbuffer;
 	glGenBuffers(1, &vertexbuffer);
 	glBindBuffer(GL_ARRAY_BUFFER, vertexbuffer);
-	glBufferData(GL_ARRAY_BUFFER, vertices->size() * sizeof(vec3), &vertices[0], GL_STATIC_DRAW);
+	//glBufferData(GL_ARRAY_BUFFER, vertices_copy.size() * sizeof(glm::vec3), &vertices_copy[0], GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, vertices_copy.size() * sizeof(vec3), &vertices_copy[0], GL_STATIC_DRAW);
 
-	GLuint normalbuffer;
-	glGenBuffers(1, &normalbuffer);
-	glBindBuffer(GL_ARRAY_BUFFER, normalbuffer);
-	glBufferData(GL_ARRAY_BUFFER, vertexNormals->size() * sizeof(vec3), &vertexNormals[0], GL_STATIC_DRAW);
 
-	GLuint normalbuffer;
-	glGenBuffers(1, &normalbuffer);
-	glBindBuffer(GL_ARRAY_BUFFER, normalbuffer);
-	glBufferData(GL_ARRAY_BUFFER, vertexNormals->size() * sizeof(vec3), &vertexNormals[0], GL_STATIC_DRAW);
+
+
+	glUniformMatrix4fv(MatrixID, 1, GL_FALSE, &MVP[0][0]);
 
 	// first attribute buffer : vertices
 	glEnableVertexAttribArray(0);
@@ -462,9 +541,9 @@ void Renderer::DrawTriangles(
 
 	// Draw the triangle !
 	if (is_wire_mode) {
-		glDrawArrays(GL_LINES, 0, vertices->size());
+		glDrawArrays(GL_LINES, 0, vertices_copy.size());
 	} else {
-		glDrawArrays(GL_TRIANGLES, 0, vertices->size());
+		glDrawArrays(GL_TRIANGLES, 0, vertices_copy.size());
 	}
 
 	glDisableVertexAttribArray(0);
@@ -514,7 +593,7 @@ void Renderer::DrawCamera()
 	if (!in_sight) {
 		return;
 	}
-	
+
 	for (int i = -5 * anti_factor; i < 5 * anti_factor; ++i) {
 		PlotPixel(camera_location.x + i, camera_location.y, camera_location.z, color);
 		PlotPixel(camera_location.x, camera_location.y + i, camera_location.z, color);
@@ -528,7 +607,7 @@ void Renderer::DrawLight(const vec3& color, const vec3& position)
 	if (!in_sight) {
 		return;
 	}
-	
+
 	for (int i = -5 * anti_factor; i <= 5 * anti_factor; ++i) {
 		PlotPixel(light_location.x + i, light_location.y + i, light_location.z, color);	// \ 
 		PlotPixel(light_location.x + i, light_location.y - i, light_location.z, color);	// /
@@ -554,13 +633,11 @@ void Renderer::SetCameraTransform(const mat4 & cTransform)
 	m_cnTransform = convert4dTo3d(m_cTransform);
 	shader->setTransform(m_cTransform);
 	default_shader->setTransform(m_cTransform);
-	mvp = m_projection * m_cTransform * m_oTransform;
 }
 
 void Renderer::SetProjection(const mat4 & projection)
 {
 	m_projection = projection;
-	mvp = m_projection * m_cTransform * m_oTransform;
 }
 
 void Renderer::SetZRange(float zNear, float zFar)
@@ -576,7 +653,7 @@ void Renderer::SetObjectMatrices(const mat4 & oTransform, const mat3 & nTransfor
 }
 
 void Renderer::SetDemoBuffer()
-{	
+{
 	GLuint MatrixID = glGetUniformLocation(programID, "MVP");
 	mat4 MVP;
 	glUniformMatrix4fv(MatrixID, 1, GL_FALSE, &MVP[0][0]);
@@ -650,7 +727,7 @@ void Renderer::InitOpenGLRendering()
 	//a = glGetError();
 	glGenVertexArrays(1, &gScreenVtc);
 	glBindVertexArray(gScreenVtc);
-	
+
 	//const GLfloat vtc[] = {
 	//	-1, -1,
 	//	1, -1,
@@ -698,7 +775,7 @@ void Renderer::InitOpenGLRendering()
 	glUseProgram(programID);
 
 	glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
-	
+
 	/*glEnable(GL_DEPTH_TEST);
 	glDepthFunc(GL_LESS);
 	glEnable(GL_CULL_FACE);*/
