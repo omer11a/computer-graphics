@@ -419,6 +419,80 @@ bool GetIntersectionPoint(const vec3& p1, const vec3& p2, const float y, vec3& p
 	return true;
 }
 
+void Renderer::SetUniformMatrix(const mat3& m, const char * const var_name) {
+	GLuint id = glGetUniformLocation(programID, var_name);
+	glUniformMatrix3fv(id, 1, GL_FALSE, &m[0][0]);
+}
+
+void Renderer::SetUniformMatrix(const mat4& m, const char * const var_name) {
+	GLuint id = glGetUniformLocation(programID, var_name);
+	glUniformMatrix4fv(id, 1, GL_FALSE, &m[0][0]);
+}
+
+GLuint Renderer::SetInVector(const vector<vec3>& v, const int attribute_id) {
+	GLuint buffer;
+	glGenBuffers(1, &buffer);
+	glBindBuffer(GL_ARRAY_BUFFER, buffer);
+	glBufferData(GL_ARRAY_BUFFER, v.size() * sizeof(vec3), &v[0], GL_STATIC_DRAW);
+
+	// attribute buffer
+	glEnableVertexAttribArray(attribute_id);
+	glBindBuffer(GL_ARRAY_BUFFER, buffer);
+	glVertexAttribPointer(
+		0,                  // attribute 0. No particular reason for 0, but must match the layout in the shader.
+		3,                  // size
+		GL_FLOAT,           // type
+		GL_FALSE,           // normalized?
+		0,                  // stride
+		(void*)0            // array buffer offset
+	);
+	return buffer;
+}
+
+GLuint Renderer::SetInVector(const vector<vec3> * v, const int attribute_id) {
+	vector<vec3> v_temp;
+	for (auto i = v->begin(); i != v->end(); ++i) {
+		v_temp.push_back(vec3(*i));
+	}
+
+	GLuint buffer;
+	glGenBuffers(1, &buffer);
+	glBindBuffer(GL_ARRAY_BUFFER, buffer);
+	glBufferData(GL_ARRAY_BUFFER, v_temp.size() * sizeof(vec3), &v_temp[0], GL_STATIC_DRAW);
+
+	// attribute buffer
+	glEnableVertexAttribArray(attribute_id);
+	glBindBuffer(GL_ARRAY_BUFFER, buffer);
+	glVertexAttribPointer(
+		0,                  // attribute 0. No particular reason for 0, but must match the layout in the shader.
+		3,                  // size
+		GL_FLOAT,           // type
+		GL_FALSE,           // normalized?
+		0,                  // stride
+		(void*)0            // array buffer offset
+	);
+	return buffer;
+}
+
+GLuint Renderer::SetInVector(const vector<GLfloat>& v, const int attribute_id) {
+	GLuint buffer;
+	glGenBuffers(1, &buffer);
+	glBindBuffer(GL_ARRAY_BUFFER, buffer);
+	glBufferData(GL_ARRAY_BUFFER, v.size() * sizeof(GLfloat), &v[0], GL_STATIC_DRAW);
+
+	// attribute buffer
+	glEnableVertexAttribArray(attribute_id);
+	glBindBuffer(GL_ARRAY_BUFFER, buffer);
+	glVertexAttribPointer(
+		0,                  // attribute 0. No particular reason for 0, but must match the layout in the shader.
+		1,                  // size
+		GL_FLOAT,           // type
+		GL_FALSE,           // normalized?
+		0,                  // stride
+		(void*)0            // array buffer offset
+	);
+	return buffer;
+}
 
 void Renderer::DrawTriangles(
 	const vector<vec3>* vertices,
@@ -443,111 +517,41 @@ void Renderer::DrawTriangles(
 		shader = default_shader;
 	}
 
-	// Get a handle for our "MVP" uniform
-	GLuint MatrixID = glGetUniformLocation(programID, "MVP");
-	/*m_cTransform[0].x = -0.599999964;
-	m_cTransform[0].y =- 0.411596596;
-	m_cTransform[0].z =	0.685994387;
-	m_cTransform[0].w =	0.000000000;
-	m_cTransform[1].x = 0.000000000;
-	m_cTransform[1].y = 0.857492924;
-	m_cTransform[1].z = 0.514495790;
-	m_cTransform[1].w = 0.000000000;
-	m_cTransform[2].x = -0.799999952;
-	m_cTransform[2].y = 0.308697462;
-	m_cTransform[2].z = -0.514495790;
-	m_cTransform[2].w = 0.000000000;
-	m_cTransform[3].x = - 0.00000000;
-	m_cTransform[3].y = - 0.00000000;
-	m_cTransform[3].z = - 5.83095264;
-	m_cTransform[3].w = 1.00000000;
-
-	m_projection[0].x = 1.81066012;
-	m_projection[0].y = 0.000000000;
-	m_projection[0].z = 0.000000000;
-	m_projection[0].w = 0.000000000;
-	m_projection[1].x = 0.000000000;
-	m_projection[1].y = 2.41421342;
-	m_projection[1].z = 0.000000000;
-	m_projection[1].w = 0.000000000;
-	m_projection[2].x = 0.000000000;
-	m_projection[2].y = 0.000000000;
-	m_projection[2].z = -1.00200200;
-	m_projection[2].w = -1.00000000;
-	m_projection[3].x =	0.000000000;
-	m_projection[3].y =	0.000000000;
-	m_projection[3].z = -0.200200200;
-	m_projection[3].w = 0.000000000;
-	*/
-	//mat4 mul1 = m_cTransform * m_oTransform;
-
-	//glm::mat4 MVP2; //= m_projection * m_cTransform * m_oTransform;
-	//mat4 MVP = mul1 * m_projection;
-	//std::cout << m_oTransform << std::endl;
-	//std::cout << m_cTransform << std::endl;
-	//std::cout << m_projection << std::endl;
-	//std::cout << mul1 << std::endl;
-	//std::cout << MVP << std::endl;
-	mat4 MVP = m_projection * m_cTransform * m_oTransform;
-	//MVP[0].x = -1.08639598;
-	//MVP[0].y = -0.993682027;
-	//MVP[0].z = -0.687367737;
-	//MVP[0].w = -0.685994387;
-	//MVP[1].x = 0.000000000;
-	//MVP[1].y = 2.07017088;
-	//MVP[1].z = -0.515525818;
-	//MVP[1].w = -0.514495790;
-	//MVP[2].x = -1.44852805;
-	//MVP[2].y = 0.745261550;
-	//MVP[2].z = 0.515525818;
-	//MVP[2].w = 0.514495790;
-	//MVP[3].x = 0.000000000;
-	//MVP[3].y = 0.000000000;
-	//MVP[3].z = 5.64242601;
-	//MVP[3].w = 5.83095264;
-	//MVP = transpose(MVP);
-	//std::cout << MVP << std::endl;
-	//vector<glm::vec3> vertices_copy;
-	vector<vec3> vertices_copy;
-	vector<vec4> vertices_copy2;
-	for (auto i = vertices->begin(); i != vertices->end(); ++i) {
-		//vertices_copy.push_back(glm::vec3((*i).x, (*i).y, (*i).z));
-		vertices_copy.push_back(vec3((*i).x, (*i).y, (*i).z));
-		//vertices_copy2.push_back(MVP * vec4((*i), 1));
+	// split material parameters
+	vector<vec3> ambiants, diffuses, speculars;
+	vector<float> shininess;
+	for (auto i = materials->begin(); i != materials->end(); ++i) {
+		ambiants.push_back((*i).ambientReflectance);
+		diffuses.push_back((*i).diffuseReflectance);
+		speculars.push_back((*i).specularReflectance);
+		shininess.push_back((*i).shininess);
 	}
 
-	GLuint vertexbuffer;
-	glGenBuffers(1, &vertexbuffer);
-	glBindBuffer(GL_ARRAY_BUFFER, vertexbuffer);
-	//glBufferData(GL_ARRAY_BUFFER, vertices_copy.size() * sizeof(glm::vec3), &vertices_copy[0], GL_STATIC_DRAW);
-	glBufferData(GL_ARRAY_BUFFER, vertices_copy.size() * sizeof(vec3), &vertices_copy[0], GL_STATIC_DRAW);
+	// uniform parameters
+	SetUniformMatrix(m_oTransform, "modelMatrix");
+	SetUniformMatrix(m_nTransform, "normalMatrix");
+	SetUniformMatrix(mvp, "modelViewProjectionMatrix");
 
-
-
-
-	glUniformMatrix4fv(MatrixID, 1, GL_FALSE, &MVP[0][0]);
-
-	// first attribute buffer : vertices
-	glEnableVertexAttribArray(0);
-	glBindBuffer(GL_ARRAY_BUFFER, vertexbuffer);
-	glVertexAttribPointer(
-		0,                  // attribute 0. No particular reason for 0, but must match the layout in the shader.
-		3,                  // size
-		GL_FLOAT,           // type
-		GL_FALSE,           // normalized?
-		0,                  // stride
-		(void*)0            // array buffer offset
-	);
-
+	SetInVector(*vertices, 0);			//in vec3 vertexPosition;
+	//SetInVector(vertexNormals, 1);		//in vec3 vertexNormal;
+	//SetInVector(ambiants, 2);			//in vec3 ambientReflectance;
+	//SetInVector(speculars, 3);			//in vec3 specularReflectance;
+	//SetInVector(diffuses, 4);			//in vec3 diffuseReflectance;
+	//SetInVector(shininess, 5);			//in float shininess;
+	
 	// Draw the triangle !
 	if (is_wire_mode) {
-		glDrawArrays(GL_LINES, 0, vertices_copy.size());
+		glDrawArrays(GL_LINES, 0, vertices->size());
 	} else {
-		glDrawArrays(GL_TRIANGLES, 0, vertices_copy.size());
+		glDrawArrays(GL_TRIANGLES, 0, vertices->size());
 	}
 
 	glDisableVertexAttribArray(0);
-
+	//glDisableVertexAttribArray(1);
+	//glDisableVertexAttribArray(2);
+	//glDisableVertexAttribArray(3);
+	//glDisableVertexAttribArray(4);
+	//glDisableVertexAttribArray(5);
 
 	if (temp != NULL) {
 		shader = temp;
@@ -633,11 +637,13 @@ void Renderer::SetCameraTransform(const mat4 & cTransform)
 	m_cnTransform = convert4dTo3d(m_cTransform);
 	shader->setTransform(m_cTransform);
 	default_shader->setTransform(m_cTransform);
+	mvp = m_projection * m_cTransform * m_oTransform;
 }
 
 void Renderer::SetProjection(const mat4 & projection)
 {
 	m_projection = projection;
+	mvp = m_projection * m_cTransform * m_oTransform;
 }
 
 void Renderer::SetZRange(float zNear, float zFar)
@@ -650,6 +656,7 @@ void Renderer::SetObjectMatrices(const mat4 & oTransform, const mat3 & nTransfor
 {
 	m_oTransform = oTransform;
 	m_nTransform = nTransform;
+	mvp = m_projection * m_cTransform * m_oTransform;
 }
 
 void Renderer::SetDemoBuffer()

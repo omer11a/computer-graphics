@@ -51,7 +51,11 @@ class Renderer : public BaseRenderer
 	void DrawModerateLine(const vec3& p1, const vec3& p2, const vec3& c, const int p1_idx = 0, const int p2_idx = 0);
 	
 	
-
+	void SetUniformMatrix(const mat3& m, const char * const var_name);
+	void SetUniformMatrix(const mat4& m, const char * const var_name);
+	GLuint SetInVector(const vector<vec3>& v, const int attribute_id);
+	GLuint SetInVector(const vector<vec3> * v, const int attribute_id);
+	GLuint SetInVector(const vector<GLfloat>& v, const int attribute_id);
 	//////////////////////////////
 	// openGL stuff. Don't touch.
 

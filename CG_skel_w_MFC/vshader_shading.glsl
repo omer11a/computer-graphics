@@ -1,10 +1,10 @@
 #version 400
 
 uniform mat4 modelMatrix;
-uniform mat4 normalMatrix;
+uniform mat3 normalMatrix;
 uniform mat4 modelViewProjectionMatrix;
 
-in vec4 vertexPosition;
+in vec3 vertexPosition;
 in vec3 vertexNormal;
 in vec3 ambientReflectance;
 in vec3 specularReflectance;
@@ -20,12 +20,12 @@ out float outShininess;
 
 void main() {
 	// interpolated output
-	outVertexPosition = modelMatrix * vertexPosition;
+	outVertexPosition = modelMatrix * vec4(vertexPosition, 1);
 	outVertexNormal = normalMatrix * vertexNormal;
 	outAmbientReflectance = ambientReflectance;
 	outSpecularReflectance = specularReflectance;
 	outDiffuseReflectance = diffuseReflectance;
 	outShininess = shininess;
 
-	gl_Position = modelViewProjectionMatrix * vertexPosition;
+	gl_Position = modelViewProjectionMatrix * vec4(vertexPosition, 1);
 }

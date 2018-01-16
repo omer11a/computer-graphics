@@ -7,7 +7,7 @@ struct Light {
 	vec3 intensity;
 };
 
-uniform vec4 cameraPosition;
+uniform vec3 cameraPosition;
 uniform vec3 ambientLightColor;
 uniform int numberOfLights;
 uniform lights[MAX_NUMBER_OF_LIGHTS];
@@ -25,7 +25,7 @@ vec3 applyLight(
 	Light light,
 	vec3 specularReflectance,
 	vec3 diffuseReflectance,
-	flot shininess,
+	float shininess,
 	vec3 normal,
 	vec3 vertexPosition,
 	vec3 modelToCamera
@@ -63,9 +63,9 @@ void main() {
 			shininess,
 			normal,
 			vertexPosition,
-			surfaceToCamera
+			modelToCamera
 		);
     }
     
-    outColor = color;
+    outColor = vec4(clamp(color, 0, 1), 1);
 }
