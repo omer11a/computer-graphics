@@ -31,8 +31,6 @@ class Renderer : public BaseRenderer
 
 	void CreateBuffers(int width, int height);
 	void CreateLocalBuffer();
-	void SetPolygonToShader(const ConvexPolygon * shader_polygon, const vec3& f_normal);
-	vec3 CalculatePointColor(const vec3& p1, const vec3& p2, const vec3& p3, const float abc_area, const vec3& p);
 	void DestroyBuffers();
 
 	vec4 applyCameraTransformation(const vec3& p, const vec3& n) const;
@@ -46,19 +44,14 @@ class Renderer : public BaseRenderer
 	bool lineToScreen(const vec3& p1, const vec3& n1, const vec3& p2, const vec3& n2, vec3& q1, vec3& q2) const;
 
 	bool PlotPixel(const int x, const int y, const float z, const vec3& color);
-	vec3 GetCenterMass(const vec3& p1, const vec3& p2, const vec3& p3) const;
-	vec3 GetCenterMass(vector<vec3> const * const vertices) const;
 	
 	bool DrawLine(const vec3& p1, const vec3& n1, const vec3& p2, const vec3& n2, const vec3& c1);
 	void DrawLine(const vec3& p1, const vec3& p2, const vec3& c=vec3(-1), const int p1_idx=0, const int p2_idx=0);
 	void DrawSteepLine(const vec3& p1, const vec3& p2, const vec3& c, const int p1_idx = 0, const int p2_idx = 0);
 	void DrawModerateLine(const vec3& p1, const vec3& p2, const vec3& c, const int p1_idx = 0, const int p2_idx = 0);
 	
-	void PaintTriangle(const vector<vec3> * vertices, const vector<Material> * materials, const vector<vec3> * v_normals, const vec3& f_normal);
-	void PaintTriangleFloodFill(const vec3& p1, const vec3& p2, const vec3& p3, const vec3& p);
-	void PaintTriangleScanLines(const vec3& p1, const vec3& p2, const vec3& p3);
+	
 
-	void FillAntiAliasingBuffer();
 	//////////////////////////////
 	// openGL stuff. Don't touch.
 

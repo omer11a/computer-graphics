@@ -120,23 +120,12 @@ void Camera::perspectiveVertical(
 ) {
 	verifyProjectionParameters(fovy, aspect, zNear, zFar);
 
-	//float fov = (M_PI / 180.0f) * fovy;
-	//float tangent = tanf(fov / 2.0f);
-	//float height = zNear * tangent;
-	//float width = height * aspect;
-	//frustum(-width, width, -height, height, zNear, zFar);
-	projection = glm::perspective(fovy, aspect, zNear, zFar);
-}
-
-void Camera::perspectiveHorizontal(
-	const float fovx, const float aspect,
-	const float zNear, const float zFar
-) {
-	verifyProjectionParameters(fovx, aspect, zNear, zFar);
-	//TODO - verity this???
-	float fov = (M_PI / 180.0f) * fovx;
-	float fovy = 2.0f * atanf(tanf(fov * 0.5f) / aspect);
-	perspectiveVertical(fovy, aspect, zNear, zFar);
+	float fov = (M_PI / 180.0f) * fovy;
+	float tangent = tanf(fov / 2.0f);
+	float height = zNear * tangent;
+	float width = height * aspect;
+	frustum(-width, width, -height, height, zNear, zFar);
+	//projection = glm::perspective(fovy, aspect, zNear, zFar);
 }
 
 void Camera::zoom(const float z) {

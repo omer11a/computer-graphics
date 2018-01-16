@@ -18,7 +18,7 @@ void initMenu();
 void redraw(bool should_redraw=true);
 bool set_ortho();
 bool set_frustum();
-bool set_perspective(char type);
+bool set_perspective();
 bool set_lookat();
 void change_active_model();
 void change_active_light();
