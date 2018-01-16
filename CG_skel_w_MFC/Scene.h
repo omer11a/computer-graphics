@@ -40,7 +40,7 @@ public:
 	Camera();
 	void transformInView(const mat4 & transform);
 	void transformInWorld(const mat4 & transform);
-	void lookAt(const vec4& eye, const vec4& at, const vec4& up);
+	void lookAt(const vec3& eye, const vec3& at, const vec3& up);
 	void ortho(const float left, const float right,
 		const float bottom, const float top,
 		const float zNear, const float zFar );

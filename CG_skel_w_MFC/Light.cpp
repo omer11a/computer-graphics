@@ -44,14 +44,14 @@ vec3 DirectionalLightSource::computeSpecularColor(
 ) const {
 	float product = dot(direction, normal);
 	if (product <= 0) {
-		return 0;
+		return vec3(0);
 	}
 
 	vec3 R = normalize(2 * product * normal - direction);
 	vec3 V = normalize(-modelPosition);
 	product = dot(R, V);
 	if (product <= 0) {
-		return 0;
+		return vec3(0);
 	}
 
 	return material.specularReflectance * pow(product, material.shininess) * intensity;
@@ -64,7 +64,7 @@ vec3 DirectionalLightSource::computeDiffuseColor(
 ) const {
 	float product = dot(direction, normal);
 	if (product <= 0) {
-		return 0;
+		return vec3(0);
 	}
 
 	return material.diffuseReflectance * product * intensity;
@@ -81,7 +81,7 @@ DirectionalLightSource::DirectionalLightSource(const DirectionalLightSource& lig
 {}
 
 void DirectionalLightSource::transformInModel(const mat4 & transform) {
-	if (!transform.isInvertible()) {
+	if (glm::determinant(transform) == 0) {
 		throw invalid_argument("Singular matrices cannot be performed as transformations on lights.");
 	}
 
@@ -89,7 +89,7 @@ void DirectionalLightSource::transformInModel(const mat4 & transform) {
 }
 
 void DirectionalLightSource::transformInWorld(const mat4 & transform) {
-	if (!transform.isInvertible()) {
+	if (glm::determinant(transform) == 0) {
 		throw invalid_argument("Singular matrices cannot be performed as transformations on lights.");
 	}
 
@@ -108,7 +108,7 @@ vec3 DirectionalLightSource::computeColor(
 }
 
 void PointLightSource::updatePosition() {
-	transformedPosition = convert4dTo3d(transform * worldTransform * modelTransform * position);
+	transformedPosition = convert4dTo3d(transform * worldTransform * modelTransform * vec4(position, 1));
 }
 
 vec3 PointLightSource::getDirection(const vec3& modelPosition) const {

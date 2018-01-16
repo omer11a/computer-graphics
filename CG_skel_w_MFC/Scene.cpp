@@ -40,7 +40,8 @@ Camera::Camera() :
 }
 
 void Camera::transformInView(const mat4& transform) {
-	if (!transform.isInvertible()) {
+	
+	if (determinant(transform) == 0) {
 		throw invalid_argument("Singular matrices cannot be performed as transformations on cameras.");
 	}
 
@@ -49,7 +50,7 @@ void Camera::transformInView(const mat4& transform) {
 }
 
 void Camera::transformInWorld(const mat4& transform) {
-	if (!transform.isInvertible()) {
+	if (determinant(transform) == 0) {
 			throw invalid_argument("Singular matrices cannot be performed as transformations on cameras.");
 	}
 
@@ -57,20 +58,12 @@ void Camera::transformInWorld(const mat4& transform) {
 	inverseWorldTransform = inverseWorldTransform * inverse(transform);
 }
 
-void Camera::lookAt(const vec4 & eye, const vec4 & at, const vec4 & up) {
+void Camera::lookAt(const vec3 & eye, const vec3 & at, const vec3 & up) {
 	viewTransform = mat4();
 	inverseViewTransform = viewTransform;
 
-	vec4 n = normalize(eye - at);
-	n.w = 0;
-	vec4 u = normalize(cross(up, n));
-	u.w = 0;
-	vec4 v = normalize(cross(n, u));
-	v.w = 0;
-	vec4 t = vec4(0, 0, 0, 1);
-	mat4 c = mat4(u, v, n, t);
-	worldTransform = Translate(eye) * transpose(c);
-	inverseWorldTransform = c * Translate(-eye);
+	inverseWorldTransform = glm::lookAt(eye, at, up);
+	worldTransform = inverse(worldTransform);
 }
 
 void Camera::ortho(
@@ -87,11 +80,11 @@ void Camera::ortho(
 	this->zNear = zNear;
 	this->zFar = zFar;
 
-	//glOrtho(left, right, bottom, top, zNear, zFar);
-	mat4 t = Translate(-(right + left) / 2, -(bottom + top) / 2, (zNear + zFar) / 2);
-	mat4 s = Scale(2 / (right - left), 2 / (top - bottom), 2 / (zNear - zFar));
-	mat4 m = Scale(1, 1, 0);
-	projection = m * s * t;
+	//mat4 t = Translate(-(right + left) / 2, -(bottom + top) / 2, (zNear + zFar) / 2);
+	//mat4 s = Scale(2 / (right - left), 2 / (top - bottom), 2 / (zNear - zFar));
+	//mat4 m = Scale(1, 1, 0);
+	//projection = m * s * t;
+	projection = glm::ortho(left, right, bottom, top, zNear, zFar);
 	isPerspective = false;
 }
 
@@ -109,16 +102,15 @@ void Camera::frustum(
 	this->zNear = zNear;
 	this->zFar = zFar;
 
-	//glFrustum(left, right, bottom, top, zNear, zFar);
-	projection = mat4();
-	projection[0][0] = 2 * zNear / (right - left);
-	projection[0][2] = (right + left) / (right - left);
-	projection[1][1] = 2 * zNear / (top - bottom);
-	projection[1][2] = (top + bottom) / (top - bottom);
-	projection[2][2] = -(zFar + zNear) / (zNear - zFar);
-	projection[2][3] = -2 * zFar * zNear / (zNear - zFar);
-	projection[3][2] = -1;
-	
+	//projection = mat4();
+	//projection[0][0] = 2 * zNear / (right - left);
+	//projection[0][2] = (right + left) / (right - left);
+	//projection[1][1] = 2 * zNear / (top - bottom);
+	//projection[1][2] = (top + bottom) / (top - bottom);
+	//projection[2][2] = -(zFar + zNear) / (zNear - zFar);
+	//projection[2][3] = -2 * zFar * zNear / (zNear - zFar);
+	//projection[3][2] = -1;
+	projection = glm::frustum(left, right, bottom, top, zNear, zFar);
 	isPerspective = true;
 }
 
@@ -128,11 +120,12 @@ void Camera::perspectiveVertical(
 ) {
 	verifyProjectionParameters(fovy, aspect, zNear, zFar);
 
-	float fov = (M_PI / 180.0f) * fovy;
-	float tangent = tanf(fov / 2.0f);
-	float height = zNear * tangent;
-	float width = height * aspect;
-	frustum(-width, width, -height, height, zNear, zFar);
+	//float fov = (M_PI / 180.0f) * fovy;
+	//float tangent = tanf(fov / 2.0f);
+	//float height = zNear * tangent;
+	//float width = height * aspect;
+	//frustum(-width, width, -height, height, zNear, zFar);
+	projection = glm::perspective(fovy, aspect, zNear, zFar);
 }
 
 void Camera::perspectiveHorizontal(
@@ -140,7 +133,7 @@ void Camera::perspectiveHorizontal(
 	const float zNear, const float zFar
 ) {
 	verifyProjectionParameters(fovx, aspect, zNear, zFar);
-
+	//TODO - verity this???
 	float fov = (M_PI / 180.0f) * fovx;
 	float fovy = 2.0f * atanf(tanf(fov * 0.5f) / aspect);
 	perspectiveVertical(fovy, aspect, zNear, zFar);

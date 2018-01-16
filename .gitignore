@@ -14,3 +14,14 @@
 /glew/lib
 /freeglut/lib
 /computer-graphics.rar
+/external/glm-0.9.9-a2/cmake
+/external/glm-0.9.9-a2/doc
+/external/glm-0.9.9-a2/test
+/external/glm-0.9.9-a2/util
+/external/glm-0.9.9-a2/readme.md
+/external/glm-0.9.9-a2/manual.md
+/external/glm-0.9.9-a2/cmake_uninstall.cmake.in
+/external/glm-0.9.9-a2/CMakeLists.txt
+/external/glm-0.9.9-a2/.travis.yml
+/external/glm-0.9.9-a2/.gitignore
+/external/glm-0.9.9-a2/.appveyor.yml

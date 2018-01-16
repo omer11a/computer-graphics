@@ -1,10 +1,10 @@
 #pragma once
 
-#include <vector>
 
 #include "vec.h"
 #include "mat.h"
 #include "Material.h"
+#include <vector>
 
 using namespace std;
 class BaseRenderer {

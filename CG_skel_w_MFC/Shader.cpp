@@ -37,7 +37,7 @@ void DirectShader::setLights(const vector<Light *> * lights) {
 }
 
 void DirectShader::setTransform(const mat4& transform) {
-	if (!transform.isInvertible()) {
+	if (glm::determinant(transform) == 0) {
 		throw invalid_argument("Invertible transformation");
 	}
 

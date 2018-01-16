@@ -1,9 +1,15 @@
+
+#include "glm/glm.hpp"
+#include "glm/gtc/matrix_transform.hpp"
+using namespace glm;
+
 #include "stdafx.h"
 #include "Renderer.h"
 #include "Polygon.h"
 #include "CG_skel_w_MFC.h"
 #include "InitShader.h"
-#include "GL\freeglut.h"
+#include "GL/freeglut.h"
+
 #include <functional>
 
 #define INDEX(width,x,y,c) ((x)+(y)*(width))*3+(c)
@@ -38,7 +44,7 @@ void Renderer::CreateBuffers(int width, int height)
 	m_height = anti_factor * height;
 	m_screen_width = width;
 	m_screen_height = height;
-	min_size = min(m_width, m_height) * 0.5;
+	min_size = min(m_width, m_height) / 2;
 	CreateOpenGLBuffer(); //Do not remove this line.
 	m_outBuffer = new float[3 * m_width * m_height];
 	m_screenBuffer = new float[3 * m_screen_width * m_screen_height];
@@ -67,16 +73,17 @@ void Renderer::DestroyBuffers()
 }
 
 vec4 Renderer::applyCameraTransformation(const vec3& p, const vec3& n) const {
-	vec4 pTransformed;
-	vec4 nTransformed;
+	//vec4 pTransformed;
+	//vec4 nTransformed;
 
-	pTransformed = m_oTransform * p;
-	if (length(n) != 0) {
-		nTransformed = normalize(m_nTransform * n);
-		nTransformed.w = 0;
-	}
+	//pTransformed = m_oTransform * p;
+	//if (length(n) != 0) {
+	//	nTransformed = normalize(m_nTransform * n);
+	//	nTransformed.w = 0;
+	//}
 
-	return m_cTransform * (pTransformed + nTransformed);
+	//return m_cTransform * (pTransformed + nTransformed);
+	return vec4();
 }
 
 vec3 Renderer::applyProjection(const vec4& p) const {
@@ -248,7 +255,6 @@ bool Renderer::DrawLine(const vec3& p1, const vec3& n1, const vec3& p2, const ve
 		return false;
 	}
 
-	std::cout << "newP1" << newP1 << "newP2" << newP2 << std::endl;
 	if (abs(newP1.y - newP2.y) > abs(newP1.x - newP2.x)) {
 		this->DrawSteepLine(newP1, newP2, c1);
 	} else {
@@ -418,7 +424,7 @@ bool Renderer::PixelToPoint(const vec3& p1, const vec3& p2, const vec3& p3, cons
 
 	mat2 a(np.x - p1.x, p2.x - p3.x,
 		np.y - p1.y, p2.y - p3.y);
-	if (!a.isInvertible()) {
+	if (glm::determinant(a) == 0) {
 		return false;
 	}
 	vec2 tk = inverse(a) * vec2(p2.x - p1.x, p2.y - p1.y);
@@ -660,7 +666,7 @@ void Renderer::DrawTriangles(
 {
 	vec3 white(1);
 	vec3 yellow(1, 1, 0);
-	vec3 pink(1, 140 / 255., 1);
+	vec3 pink(1, 140 / 255.0f, 1);
 	int fn_index = 0;
 	int vn_index = 0;
 	vec3 v_normal, f_normal;
@@ -675,33 +681,81 @@ void Renderer::DrawTriangles(
 
 	// Get a handle for our "MVP" uniform
 	GLuint MatrixID = glGetUniformLocation(programID, "MVP");
-	mat4 MVP;// = m_projection * m_cTransform * m_oTransform;
-	MVP[0].x = 1.08639598;
-	MVP[0].y = 0.993682027;
-	MVP[0].z = 0.687367737;
-	MVP[0].w = 0.685994387;
-	MVP[1].x = 0.000000000;
-	MVP[1].y = 2.07017088;
-	MVP[1].z = 0.515525818;
-	MVP[1].w = 0.514495790;
-	MVP[2].x = 1.44852805;
-	MVP[2].y = 0.745261550;
-	MVP[2].z = 0.515525818;
-	MVP[2].w = 0.514495790;
-	MVP[3].x = 0.000000000;
-	MVP[3].y = 0.000000000;
-	MVP[3].z = 5.64242601;
-	MVP[3].w = 5.83095264;
-	MVP = transpose(MVP);
+	/*m_cTransform[0].x = -0.599999964;
+	m_cTransform[0].y =- 0.411596596;
+	m_cTransform[0].z =	0.685994387;
+	m_cTransform[0].w =	0.000000000;
+	m_cTransform[1].x = 0.000000000;
+	m_cTransform[1].y = 0.857492924;
+	m_cTransform[1].z = 0.514495790;
+	m_cTransform[1].w = 0.000000000;
+	m_cTransform[2].x = -0.799999952;
+	m_cTransform[2].y = 0.308697462;
+	m_cTransform[2].z = -0.514495790;
+	m_cTransform[2].w = 0.000000000;
+	m_cTransform[3].x = - 0.00000000;
+	m_cTransform[3].y = - 0.00000000;
+	m_cTransform[3].z = - 5.83095264;
+	m_cTransform[3].w = 1.00000000;
 
-	vector<vec4> vertices_copy;
+	m_projection[0].x = 1.81066012;
+	m_projection[0].y = 0.000000000;
+	m_projection[0].z = 0.000000000;
+	m_projection[0].w = 0.000000000;
+	m_projection[1].x = 0.000000000;
+	m_projection[1].y = 2.41421342;
+	m_projection[1].z = 0.000000000;
+	m_projection[1].w = 0.000000000;
+	m_projection[2].x = 0.000000000;
+	m_projection[2].y = 0.000000000;
+	m_projection[2].z = -1.00200200;
+	m_projection[2].w = -1.00000000;
+	m_projection[3].x =	0.000000000;
+	m_projection[3].y =	0.000000000;
+	m_projection[3].z = -0.200200200;
+	m_projection[3].w = 0.000000000;
+	*/
+	//mat4 mul1 = m_cTransform * m_oTransform;
+
+	//glm::mat4 MVP2; //= m_projection * m_cTransform * m_oTransform;
+	//mat4 MVP = mul1 * m_projection;
+	//std::cout << m_oTransform << std::endl;
+	//std::cout << m_cTransform << std::endl;
+	//std::cout << m_projection << std::endl;
+	//std::cout << mul1 << std::endl;
+	//std::cout << MVP << std::endl;
+	mat4 MVP = m_projection * m_cTransform * m_oTransform;
+	//MVP[0].x = -1.08639598;
+	//MVP[0].y = -0.993682027;
+	//MVP[0].z = -0.687367737;
+	//MVP[0].w = -0.685994387;
+	//MVP[1].x = 0.000000000;
+	//MVP[1].y = 2.07017088;
+	//MVP[1].z = -0.515525818;
+	//MVP[1].w = -0.514495790;
+	//MVP[2].x = -1.44852805;
+	//MVP[2].y = 0.745261550;
+	//MVP[2].z = 0.515525818;
+	//MVP[2].w = 0.514495790;
+	//MVP[3].x = 0.000000000;
+	//MVP[3].y = 0.000000000;
+	//MVP[3].z = 5.64242601;
+	//MVP[3].w = 5.83095264;
+	//MVP = transpose(MVP);
+	//std::cout << MVP << std::endl;
+	//vector<glm::vec3> vertices_copy;
+	vector<vec3> vertices_copy;
+	vector<vec4> vertices_copy2;
 	for (auto i = vertices->begin(); i != vertices->end(); ++i) {
-		vertices_copy.push_back((*i));
+		//vertices_copy.push_back(glm::vec3((*i).x, (*i).y, (*i).z));
+		vertices_copy.push_back(vec3((*i).x, (*i).y, (*i).z));
+		//vertices_copy2.push_back(MVP * vec4((*i), 1));
 	}
 
 	GLuint vertexbuffer;
 	glGenBuffers(1, &vertexbuffer);
 	glBindBuffer(GL_ARRAY_BUFFER, vertexbuffer);
+	//glBufferData(GL_ARRAY_BUFFER, vertices_copy.size() * sizeof(glm::vec3), &vertices_copy[0], GL_STATIC_DRAW);
 	glBufferData(GL_ARRAY_BUFFER, vertices_copy.size() * sizeof(vec3), &vertices_copy[0], GL_STATIC_DRAW);
 
 	
@@ -729,8 +783,6 @@ void Renderer::DrawTriangles(
 	}
 
 	glDisableVertexAttribArray(0);
-
-	//delete[] vertices_copy;
 
 
 	if (temp != NULL) {
