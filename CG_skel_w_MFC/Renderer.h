@@ -21,7 +21,7 @@ class Renderer : public BaseRenderer
 	bool *m_paintBuffer;	// width * height
 	int m_screen_width, m_screen_height, anti_factor;
 
-	mat4 m_cTransform, m_projection, m_oTransform;
+	mat4 m_cTransform, m_projection, m_oTransform, mvp;
 	mat3 m_cnTransform, m_nTransform;
 	Shader * shader, * default_shader;
 	float zNear;
