@@ -185,7 +185,7 @@ void keyboard(unsigned char key, int x, int y)
 		break;
 	case 'p':
 	case 'P':
-		should_redraw = set_perspective(key);
+		should_redraw = set_perspective();
 		break;
 	case 'z':
 	case 'Z':
@@ -627,9 +627,9 @@ bool set_frustum()
 	return false;
 }
 
-bool set_perspective(char type)
+bool set_perspective()
 {
-	bool is_horizontal = (type == 'P');
+	bool is_horizontal = false;
 	CString title = is_horizontal ? "Horizontal" : "Vertical";
 	CPerspectiveDialog dlg(title + " Perspective Setting", is_horizontal);
 	if (dlg.DoModal() == IDOK) {
@@ -641,17 +641,11 @@ bool set_perspective(char type)
 				dlg.GetNear() << ", " << dlg.GetFar() << ")" << endl;
 			return false;
 		}
-		if (is_horizontal) {
-			scene->getActiveCamera()->perspectiveHorizontal(
-				dlg.GetFov(), dlg.GetAspect(),
-				dlg.GetNear(), dlg.GetFar()
-			);
-		} else {
-			scene->getActiveCamera()->perspectiveVertical(
-				dlg.GetFov(), dlg.GetAspect(),
-				dlg.GetNear(), dlg.GetFar()
-			);
-		}
+		scene->getActiveCamera()->perspectiveVertical(
+			dlg.GetFov(), dlg.GetAspect(),
+			dlg.GetNear(), dlg.GetFar()
+		);
+		
 		return true;
 	}
 	return false;
@@ -661,11 +655,10 @@ bool set_lookat()
 {
 	Camera * cam = scene->getActiveCamera();
 	mat4 tc = inverse(cam->getInverseTransform());
-	// TODO: validate this
+	// TODO - validate this
 	vec4 eye = tc * vec4(vec3(), 1);
 	eye = eye / eye.w;
-	vec4 up = tc * vec4(0, 1, 0, 1);
-	up = up / up.w;
+	vec4 up = glm::normalize(tc * vec4(0, 1, 0, 0));
 
 	cout << "start from : " << eye << " with up in " << up << endl;
 	if (scene->getNumberOfModels() > 0) {
@@ -942,7 +935,7 @@ bool zoom(unsigned char type)
 	int delta = (type == 'z') ? config.zoom : -config.zoom;
 	Camera * cam = scene->getActiveCamera();
 	if ((cam->getNear() + delta > 0) && (cam->getNear() + delta > 0)) {
-		scene->getActiveCamera()->zoom(delta);
+		cam->zoom(delta);
 		return true;
 	}
 	cout << "zoom is out of range, far=" << cam->getFar() << ", near=" << cam->getNear() << ", zoom=" << delta << endl;
