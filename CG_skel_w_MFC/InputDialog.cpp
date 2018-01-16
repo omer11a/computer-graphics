@@ -497,7 +497,6 @@ void CPerspectiveDialog::OnPaint()
 //    Class CLightDialog
 // ----------------------
 vec3 ColorToVec(COLORREF color) {
-
 	return vec3(color & 0xFF, (color & 0xFF00) >> 8, (color & 0xFF0000) >> 16) / 255;
 }
 

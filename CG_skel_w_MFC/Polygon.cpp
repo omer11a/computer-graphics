@@ -74,7 +74,7 @@ ConvexPolygon::ConvexPolygon(
 	interpolatedVertices(), interpolatedMaterials(), interpolatedNormals()
 {
 	for (auto i = vertices.begin(); i != vertices.end(); ++i) {
-		this->vertices.insert(this->vertices.begin(), vec4(*i));
+		this->vertices.insert(this->vertices.begin(), vec4(*i, 1));
 	}
 
 	verifyThis();
@@ -94,9 +94,10 @@ void ConvexPolygon::transform(
 }
 
 void ConvexPolygon::divide() {
-	for (vector<vec4>::iterator it = vertices.begin(); it != vertices.end(); ++it) {
-		*it = convert4dTo3d(*it);
-	}
+	// TODO - do we need this?
+	//for (vector<vec4>::iterator it = vertices.begin(); it != vertices.end(); ++it) {
+	//	*it = convert4dTo3d(*it);
+	//}
 }
 
 void ConvexPolygon::getTriangles(vector<ConvexPolygon *>& triangles) const {

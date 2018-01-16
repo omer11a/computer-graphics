@@ -1,7 +1,7 @@
+#include "vec.h"
 #include "StdAfx.h"
 #include "MeshModel.h"
-#include "vec.h"
-#include <string>
+//#include <string>
 #include <iostream>
 #include <fstream>
 #include <sstream>
@@ -132,7 +132,7 @@ void MeshModel::loadFile(string fileName)
 
 mat3 MeshModel::convertToNormalTransform(const mat4 & transform) const {
 	mat3 transform_in_3d = convert4dTo3d(transform);
-	if (!transform_in_3d.isInvertible()) {
+	if (glm::determinant(transform_in_3d) == 0) {
 		throw invalid_argument("Can't apply matrix to normals");
 	}
 
@@ -152,29 +152,29 @@ void MeshModel::computeBoundingBox() {
 	for (unsigned int i = 1; i < vertexPositions.size(); ++i) {
 		vec3 vertex = vertexPositions.at(i);
 
-		minValues.x = min(minValues.x, vertex.x);
-		minValues.y = min(minValues.y, vertex.y);
-		minValues.z = min(minValues.z, vertex.z);
+		minValues.x = std::min(minValues.x, vertex.x);
+		minValues.y = std::min(minValues.y, vertex.y);
+		minValues.z = std::min(minValues.z, vertex.z);
 
-		maxValues.x = max(maxValues.x, vertex.x);
-		maxValues.y = max(maxValues.y, vertex.y);
-		maxValues.z = max(maxValues.z, vertex.z);
+		maxValues.x = std::max(maxValues.x, vertex.x);
+		maxValues.y = std::max(maxValues.y, vertex.y);
+		maxValues.z = std::max(maxValues.z, vertex.z);
 	}
 }
 
 MeshModel::MeshModel() :
 	vertexPositions(), vertexNormals(), faceNormals(), materials(),
-	worldTransform(), modelTransform(), normalModelTransform(), normalWorldTransform(),
+	worldTransform(1), modelTransform(1), normalModelTransform(1), normalWorldTransform(1),
 	allowVertexNormals(false), allowFaceNormals(false), allowBoundingBox(false)
 { }
 
 MeshModel::MeshModel(string fileName) :
 	vertexPositions(), vertexNormals(), faceNormals(), materials(),
-	worldTransform(), modelTransform(), normalModelTransform(), normalWorldTransform(),
+	worldTransform(1), modelTransform(1), normalModelTransform(1), normalWorldTransform(1),
 	allowVertexNormals(false), allowFaceNormals(false), allowBoundingBox(false)
 {
 	loadFile(fileName);
-	setUniformMaterial({ 1, 1, 1, 1 });
+	setUniformMaterial({ vec3(1), vec3(1), vec3(1), 1 });
 	computeFaceNormals();
 }
 
@@ -196,7 +196,7 @@ vec4 MeshModel::getLocation()
 		cm += vertex;
 	}
 
-	return worldTransform * modelTransform * (cm / vertexPositions.size());
+	return worldTransform * modelTransform * vec4(cm / vertexPositions.size(), 1);
 }
 
 void MeshModel::switchVertexNormalsVisibility() {
@@ -299,6 +299,6 @@ PrimMeshModel::PrimMeshModel() : MeshModel()
 		}
 	}
 
-	setUniformMaterial({ 1, 1, 1, 1 });
+	setUniformMaterial({ vec3(1), vec3(1), vec3(1), 1 });
 	computeFaceNormals();
 }

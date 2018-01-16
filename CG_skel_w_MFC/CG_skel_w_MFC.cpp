@@ -39,7 +39,6 @@ PrimMeshModels:
 */
 #include "stdafx.h"
 #include "CG_skel_w_MFC.h"
-#include "InputDialog.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -53,10 +52,10 @@ PrimMeshModels:
 #include "GL/freeglut_ext.h"
 #include "vec.h"
 #include "mat.h"
-//#include "InitShader.h"
+#include "InputDialog.h"
 #include "Shader.h"
-#include "Scene.h"
 #include "Renderer.h"
+#include "Scene.h"
 #include <string>
 
 #define BUFFER_OFFSET( offset )   ((GLvoid*) (offset))
@@ -662,9 +661,10 @@ bool set_lookat()
 {
 	Camera * cam = scene->getActiveCamera();
 	mat4 tc = inverse(cam->getInverseTransform());
-	vec4 eye = tc * vec3();
+	// TODO: validate this
+	vec4 eye = tc * vec4(vec3(), 1);
 	eye = eye / eye.w;
-	vec4 up = tc * vec3(0, 1, 0);
+	vec4 up = tc * vec4(0, 1, 0, 1);
 	up = up / up.w;
 
 	cout << "start from : " << eye << " with up in " << up << endl;
@@ -674,7 +674,7 @@ bool set_lookat()
 		cam->lookAt(eye, at, up);
 		cout << "look at: looking at " << at << endl;
 		tc = inverse(cam->getInverseTransform());
-		cout << "end at: " << (tc * vec3()) << " with up in " << (tc * vec3(0, 1, 0)) << endl;
+		//cout << "end at: " << (tc * vec3()) << " with up in " << (tc * vec3(0, 1, 0)) << endl;
 		return true;
 	} else {
 		cout << "look at: no model to look at..." << endl;
@@ -768,28 +768,28 @@ bool scale(unsigned char key)
 	case MODEL_OBJECT:
 		if (scene->getNumberOfModels() > 0) {
 			scene->getActiveModel()->transformInModel(scaling_mat);
-			cout << "scalling model frame with " << scaling_mat << endl;
+			//cout << "scalling model frame with " << scaling_mat << endl;
 			should_redraw = true;
 		}
 		break;
 	case MODEL_WORLD:
 		if (scene->getNumberOfModels() > 0) {
 			scene->getActiveModel()->transformInWorld(scaling_mat);
-			cout << "scalling model world frame with " << scaling_mat << endl;
+			//cout << "scalling model world frame with " << scaling_mat << endl;
 			should_redraw = true;
 		}
 		break;
 	case CAMERA_OBJECT:
 		if (scene->getNumberOfCameras() > 0) {
 			scene->getActiveCamera()->transformInView(scaling_mat);
-			cout << "scalling camera frame with " << scaling_mat << endl;
+			//cout << "scalling camera frame with " << scaling_mat << endl;
 			should_redraw = true;
 		}
 		break;
 	case CAMERA_WORLD:
 		if (scene->getNumberOfCameras() > 0) {
 			scene->getActiveCamera()->transformInWorld(scaling_mat);
-			cout << "scalling camera world with " << scaling_mat << endl;
+			//cout << "scalling camera world with " << scaling_mat << endl;
 			should_redraw = true;
 		}
 		break;
