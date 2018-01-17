@@ -1,7 +1,6 @@
 #include "vec.h"
 #include "StdAfx.h"
 #include "MeshModel.h"
-//#include <string>
 #include <iostream>
 #include <fstream>
 #include <sstream>
@@ -61,25 +60,14 @@ vec2 vec2fFromStream(std::istream & aStream)
 	return vec2(x, y);
 }
 
-vec3 & MeshModel::getVecByIndex(vector<vec3> & vecs, int i)
-{
-	if (i >= 1) {
-		return vecs.at(i - 1);
-	}
-
-	if (i <= -1) {
-		return vecs.at(vecs.size() + i);
-	}
-
-	throw out_of_range("Invalid index in obj file");
-}
-
 void MeshModel::loadFile(string fileName)
 {
 	ifstream ifile(fileName.c_str());
 	vector<FaceIdcs> faces;
 	vector<vec3> vertices;
 	vector<vec3> normals;
+	vector<vec2> coordinates;
+
 	// while not end of file
 	while (!ifile.eof())
 	{
@@ -100,6 +88,8 @@ void MeshModel::loadFile(string fileName)
 			normals.push_back(vec3fFromStream(issLine));
 		else if (lineType == "f")
 			faces.push_back(issLine);
+		else if (lineType == "vt")
+			coordinates.push_back(vec2fFromStream(issLine));
 		else if (lineType == "#" || lineType == "")
 		{
 			// comment / empty line
@@ -123,8 +113,13 @@ void MeshModel::loadFile(string fileName)
 		for (int i = 0; i < 3; i++)
 		{
 			vertexPositions.push_back(getVecByIndex(vertices, it->v[i]));
+			
 			if (normals.size() != 0) {
 				vertexNormals.push_back(getVecByIndex(normals, it->vn[i]));
+			}
+
+			if (coordinates.size() != 0) {
+				textureCoordinates.push_back(getVecByIndex(coordinates, it->vt[i]));
 			}
 		}
 	}
@@ -163,13 +158,13 @@ void MeshModel::computeBoundingBox() {
 }
 
 MeshModel::MeshModel() :
-	vertexPositions(), vertexNormals(), faceNormals(), materials(),
+	vertexPositions(), vertexNormals(), textureCoordinates(), faceNormals(), materials(),
 	worldTransform(1), modelTransform(1), normalModelTransform(1), normalWorldTransform(1),
 	allowVertexNormals(false), allowFaceNormals(false), allowBoundingBox(false)
 { }
 
 MeshModel::MeshModel(string fileName) :
-	vertexPositions(), vertexNormals(), faceNormals(), materials(),
+	vertexPositions(), vertexNormals(), textureCoordinates(), faceNormals(), materials(),
 	worldTransform(1), modelTransform(1), normalModelTransform(1), normalWorldTransform(1),
 	allowVertexNormals(false), allowFaceNormals(false), allowBoundingBox(false)
 {

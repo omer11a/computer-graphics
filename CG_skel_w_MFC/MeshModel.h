@@ -27,10 +27,24 @@ class MeshModel
 protected:
 	vector<vec3> vertexPositions;
 	vector<vec3> vertexNormals;
+	vector<vec2> textureCoordinates;
 	vector<vec3> faceNormals;
 	vector<Material> materials;
 
-	vec3 & getVecByIndex(vector<vec3> & vecs, int i);
+	template<class T>
+	T & getVecByIndex(vector<T> & vecs, int i)
+	{
+		if (i >= 1) {
+			return vecs.at(i - 1);
+		}
+
+		if (i <= -1) {
+			return vecs.at(vecs.size() + i);
+		}
+
+		throw out_of_range("Invalid index in obj file");
+	}
+	
 	void computeFaceNormals();
 	MeshModel();
 
