@@ -473,6 +473,7 @@ void Renderer::DrawLight(const vec3& color, const vec3& position)
 }
 
 void Renderer::SetShaderLights(const AmbientLight& amb_light, const vector<DirectionalLightSource *>& lights) {
+	objectsProgram.Activate();
 	for (int i = 0; i < lights.size(); i++) {
 		std::ostringstream position_ss, intensity_ss;
 		position_ss << "lights[" << i << "].position";
@@ -493,6 +494,7 @@ void Renderer::SetCameraTransform(const mat4& cInverseTransform, const mat4 & cT
 	vec3 camera_position = convert4dTo3d(cTransform * vec4(0, 0, 0, 1));
 	mv = m_cTransform * m_oTransform;
 	mvp = m_projection * mv;
+	objectsProgram.Activate();
 	objectsProgram.SetUniformParameter(camera_position, "cameraPosition");
 }
 
@@ -562,6 +564,7 @@ void Renderer::SetAntiAliasing(int new_factor)
 }
 
 void Renderer::SetBaseShader(Renderer::ShaderType s) {
+	objectsProgram.Activate();
 	objectsProgram.SetUniformParameter(int(s == ShaderType::Flat), "isFlat");
 	objectsProgram.SetUniformParameter(int(s == ShaderType::Gouraud), "isGouraud");
 	objectsProgram.SetUniformParameter(int(s == ShaderType::Phong), "isPhong");
@@ -569,6 +572,7 @@ void Renderer::SetBaseShader(Renderer::ShaderType s) {
 
 void Renderer::SetFog(const vec3& color, const float extinction, const float scattering)
 {
+	objectsProgram.Activate();
 	objectsProgram.SetUniformParameter(int(true), "isFog");
 	objectsProgram.SetUniformParameter(color, "fogColor");
 	objectsProgram.SetUniformParameter(extinction, "extinctionCoefficient");
@@ -581,6 +585,7 @@ void Renderer::SetFog(const vec3& color, const float extinction, const float sca
 
 void Renderer::DisableFog()
 {
+	objectsProgram.Activate();
 	objectsProgram.SetUniformParameter(int(false), "isFog");
 }
 
@@ -639,6 +644,7 @@ void Renderer::InitOpenGLRendering()
 	// Create and compile our GLSL program from the shaders
 	normalsProgram = ShaderProgram("vshader_basic.glsl", "fshader_basic.glsl", 1);
 	objectsProgram = ShaderProgram("vshader_fog.glsl", "fshader_fog.glsl", 8);
+	objectsProgram.Activate();
 	SetBaseShader(ShaderType::Flat);
 	DisableFog();
 
