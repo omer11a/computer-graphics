@@ -153,6 +153,8 @@
     <None Include="vshader_fog.glsl" />
     <None Include="vshader_shading.glsl" />
     <None Include="vshader_transform.glsl" />
+    <None Include="‏‏fshader_texture.glsl" />
+    <None Include="‏‏vshader_texture.glsl" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\freeglut\freeglut.vcxproj">

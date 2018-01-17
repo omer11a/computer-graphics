@@ -10,7 +10,7 @@ struct Light {
 uniform bool isFlat;
 uniform bool isGouraud;
 uniform bool isPhong;
-uniform bool isFog;
+uniform bool hasFog;
 uniform mat4 modelMatrix;
 uniform mat3 normalMatrix;
 uniform mat4 modelViewMatrix;
@@ -107,7 +107,7 @@ void main() {
 	outColor = clamp(color, 0, 1);
 	
 	outViewVertexPosition = vec3(0);
-	if (isFog) {
+	if (hasFog) {
 		outViewVertexPosition = (modelViewMatrix * vec4(vertexPosition, 1)).xyz;
 	}
 	
