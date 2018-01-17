@@ -16,6 +16,9 @@
     <Filter Include="Shaders">
       <UniqueIdentifier>{5f35f4d7-05b7-4340-bdca-a9712935aa4b}</UniqueIdentifier>
     </Filter>
+    <Filter Include="external">
+      <UniqueIdentifier>{e7db47e9-0788-4690-ba6f-9e1ac69d88b3}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="CG_skel_w_MFC.cpp">
@@ -52,6 +55,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="ShaderProgram.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="lodepng.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -105,6 +111,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="ShaderProgram.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="lodepng.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
