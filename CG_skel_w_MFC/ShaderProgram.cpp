@@ -48,6 +48,12 @@ void ShaderProgram::SetUniformParameter(const GLfloat f, const char * const var_
 	glUniform1f(id, f);
 }
 
+void ShaderProgram::SetUniformParameter(const GLuint ui, const char * const var_name)
+{
+	GLuint id = glGetUniformLocation(program_id, var_name);
+	glUniform1ui(id, ui);
+}
+
 //GLuint ShaderProgram::SetInParameter(const vector<vec3>& v, const int attribute_id) {
 //	GLuint buffer;
 //	glGenBuffers(1, &buffer);

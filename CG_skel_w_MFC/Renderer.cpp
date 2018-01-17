@@ -333,7 +333,7 @@ void Renderer::DrawTriangles(
 
 	// uniform parameters
 	objectsProgram.SetUniformParameter(int(hasTexture), "hasTexture");
-	objectsProgram.SetUniformParameter(int(textureID), "textureSampler");
+	objectsProgram.SetUniformParameter(textureID, "textureSampler");
 	objectsProgram.SetUniformParameter(m_oTransform, "modelMatrix");
 	objectsProgram.SetUniformParameter(m_nTransform, "normalMatrix");
 	objectsProgram.SetUniformParameter(mv, "modelViewMatrix");
