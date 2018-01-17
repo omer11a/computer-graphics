@@ -314,6 +314,10 @@ void Renderer::DrawTriangles(
 	const vector<vec3>* vertices,
 	const vector<Material>* materials,
 	const vector<vec3>* centerPositions,
+	const bool hasTexture,
+	const GLuint textureID,
+	const vector<vec2>* textureCoordinates,
+	const vector<vec2>* textureCenters,
 	const vector<vec3>* vertexNormals,
 	const vector<vec3>* faceNormals,
 	const bool allowVertexNormals,
@@ -328,6 +332,8 @@ void Renderer::DrawTriangles(
 	objectsProgram.Activate();
 
 	// uniform parameters
+	objectsProgram.SetUniformParameter(int(hasTexture), "hasTexture");
+	objectsProgram.SetUniformParameter(int(textureID), "textureSampler");
 	objectsProgram.SetUniformParameter(m_oTransform, "modelMatrix");
 	objectsProgram.SetUniformParameter(m_nTransform, "normalMatrix");
 	objectsProgram.SetUniformParameter(mv, "modelViewMatrix");
@@ -353,14 +359,19 @@ void Renderer::DrawTriangles(
 	}
 
 	vector<GLuint> buffers;
-	buffers.push_back(objectsProgram.SetInParameter(*vertices, 0));			//in vec3 vertexPosition;
-	buffers.push_back(objectsProgram.SetInParameter(*centerPositions, 1));			//in vec3 centerPosition;
-	buffers.push_back(objectsProgram.SetInParameter(*vertexNormals, 2));		//in vec3 vertexNormal;
-	buffers.push_back(objectsProgram.SetInParameter(shader_faceNormals, 3));		//in vec3 faceNormal;
-	buffers.push_back(objectsProgram.SetInParameter(ambients, 4));			//in vec3 ambientReflectance;
-	buffers.push_back(objectsProgram.SetInParameter(speculars, 5));			//in vec3 specularReflectance;
-	buffers.push_back(objectsProgram.SetInParameter(diffuses, 6));			//in vec3 diffuseReflectance;
-	buffers.push_back(objectsProgram.SetInParameter(shininess, 7));			//in float shininess;
+	buffers.push_back(objectsProgram.SetInParameter(*vertices, 0 , 3));				//in vec3 vertexPosition;
+	buffers.push_back(objectsProgram.SetInParameter(*centerPositions, 1 , 3));		//in vec3 centerPosition;
+	buffers.push_back(objectsProgram.SetInParameter(*vertexNormals, 2, 3));			//in vec3 vertexNormal;
+	buffers.push_back(objectsProgram.SetInParameter(shader_faceNormals, 3, 3));		//in vec3 faceNormal;
+	buffers.push_back(objectsProgram.SetInParameter(ambients, 4, 3));				//in vec3 ambientReflectance;
+	buffers.push_back(objectsProgram.SetInParameter(speculars, 5, 3));				//in vec3 specularReflectance;
+	buffers.push_back(objectsProgram.SetInParameter(diffuses, 6, 3));				//in vec3 diffuseReflectance;
+	buffers.push_back(objectsProgram.SetInParameter(shininess, 7, 1));				//in float shininess;
+	
+	if (hasTexture) {
+		buffers.push_back(objectsProgram.SetInParameter(*textureCoordinates, 8, 2));	//in vec2 uv;
+		buffers.push_back(objectsProgram.SetInParameter(*textureCenters, 9, 2));		//in vec2 centerUv;
+	}
 	
 	// Draw the triangle !
 	if (is_wire_mode) {
@@ -464,7 +475,7 @@ void Renderer::DrawLight(const vec3& color, const vec3& position)
 	star.push_back(light_location + vec3(-offset, 0, 0)); // -
 	star.push_back(light_location + vec3(offset, 0, 0));
 
-	GLuint buffer = normalsProgram.SetInParameter(star, 0);			//in vec3 vertexPosition;
+	GLuint buffer = normalsProgram.SetInParameter(star, 0, 3);			//in vec3 vertexPosition;
 	
 	glDrawArrays(GL_LINES, 0, star.size());
 	
@@ -643,7 +654,7 @@ void Renderer::InitOpenGLRendering()
 	// shai's code
 	// Create and compile our GLSL program from the shaders
 	normalsProgram = ShaderProgram("vshader_basic.glsl", "fshader_basic.glsl", 1);
-	objectsProgram = ShaderProgram("vshader_fog.glsl", "fshader_fog.glsl", 8);
+	objectsProgram = ShaderProgram("vshader_texture.glsl", "fshader_texture.glsl", 10);
 	objectsProgram.Activate();
 	SetBaseShader(ShaderType::Flat);
 	DisableFog();

@@ -48,45 +48,45 @@ void ShaderProgram::SetUniformParameter(const GLfloat f, const char * const var_
 	glUniform1f(id, f);
 }
 
-GLuint ShaderProgram::SetInParameter(const vector<vec3>& v, const int attribute_id) {
-	GLuint buffer;
-	glGenBuffers(1, &buffer);
-	glBindBuffer(GL_ARRAY_BUFFER, buffer);
-	glBufferData(GL_ARRAY_BUFFER, v.size() * sizeof(vec3), &v[0], GL_STATIC_DRAW);
-
-	// attribute buffer
-	glEnableVertexAttribArray(attribute_id);
-	glBindBuffer(GL_ARRAY_BUFFER, buffer);
-	glVertexAttribPointer(
-		attribute_id,                  // attribute 0. No particular reason for 0, but must match the layout in the shader.
-		3,                  // size
-		GL_FLOAT,           // type
-		GL_FALSE,           // normalized?
-		0,                  // stride
-		(void*)0            // array buffer offset
-	);
-	return buffer;
-}
-
-GLuint ShaderProgram::SetInParameter(const vector<GLfloat>& v, const int attribute_id) {
-	GLuint buffer;
-	glGenBuffers(1, &buffer);
-	glBindBuffer(GL_ARRAY_BUFFER, buffer);
-	glBufferData(GL_ARRAY_BUFFER, v.size() * sizeof(GLfloat), &v[0], GL_STATIC_DRAW);
-
-	// attribute buffer
-	glEnableVertexAttribArray(attribute_id);
-	glBindBuffer(GL_ARRAY_BUFFER, buffer);
-	glVertexAttribPointer(
-		attribute_id,                  // attribute 0. No particular reason for 0, but must match the layout in the shader.
-		1,                  // size
-		GL_FLOAT,           // type
-		GL_FALSE,           // normalized?
-		0,                  // stride
-		(void*)0            // array buffer offset
-	);
-	return buffer;
-}
+//GLuint ShaderProgram::SetInParameter(const vector<vec3>& v, const int attribute_id) {
+//	GLuint buffer;
+//	glGenBuffers(1, &buffer);
+//	glBindBuffer(GL_ARRAY_BUFFER, buffer);
+//	glBufferData(GL_ARRAY_BUFFER, v.size() * sizeof(vec3), &v[0], GL_STATIC_DRAW);
+//
+//	// attribute buffer
+//	glEnableVertexAttribArray(attribute_id);
+//	glBindBuffer(GL_ARRAY_BUFFER, buffer);
+//	glVertexAttribPointer(
+//		attribute_id,                  // attribute 0. No particular reason for 0, but must match the layout in the shader.
+//		3,                  // size
+//		GL_FLOAT,           // type
+//		GL_FALSE,           // normalized?
+//		0,                  // stride
+//		(void*)0            // array buffer offset
+//	);
+//	return buffer;
+//}
+//
+//GLuint ShaderProgram::SetInParameter(const vector<GLfloat>& v, const int attribute_id) {
+//	GLuint buffer;
+//	glGenBuffers(1, &buffer);
+//	glBindBuffer(GL_ARRAY_BUFFER, buffer);
+//	glBufferData(GL_ARRAY_BUFFER, v.size() * sizeof(GLfloat), &v[0], GL_STATIC_DRAW);
+//
+//	// attribute buffer
+//	glEnableVertexAttribArray(attribute_id);
+//	glBindBuffer(GL_ARRAY_BUFFER, buffer);
+//	glVertexAttribPointer(
+//		attribute_id,                  // attribute 0. No particular reason for 0, but must match the layout in the shader.
+//		1,                  // size
+//		GL_FLOAT,           // type
+//		GL_FALSE,           // normalized?
+//		0,                  // stride
+//		(void*)0            // array buffer offset
+//	);
+//	return buffer;
+//}
 
 void ShaderProgram::Activate() {
 	glUseProgram(program_id);

@@ -151,6 +151,22 @@ void MeshModel::computeCenterPositions()
 		centerPositions.push_back(cm);
 		centerPositions.push_back(cm);
 	}
+
+	for (int i = 0; i < textureCoordinates.size(); i += 3) {
+		vec2 cm = (textureCoordinates[i] + textureCoordinates[i + 1] + textureCoordinates[i + 2]) / 3;
+		textureCenters.push_back(cm);
+		textureCenters.push_back(cm);
+		textureCenters.push_back(cm);
+	}
+	
+}
+
+void MeshModel::clearTexture()
+{
+	if (hasTexture) {
+		glDeleteTextures(1, &textureID);
+	}
+	hasTexture = false;
 }
 
 void MeshModel::computeBoundingBox() {
@@ -169,20 +185,25 @@ void MeshModel::computeBoundingBox() {
 }
 
 MeshModel::MeshModel() :
-	vertexPositions(), vertexNormals(), textureCoordinates(), faceNormals(), materials(),
+	vertexPositions(), vertexNormals(), textureCoordinates(), textureCenters(), faceNormals(), materials(),
 	worldTransform(1), modelTransform(1), normalModelTransform(1), normalWorldTransform(1),
-	allowVertexNormals(false), allowFaceNormals(false), allowBoundingBox(false)
+	allowVertexNormals(false), allowFaceNormals(false), allowBoundingBox(false), textureID(0), hasTexture(false)
 { }
 
 MeshModel::MeshModel(string fileName) :
-	vertexPositions(), vertexNormals(), textureCoordinates(), faceNormals(), materials(),
+	vertexPositions(), vertexNormals(), textureCoordinates(), textureCenters(), faceNormals(), materials(),
 	worldTransform(1), modelTransform(1), normalModelTransform(1), normalWorldTransform(1),
-	allowVertexNormals(false), allowFaceNormals(false), allowBoundingBox(false)
+	allowVertexNormals(false), allowFaceNormals(false), allowBoundingBox(false), textureID(0), hasTexture(false)
 {
 	loadFile(fileName);
 	setUniformMaterial({ vec3(1), vec3(1), vec3(1), 1 });
 	computeFaceNormals();
 	computeCenterPositions();
+}
+
+MeshModel::~MeshModel()
+{
+	clearTexture();
 }
 
 void MeshModel::transformInModel(const mat4 & transform) {
@@ -226,6 +247,7 @@ void MeshModel::setUniformMaterial(Material material) {
 	for (int i = 0; i < vertexPositions.size(); ++i) {
 		materials.push_back(material);
 	}
+	clearTexture();
 }
 
 void MeshModel::setRandomMaterial() {
@@ -242,16 +264,32 @@ void MeshModel::setRandomMaterial() {
 			(float) uni(rng)
 		});
 	}
+	clearTexture();
 }
 
 void MeshModel::setTextures(const vec3& ambient, const vec3& specular, const string fileName, const float shininess)
 {
 	unsigned width, height;
-	unsigned error = lodepng::decode(textures, width, height, fileName);
+	vector<unsigned char> pixels;
+	unsigned error = lodepng::decode(pixels, width, height, fileName);
 
 	// If there's an error, display it.
 	if (error != 0) {
 		std::cout << "error " << error << ": " << lodepng_error_text(error) << std::endl;
+		return;
+	}
+	hasTexture = true;
+
+	glGenTextures(1, &textureID);
+	try {
+		glBindTexture(GL_TEXTURE_2D, textureID);
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_BGR, GL_UNSIGNED_BYTE, &pixels[0]);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+		glGenerateMipmap(GL_TEXTURE_2D);
+	}
+	catch (...) {
+		clearTexture();
 		return;
 	}
 
@@ -273,8 +311,8 @@ void MeshModel::draw(BaseRenderer * renderer) const {
 	}
 
 	renderer->SetObjectMatrices(worldTransform * modelTransform, normalWorldTransform * normalModelTransform);
-	renderer->DrawTriangles(&vertexPositions, &materials, &centerPositions, &vertexNormals,
-		&faceNormals, allowVertexNormals, allowFaceNormals);
+	renderer->DrawTriangles(&vertexPositions, &materials, &centerPositions, hasTexture, textureID, &textureCoordinates, &textureCenters,
+		&vertexNormals, &faceNormals, allowVertexNormals, allowFaceNormals);
 
 	if (allowBoundingBox) {
 		renderer->DrawBox(minValues, maxValues);

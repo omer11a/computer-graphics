@@ -29,9 +29,11 @@ protected:
 	vector<vec3> centerPositions;
 	vector<vec3> vertexNormals;
 	vector<vec2> textureCoordinates;
+	vector<vec2> textureCenters;
 	vector<vec3> faceNormals;
 	vector<Material> materials;
-	vector<unsigned char> textures;
+	GLuint textureID;
+	bool hasTexture;
 
 	template<class T>
 	T & getVecByIndex(vector<T> & vecs, int i)
@@ -49,11 +51,12 @@ protected:
 	
 	void computeFaceNormals();
 	void computeCenterPositions();
+	void clearTexture();
 	MeshModel();
 
 public:
 	MeshModel(string fileName);
-	~MeshModel(void) = default;
+	~MeshModel();
 	void transformInModel(const mat4 & transform);
 	void transformInWorld(const mat4 & transform);
 	vec4 getLocation();
