@@ -90,7 +90,7 @@ void main() {
 		}
 		
 		vec3 modelToCamera = normalize(cameraPosition - worldVertexPosition);
-		vec3 color = ambientLightColor * ambientReflectance;
+		color = ambientLightColor * ambientReflectance;
 		for (int i = 0; i < numberOfLights; ++i) {
 			color += applyLight(
 				lights[i],
