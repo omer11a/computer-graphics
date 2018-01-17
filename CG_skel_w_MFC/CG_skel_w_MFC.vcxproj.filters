@@ -133,5 +133,11 @@
     <None Include="fshader_shading.glsl">
       <Filter>Shaders</Filter>
     </None>
+    <None Include="vshader_fog.glsl">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="fshader_fog.glsl">
+      <Filter>Shaders</Filter>
+    </None>
   </ItemGroup>
 </Project>
