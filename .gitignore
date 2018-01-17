@@ -25,3 +25,5 @@
 /external/glm-0.9.9-a2/.travis.yml
 /external/glm-0.9.9-a2/.gitignore
 /external/glm-0.9.9-a2/.appveyor.yml
+/lodepng-master/examples
+/lodepng-master
