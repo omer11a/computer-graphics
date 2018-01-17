@@ -7,11 +7,11 @@ struct Light {
 	vec3 intensity;
 };
 
-uniform bool flat;
-uniform bool gouraud;
-uniform bool phong;
-uniform bool texture;
-uniform bool fog;
+uniform bool isFlat;
+uniform bool isGouraud;
+uniform bool isPhong;
+uniform bool hasTexture;
+uniform bool isFog;
 uniform vec3 cameraPosition;
 uniform vec3 ambientLightColor;
 uniform int numberOfLights;
@@ -27,8 +27,9 @@ layout (location = 2) in vec3 ambientReflectance;
 layout (location = 3) in vec3 specularReflectance;
 layout (location = 4) in vec3 diffuseReflectance;
 layout (location = 5) in float shininess;
-layout (location = 6) in vec3 color;
-layout (location = 7) in vec3 viewVertexPosition;
+layout (location = 6) out vec2 uv;
+layout (location = 7) in vec3 color;
+layout (location = 8) in vec3 viewVertexPosition;
 
 layout (location = 0) out vec4 outColor;
 
@@ -62,15 +63,21 @@ vec3 applyLight(
 }
 
 void main() {
-	if (phong) {
+	vec3 finalColor = color;
+	if (isPhong) {
 		vec3 normal = normalize(vertexNormal);
 		vec3 modelToCamera = normalize(cameraPosition - vertexPosition);
-		vec3 color = ambientLightColor * ambientReflectance;
+		vec3 diffuseColor = diffuseReflectance;
+		if (hasTexture) {
+			diffuseColor = texture(textureSampler, uv).rgb;
+		}
+		
+		finalColor = ambientLightColor * ambientReflectance;
 		for (int i = 0; i < numberOfLights; ++i) {
-			color += applyLight(
+			finalColor += applyLight(
 				lights[i],
 				specularReflectance,
-				diffuseReflectance,
+				diffuseColor,
 				shininess,
 				normal,
 				vertexPosition,
@@ -79,14 +86,14 @@ void main() {
 		}
 	}
 	
-	if (fog) {
+	if (hasFog) {
 		float dist = length(viewVertexPosition);
 		float be = abs(viewVertexPosition.y) * extinctionCoefficient;
 		float bi = abs(viewVertexPosition.y) * inScatteringCoefficient;
 		float ext = exp(-dist * be);
 		float insc = exp(-dist * bi);
-		color = color * ext + fogColor * (1 - insc);
+		finalColor = finalColor * ext + fogColor * (1 - insc);
 	}
     
-    outColor = vec4(clamp(color, 0, 1), 1);
+    outColor = vec4(clamp(finalColor, 0, 1), 1);
 }

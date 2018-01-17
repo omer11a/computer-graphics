@@ -573,7 +573,7 @@ void Renderer::SetBaseShader(Renderer::ShaderType s) {
 void Renderer::SetFog(const vec3& color, const float extinction, const float scattering)
 {
 	objectsProgram.Activate();
-	objectsProgram.SetUniformParameter(int(true), "isFog");
+	objectsProgram.SetUniformParameter(int(true), "hasFog");
 	objectsProgram.SetUniformParameter(color, "fogColor");
 	objectsProgram.SetUniformParameter(extinction, "extinctionCoefficient");
 	objectsProgram.SetUniformParameter(scattering, "inScatteringCoefficient");
@@ -586,7 +586,7 @@ void Renderer::SetFog(const vec3& color, const float extinction, const float sca
 void Renderer::DisableFog()
 {
 	objectsProgram.Activate();
-	objectsProgram.SetUniformParameter(int(false), "isFog");
+	objectsProgram.SetUniformParameter(int(false), "hasFog");
 }
 
 /////////////////////////////////////////////////////

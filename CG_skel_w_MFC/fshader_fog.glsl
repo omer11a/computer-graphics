@@ -10,7 +10,7 @@ struct Light {
 uniform bool isFlat;
 uniform bool isGouraud;
 uniform bool isPhong;
-uniform bool isFog;
+uniform bool hasFog;
 uniform vec3 cameraPosition;
 uniform vec3 ambientLightColor;
 uniform int numberOfLights;
@@ -79,7 +79,7 @@ void main() {
 		}
 	}
 	
-	if (isFog) {
+	if (hasFog) {
 		float dist = length(viewVertexPosition);
 		float be = abs(viewVertexPosition.y) * extinctionCoefficient;
 		float bi = abs(viewVertexPosition.y) * inScatteringCoefficient;

@@ -154,5 +154,11 @@
     <None Include="vshader_fog.glsl">
       <Filter>Shaders</Filter>
     </None>
+    <None Include="‏‏vshader_texture.glsl">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="‏‏fshader_texture.glsl">
+      <Filter>Shaders</Filter>
+    </None>
   </ItemGroup>
 </Project>

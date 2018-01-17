@@ -7,10 +7,11 @@ struct Light {
 	vec3 intensity;
 };
 
-uniform bool flat;
-uniform bool gouraud;
-uniform bool phong;
-uniform bool fog;
+uniform bool isFlat;
+uniform bool isGouraud;
+uniform bool isPhong;
+uniform bool hasTexture;
+uniform bool hasFog;
 uniform mat4 modelMatrix;
 uniform mat3 normalMatrix;
 uniform mat4 modelViewMatrix;
@@ -19,6 +20,7 @@ uniform vec3 cameraPosition;
 uniform vec3 ambientLightColor;
 uniform int numberOfLights;
 uniform Light lights[MAX_NUMBER_OF_LIGHTS];
+uniform sampler2D textureSampler;
 
 layout (location = 0) in vec3 vertexPosition;
 layout (location = 1) in vec3 centerPosition;
@@ -28,6 +30,8 @@ layout (location = 4) in vec3 ambientReflectance;
 layout (location = 5) in vec3 specularReflectance;
 layout (location = 6) in vec3 diffuseReflectance;
 layout (location = 7) in float shininess;
+layout (location = 8) in vec2 uv;
+layout (location = 9) in vec2 centerUv;
 
 layout (location = 0) out vec3 outVertexPosition;
 layout (location = 1) out vec3 outVertexNormal;
@@ -35,8 +39,9 @@ layout (location = 2) out vec3 outAmbientReflectance;
 layout (location = 3) out vec3 outSpecularReflectance;
 layout (location = 4) out vec3 outDiffuseReflectance;
 layout (location = 5) out float outShininess;
-layout (location = 6) out vec3 outColor;
-layout (location = 7) out vec3 outViewVertexPosition;
+layout (location = 6) out vec2 outUv;
+layout (location = 7) out vec3 outColor;
+layout (location = 8) out vec3 outViewVertexPosition;
 
 vec3 applyLight(
 	Light light,
@@ -74,28 +79,34 @@ void main() {
 	outSpecularReflectance = specularReflectance;
 	outDiffuseReflectance = diffuseReflectance;
 	outShininess = shininess;
+	outUv = uv;
 	
 	vec3 color = vec3(0);
-	if ((flat) || (gouraud)) {
-		vec3 worldVertexPosition = outVertexPosition;
-		if (flat) {
-			worldVertexPosition = (modelMatrix * vec4(centerPosition, 1)).xyz;
-		}
-		
+	if ((isFlat) || (isGouraud)) {
+		vec3 worldVertexPosition = vec3(0);
 		vec3 normal = vec3(0);
-		if (flat) {
+		vec3 diffuseColor = diffuseReflectance;
+		if (isFlat) {
+			worldVertexPosition = (modelMatrix * vec4(centerPosition, 1)).xyz;
 			normal = normalize(normalMatrix * faceNormal);
+			if (hasTexture) {
+				diffuseColor = texture(textureSampler, centerUv).rgb;
+			}
 		} else {
+			worldVertexPosition = outVertexPosition;
 			normal = normalize(outVertexNormal);
+			if (hasTexture) {
+				diffuseColor = texture(textureSampler, uv).rgb;
+			}
 		}
 		
 		vec3 modelToCamera = normalize(cameraPosition - worldVertexPosition);
-		vec3 color = ambientLightColor * ambientReflectance;
+		color = ambientLightColor * ambientReflectance;
 		for (int i = 0; i < numberOfLights; ++i) {
 			color += applyLight(
 				lights[i],
 				specularReflectance,
-				diffuseReflectance,
+				diffuseColor,
 				shininess,
 				normal,
 				worldVertexPosition,
@@ -107,7 +118,7 @@ void main() {
 	outColor = clamp(color, 0, 1);
 	
 	outViewVertexPosition = vec3(0);
-	if (fog) {
+	if (hasFog) {
 		outViewVertexPosition = (modelViewMatrix * vec4(vertexPosition, 1)).xyz;
 	}
 	
