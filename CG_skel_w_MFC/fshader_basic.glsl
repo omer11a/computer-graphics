@@ -1,11 +1,10 @@
-#version 150
+#version 400
 
-// Ouput data
-out vec3 color;
+uniform vec3 color;
+
+layout(location = 0) out vec4 outColor;
 
 void main()
 {
-	// Output color = red 
-	color = vec3(1, 1, 1);
-
+	outColor = vec4(color, 1);
 }

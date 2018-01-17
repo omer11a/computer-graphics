@@ -1,12 +1,9 @@
-#version 150
+#version 400
 
-// Input vertex data, different for all executions of this shader.
-in vec3 vertexPosition_modelspace;
+layout(location = 0) in vec3 vertexPosition;
 
 void main() {
-
-    gl_Position.xyz = vertexPosition_modelspace;
+    gl_Position.xyz = vertexPosition;
     gl_Position.w = 1.0;
-
 }
 
