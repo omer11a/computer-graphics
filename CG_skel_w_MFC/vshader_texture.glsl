@@ -85,27 +85,33 @@ void main() {
 	if ((isFlat) || (isGouraud)) {
 		vec3 worldVertexPosition = vec3(0);
 		vec3 normal = vec3(0);
+		vec3 ambientColor = ambientReflectance;
+		vec3 specularColor = specularReflectance;
 		vec3 diffuseColor = diffuseReflectance;
 		if (isFlat) {
 			worldVertexPosition = (modelMatrix * vec4(centerPosition, 1)).xyz;
 			normal = normalize(normalMatrix * faceNormal);
 			if (hasTexture) {
-				diffuseColor = texture(textureSampler, centerUv).rgb;
+				ambientColor = texture(textureSampler, centerUv).rgb;
+				specularColor = ambientColor;
+				diffuseColor = ambientColor;
 			}
 		} else {
 			worldVertexPosition = outVertexPosition;
 			normal = normalize(outVertexNormal);
 			if (hasTexture) {
-				diffuseColor = texture(textureSampler, uv).rgb;
+				ambientColor = texture(textureSampler, uv).rgb;
+				specularColor = ambientColor;
+				diffuseColor = ambientColor;
 			}
 		}
 		
 		vec3 modelToCamera = normalize(cameraPosition - worldVertexPosition);
-		color = ambientLightColor * ambientReflectance;
+		color = ambientLightColor * ambientColor;
 		for (int i = 0; i < numberOfLights; ++i) {
 			color += applyLight(
 				lights[i],
-				specularReflectance,
+				specularColor,
 				diffuseColor,
 				shininess,
 				normal,
