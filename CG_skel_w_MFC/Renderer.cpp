@@ -565,9 +565,6 @@ void Renderer::SetBaseShader(Renderer::ShaderType s) {
 	objectsProgram.SetUniformParameter(int(s == ShaderType::Flat), "isFlat");
 	objectsProgram.SetUniformParameter(int(s == ShaderType::Gouraud), "isGouraud");
 	objectsProgram.SetUniformParameter(int(s == ShaderType::Phong), "isPhong");
-	objectsProgram.SetUniformParameter(int(false), "isFog"); 
-	//shader = s;
-	//has_fog = false;
 }
 
 void Renderer::SetFog(const vec3& color, const float extinction, const float scattering)
@@ -580,6 +577,11 @@ void Renderer::SetFog(const vec3& color, const float extinction, const float sca
 	//fog_extinction = extinction;
 	//fog_scattering = scattering;
 	//has_fog = true;
+}
+
+void Renderer::DisableFog()
+{
+	objectsProgram.SetUniformParameter(int(false), "isFog");
 }
 
 /////////////////////////////////////////////////////
@@ -637,7 +639,8 @@ void Renderer::InitOpenGLRendering()
 	// Create and compile our GLSL program from the shaders
 	normalsProgram = ShaderProgram("vshader_basic.glsl", "fshader_basic.glsl", 1);
 	objectsProgram = ShaderProgram("vshader_fog.glsl", "fshader_fog.glsl", 8);
-	//objectsProgram = ShaderProgram("vshader_shading.glsl", "fshader_shading.glsl", 6);
+	SetBaseShader(ShaderType::Flat);
+	DisableFog();
 
 	glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
 

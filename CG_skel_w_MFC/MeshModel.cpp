@@ -1,6 +1,7 @@
 #include "vec.h"
 #include "StdAfx.h"
 #include "MeshModel.h"
+#include "lodepng.h"
 #include <iostream>
 #include <fstream>
 #include <sstream>
@@ -241,6 +242,11 @@ void MeshModel::setRandomMaterial() {
 			(float) uni(rng)
 		});
 	}
+}
+
+void MeshModel::setTextures(string fileName)
+{
+	lodepng::load_file(textures, fileName);
 }
 
 void MeshModel::draw(BaseRenderer * renderer) const {

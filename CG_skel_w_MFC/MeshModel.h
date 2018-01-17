@@ -31,6 +31,7 @@ protected:
 	vector<vec2> textureCoordinates;
 	vector<vec3> faceNormals;
 	vector<Material> materials;
+	vector<unsigned char> textures;
 
 	template<class T>
 	T & getVecByIndex(vector<T> & vecs, int i)
@@ -61,6 +62,7 @@ public:
 	void switchBoundingBoxVisibility();
 	void setUniformMaterial(Material material);
 	void setRandomMaterial();
+	void setTextures(string fileName);
 	void draw(BaseRenderer * renderer) const;
 };
 
