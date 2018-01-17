@@ -38,7 +38,7 @@ void BaseRenderer::DrawCamera() { }
 
 void BaseRenderer::DrawLight(const vec3& color, const vec3 & position) { }
 
-void BaseRenderer::SetCameraTransform(const mat4 & cTransform) { }
+void BaseRenderer::SetCameraTransform(const mat4& cInverseTransform, const mat4& cTransform) { }
 
 void BaseRenderer::SetProjection(const mat4 & projection) { }
 

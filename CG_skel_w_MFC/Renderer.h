@@ -51,11 +51,15 @@ class Renderer : public BaseRenderer
 	void DrawModerateLine(const vec3& p1, const vec3& p2, const vec3& c, const int p1_idx = 0, const int p2_idx = 0);
 	
 	
-	void SetUniformMatrix(const mat3& m, const char * const var_name);
-	void SetUniformMatrix(const mat4& m, const char * const var_name);
-	GLuint SetInVector(const vector<vec3>& v, const int attribute_id);
-	GLuint SetInVector(const vector<vec3> * v, const int attribute_id);
-	GLuint SetInVector(const vector<GLfloat>& v, const int attribute_id);
+	void SetUniformParameter(const mat3& m, const char * const var_name);
+	void SetUniformParameter(const mat4& m, const char * const var_name);
+	void SetUniformParameter(const vec4& v, const char * const var_name);
+	void SetUniformParameter(const vec3& v, const char * const var_name);
+	void SetUniformParameter(const int i, const char * const var_name);
+
+	GLuint SetInParameter(const vector<vec3>& v, const int attribute_id);
+	GLuint SetInParameter(const vector<vec3> * v, const int attribute_id);
+	GLuint SetInParameter(const vector<GLfloat>& v, const int attribute_id);
 	//////////////////////////////
 	// openGL stuff. Don't touch.
 
@@ -86,8 +90,8 @@ public:
 	void DrawBox(const vec3& minValues, const vec3& maxValues) override;
 	void DrawCamera() override;
 	void DrawLight(const vec3& color, const vec3& position) override;
-	void SetLights(const vector<Light *> * lights);
-	void SetCameraTransform(const mat4& cTransform) override;
+	void SetShaderLights(const AmbientLight& amb_light, const vector<DirectionalLightSource *>& lights);
+	void SetCameraTransform(const mat4& cInverseTransform, const mat4& cTransform) override;
 	void SetProjection(const mat4& projection) override;
 	void SetZRange(float zNear, float zFar) override;
 	void SetObjectMatrices(const mat4& oTransform, const mat3& nTransform = mat3()) override;

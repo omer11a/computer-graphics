@@ -9,6 +9,11 @@ void Light::setIntensity(const vec3& intensity) {
 	this->intensity = intensity;
 }
 
+vec3 Light::getIntensity() const
+{
+	return intensity;
+}
+
 void Light::setTransform(const mat4 & transform) {
 	this->transform = transform;
 }
@@ -142,6 +147,11 @@ void PointLightSource::transformInWorld(const mat4 & transform) {
 	updatePosition();
 }
 
+vec4 PointLightSource::GetPositionForShader() const
+{
+	return vec4(transformedPosition, 1);
+}
+
 void PointLightSource::draw(BaseRenderer * renderer) const
 {
 	if (renderer == NULL) {
@@ -186,4 +196,9 @@ void ParallelLightSource::transformInModel(const mat4 & transform) {
 void ParallelLightSource::transformInWorld(const mat4 & transform) {
 	DirectionalLightSource::transformInWorld(transform);
 	updateDirection();
+}
+
+vec4 ParallelLightSource::GetPositionForShader() const
+{
+	return vec4(-transformedDirection, 0);
 }

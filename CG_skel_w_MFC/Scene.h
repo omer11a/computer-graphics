@@ -52,6 +52,7 @@ public:
 	void zoom(const float z = 1);
 	void switchVisibility();
 	mat4 getInverseTransform() const;
+	mat4 getTransform() const;
 	mat4 getProjection() const;
 	float getNear() const;
 	float getFar() const;

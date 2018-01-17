@@ -26,7 +26,7 @@ public:
 	virtual void DrawCamera();
 	virtual void DrawLight(const vec3& color, const vec3& position);
 
-	virtual void SetCameraTransform(const mat4& cTransform);
+	virtual void SetCameraTransform(const mat4& cInverseTransform, const mat4& cTransform);
 	virtual void SetProjection(const mat4& projection);
 	virtual void SetZRange(float zNear, float zFar);
 	virtual void SetObjectMatrices(const mat4& oTransform, const mat3& nTransform = mat3());

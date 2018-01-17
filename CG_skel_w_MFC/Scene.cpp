@@ -144,6 +144,10 @@ mat4 Camera::getInverseTransform() const {
 	return inverseViewTransform * inverseWorldTransform;
 }
 
+mat4 Camera::getTransform() const {
+	return worldTransform * viewTransform;
+}
+
 mat4 Camera::getProjection() const {
 	return projection;
 }
@@ -428,16 +432,11 @@ void Scene::draw() const {
 	}
 
 	// 0. Send the renderer the current lights.
-	vector<Light*> r_lights;
-	r_lights.push_back(ambientLight.clone());
-	for (auto i = lights.begin(); i != lights.end(); ++i) {
-		r_lights.push_back((*i)->clone());
-	}
-	renderer->SetLights(&r_lights);
+	renderer->SetShaderLights(ambientLight, lights);
 
 	// 1. Send the renderer the current camera transform and the projection
 	Camera * camera = cameras.at(activeCamera);
-	renderer->SetCameraTransform(camera->getInverseTransform());
+	renderer->SetCameraTransform(camera->getInverseTransform(), camera->getTransform());
 	renderer->SetProjection(camera->getProjection());
 	renderer->SetZRange(camera->getNear(), camera->getFar());
 
@@ -457,14 +456,6 @@ void Scene::draw() const {
 	}
 
 	renderer->SwapBuffers();
-
-	// destroy the copy of the light list
-	//renderer->SetLights(NULL);
-	while (!r_lights.empty()) {
-		Light* l = r_lights.back();
-		r_lights.pop_back();
-		delete l;
-	}
 }
 
 void Scene::drawDemo() const {

@@ -15,6 +15,7 @@ public:
 	virtual Light * clone() const = 0;
 
 	void setIntensity(const vec3& intensity);
+	vec3 getIntensity() const;
 	virtual void setTransform(const mat4 & transform);
 	virtual void draw(BaseRenderer * r) const;
 
@@ -64,6 +65,7 @@ public:
 	DirectionalLightSource(const DirectionalLightSource& light);
 	virtual void transformInModel(const mat4 & transform);
 	virtual void transformInWorld(const mat4 & transform);
+	virtual vec4 GetPositionForShader() const = 0;
 
 	virtual vec3 computeColor(
 		const vec3& modelPosition,
@@ -88,6 +90,7 @@ public:
 	void setTransform(const mat4 & transform);
 	void transformInModel(const mat4 & transform);
 	void transformInWorld(const mat4 & transform);
+	vec4 GetPositionForShader() const override;
 	void draw(BaseRenderer * renderer) const override;
 };
 
@@ -107,4 +110,6 @@ public:
 	void setTransform(const mat4 & transform);
 	void transformInModel(const mat4 & transform);
 	void transformInWorld(const mat4 & transform);
+	vec4 GetPositionForShader() const override;
+
 };
