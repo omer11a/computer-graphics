@@ -1,32 +1,39 @@
 #pragma once
-#include "glm/glm.hpp"
-#include "glm/gtc/matrix_transform.hpp"
-using namespace glm;
 #include <vector>
 #include "vec.h"
 #include "mat.h"
+#include "ShaderProgram.h"
 #include "Material.h"
+#include "Light.h"
 #include "BaseRenderer.h"
-#include "Polygon.h"
-#include "Shader.h"
 #include "GL/glew.h"
 #include "CG_skel_w_MFC.h"
 
 using namespace std;
 class Renderer : public BaseRenderer
 {
+public:
+	enum ShaderType {
+		Flat, Gouraud, Phong
+	};
+private:
 	float *m_outBuffer;		// width * height * 3
 	float *m_screenBuffer;		// screen_width * screen_height * 3
 	float *m_zBuffer;		// width * height
 	bool *m_paintBuffer;	// width * height
-	int m_screen_width, m_screen_height, anti_factor;
-
-	mat4 m_cTransform, m_projection, m_oTransform, mvp;
-	mat3 m_cnTransform, m_nTransform;
 	float zNear;
 	float zFar;
 
+	int m_screen_width, m_screen_height, anti_factor;
 	bool is_wire_mode;
+
+	mat4 m_cTransform, m_projection, m_oTransform, mvp, mv;
+	mat3 m_cnTransform, m_nTransform;
+
+	ShaderType shader;
+	bool has_fog;
+	//vec3 fog_color;
+	//GLfloat fog_extinction, fog_scattering;
 
 	void CreateBuffers(int width, int height);
 	void CreateLocalBuffer();
@@ -48,25 +55,15 @@ class Renderer : public BaseRenderer
 	void DrawLine(const vec3& p1, const vec3& p2, const vec3& c=vec3(-1), const int p1_idx=0, const int p2_idx=0);
 	void DrawSteepLine(const vec3& p1, const vec3& p2, const vec3& c, const int p1_idx = 0, const int p2_idx = 0);
 	void DrawModerateLine(const vec3& p1, const vec3& p2, const vec3& c, const int p1_idx = 0, const int p2_idx = 0);
-	
-	
-	void SetUniformParameter(const mat3& m, const char * const var_name);
-	void SetUniformParameter(const mat4& m, const char * const var_name);
-	void SetUniformParameter(const vec4& v, const char * const var_name);
-	void SetUniformParameter(const vec3& v, const char * const var_name);
-	void SetUniformParameter(const int i, const char * const var_name);
 
-	GLuint SetInParameter(const vector<vec3>& v, const int attribute_id);
-	GLuint SetInParameter(const vector<GLfloat>& v, const int attribute_id);
 	//////////////////////////////
 	// openGL stuff. Don't touch.
 
 	GLuint gScreenTex;
 	GLuint gScreenVtc;	// VertexArrayID in tutorials
-	GLuint activeProgramID, objectsProgramID, normalsProgramID;
+	ShaderProgram objectsProgram, normalsProgram;
 	void CreateOpenGLBuffer();
 	void InitOpenGLRendering();
-	void SetShaderProgram(GLuint new_program);
 	//////////////////////////////
 public:
 	Renderer();
@@ -76,6 +73,7 @@ public:
 	void DrawTriangles(
 		const vector<vec3>* vertices,
 		const vector<Material>* materials,
+		const vector<vec3>* centerPositions,
 		const vector<vec3>* vertexNormals = NULL,
 		const vector<vec3>* faceNormals = NULL,
 		const bool allowVertexNormals = false,
@@ -89,7 +87,7 @@ public:
 
 	void SwitchWire(); 
 	void SetAntiAliasing(int new_factor);
-	void SetBaseShader(Shader * s);
+	void SetBaseShader(ShaderType s);
 	void SetFog(const vec3& color, const float extinction, const float scattering);
 
 	void DrawSquare(const vec3& p1, const vec3& p2, const vec3& p3, const vec3& p4, const vec3& color);

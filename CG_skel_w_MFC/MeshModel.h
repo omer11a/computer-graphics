@@ -26,6 +26,7 @@ class MeshModel
 
 protected:
 	vector<vec3> vertexPositions;
+	vector<vec3> centerPositions;
 	vector<vec3> vertexNormals;
 	vector<vec2> textureCoordinates;
 	vector<vec3> faceNormals;
@@ -46,6 +47,7 @@ protected:
 	}
 	
 	void computeFaceNormals();
+	void computeCenterPositions();
 	MeshModel();
 
 public:

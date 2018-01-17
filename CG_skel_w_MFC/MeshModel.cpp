@@ -142,6 +142,16 @@ void MeshModel::computeFaceNormals() {
 	}
 }
 
+void MeshModel::computeCenterPositions()
+{
+	for (int i = 0; i < vertexPositions.size(); i += 3) {
+		vec3 cm = (vertexPositions[i] + vertexPositions[i + 1] + vertexPositions[i + 2]) / 3;
+		centerPositions.push_back(cm);
+		centerPositions.push_back(cm);
+		centerPositions.push_back(cm);
+	}
+}
+
 void MeshModel::computeBoundingBox() {
 	minValues = maxValues = vertexPositions.at(0);
 	for (unsigned int i = 1; i < vertexPositions.size(); ++i) {
@@ -171,6 +181,7 @@ MeshModel::MeshModel(string fileName) :
 	loadFile(fileName);
 	setUniformMaterial({ vec3(1), vec3(1), vec3(1), 1 });
 	computeFaceNormals();
+	computeCenterPositions();
 }
 
 void MeshModel::transformInModel(const mat4 & transform) {
@@ -238,7 +249,8 @@ void MeshModel::draw(BaseRenderer * renderer) const {
 	}
 
 	renderer->SetObjectMatrices(worldTransform * modelTransform, normalWorldTransform * normalModelTransform);
-	renderer->DrawTriangles(&vertexPositions, &materials, &vertexNormals, &faceNormals, allowVertexNormals, allowFaceNormals);
+	renderer->DrawTriangles(&vertexPositions, &materials, &centerPositions, &vertexNormals,
+		&faceNormals, allowVertexNormals, allowFaceNormals);
 
 	if (allowBoundingBox) {
 		renderer->DrawBox(minValues, maxValues);
@@ -296,4 +308,5 @@ PrimMeshModel::PrimMeshModel() : MeshModel()
 
 	setUniformMaterial({ vec3(1), vec3(1), vec3(1), 1 });
 	computeFaceNormals();
+	computeCenterPositions();
 }

@@ -1,13 +1,10 @@
 
-#include "glm/glm.hpp"
-#include "glm/gtc/matrix_transform.hpp"
-using namespace glm;
-
+#include "vec.h"
+#include "mat.h"
 #include "stdafx.h"
 #include "Renderer.h"
-#include "Polygon.h"
+#include "Light.h"
 #include "CG_skel_w_MFC.h"
-#include "InitShader.h"
 #include "GL/freeglut.h"
 
 #include <iostream>
@@ -313,77 +310,10 @@ bool GetIntersectionPoint(const vec3& p1, const vec3& p2, const float y, vec3& p
 	return true;
 }
 
-void Renderer::SetUniformParameter(const mat3& m, const char * const var_name) {
-	GLuint id = glGetUniformLocation(activeProgramID, var_name);
-	glUniformMatrix3fv(id, 1, GL_FALSE, &m[0][0]);
-}
-
-void Renderer::SetUniformParameter(const mat4& m, const char * const var_name) {
-	GLuint id = glGetUniformLocation(activeProgramID, var_name);
-	glUniformMatrix4fv(id, 1, GL_FALSE, &m[0][0]);
-}
-
-void Renderer::SetUniformParameter(const vec4& v, const char * const var_name)
-{
-	GLuint id = glGetUniformLocation(activeProgramID, var_name);
-	glUniform4fv(id, 1, &v[0]);
-}
-
-void Renderer::SetUniformParameter(const vec3& v, const char * const var_name)
-{
-	GLuint id = glGetUniformLocation(activeProgramID, var_name);
-	glUniform3fv(id, 1, &v[0]);
-}
-
-void Renderer::SetUniformParameter(const int i, const char * const var_name)
-{
-	GLuint id = glGetUniformLocation(activeProgramID, var_name);
-	glUniform1i(id, i);
-}
-
-GLuint Renderer::SetInParameter(const vector<vec3>& v, const int attribute_id) {
-	GLuint buffer;
-	glGenBuffers(1, &buffer);
-	glBindBuffer(GL_ARRAY_BUFFER, buffer);
-	glBufferData(GL_ARRAY_BUFFER, v.size() * sizeof(vec3), &v[0], GL_STATIC_DRAW);
-
-	// attribute buffer
-	glEnableVertexAttribArray(attribute_id);
-	glBindBuffer(GL_ARRAY_BUFFER, buffer);
-	glVertexAttribPointer(
-		attribute_id,                  // attribute 0. No particular reason for 0, but must match the layout in the shader.
-		3,                  // size
-		GL_FLOAT,           // type
-		GL_FALSE,           // normalized?
-		0,                  // stride
-		(void*)0            // array buffer offset
-	);
-	return buffer;
-}
-
-GLuint Renderer::SetInParameter(const vector<GLfloat>& v, const int attribute_id) {
-	GLuint buffer;
-	glGenBuffers(1, &buffer);
-	glBindBuffer(GL_ARRAY_BUFFER, buffer);
-	glBufferData(GL_ARRAY_BUFFER, v.size() * sizeof(GLfloat), &v[0], GL_STATIC_DRAW);
-
-	// attribute buffer
-	glEnableVertexAttribArray(attribute_id);
-	glBindBuffer(GL_ARRAY_BUFFER, buffer);
-	glVertexAttribPointer(
-		attribute_id,                  // attribute 0. No particular reason for 0, but must match the layout in the shader.
-		1,                  // size
-		GL_FLOAT,           // type
-		GL_FALSE,           // normalized?
-		0,                  // stride
-		(void*)0            // array buffer offset
-	);
-	return buffer;
-}
-
 void Renderer::DrawTriangles(
 	const vector<vec3>* vertices,
 	const vector<Material>* materials,
+	const vector<vec3>* centerPositions,
 	const vector<vec3>* vertexNormals,
 	const vector<vec3>* faceNormals,
 	const bool allowVertexNormals,
@@ -394,9 +324,15 @@ void Renderer::DrawTriangles(
 	int vn_index = 0;
 	vec3 v_normal, f_normal;
 
-	// Use our shader
-	SetShaderProgram(objectsProgramID);
-	
+	// Use object shader
+	objectsProgram.Activate();
+
+	// uniform parameters
+	objectsProgram.SetUniformParameter(m_oTransform, "modelMatrix");
+	objectsProgram.SetUniformParameter(m_nTransform, "normalMatrix");
+	objectsProgram.SetUniformParameter(mv, "modelViewMatrix");
+	objectsProgram.SetUniformParameter(mvp, "modelViewProjectionMatrix");
+
 	// TODO: if there are no normals, use the flat shader
 
 	// split material parameters
@@ -409,18 +345,22 @@ void Renderer::DrawTriangles(
 		shininess.push_back((*i).shininess);
 	}
 
-	// uniform parameters
-	SetUniformParameter(m_oTransform, "modelMatrix");
-	SetUniformParameter(m_nTransform, "normalMatrix");
-	SetUniformParameter(mvp, "modelViewProjectionMatrix");
+	vector<vec3> shader_faceNormals;
+	for (auto i = faceNormals->begin(); i != faceNormals->end(); ++i) {
+		shader_faceNormals.push_back((*i));
+		shader_faceNormals.push_back((*i));
+		shader_faceNormals.push_back((*i));
+	}
 
 	vector<GLuint> buffers;
-	buffers.push_back(SetInParameter(*vertices, 0));			//in vec3 vertexPosition;
-	buffers.push_back(SetInParameter(*vertexNormals, 1));		//in vec3 vertexNormal;
-	buffers.push_back(SetInParameter(ambiants, 2));			//in vec3 ambientReflectance;
-	buffers.push_back(SetInParameter(speculars, 3));			//in vec3 specularReflectance;
-	buffers.push_back(SetInParameter(diffuses, 4));			//in vec3 diffuseReflectance;
-	buffers.push_back(SetInParameter(shininess, 5));			//in float shininess;
+	buffers.push_back(objectsProgram.SetInParameter(*vertices, 0));			//in vec3 vertexPosition;
+	buffers.push_back(objectsProgram.SetInParameter(*centerPositions, 1));			//in vec3 centerPosition;
+	buffers.push_back(objectsProgram.SetInParameter(*vertexNormals, 2));		//in vec3 vertexNormal;
+	buffers.push_back(objectsProgram.SetInParameter(shader_faceNormals, 3));		//in vec3 vertexNormal;
+	buffers.push_back(objectsProgram.SetInParameter(ambiants, 4));			//in vec3 ambientReflectance;
+	buffers.push_back(objectsProgram.SetInParameter(speculars, 5));			//in vec3 specularReflectance;
+	buffers.push_back(objectsProgram.SetInParameter(diffuses, 6));			//in vec3 diffuseReflectance;
+	buffers.push_back(objectsProgram.SetInParameter(shininess, 7));			//in float shininess;
 	
 	// Draw the triangle !
 	if (is_wire_mode) {
@@ -429,13 +369,7 @@ void Renderer::DrawTriangles(
 		glDrawArrays(GL_TRIANGLES, 0, vertices->size());
 	}
 
-	glDisableVertexAttribArray(0);
-	glDisableVertexAttribArray(1);
-	glDisableVertexAttribArray(2);
-	glDisableVertexAttribArray(3);
-	glDisableVertexAttribArray(4);
-	glDisableVertexAttribArray(5);
-
+	objectsProgram.ClearAttributes();
 }
 
 void Renderer::DrawVertexNormals(
@@ -444,8 +378,7 @@ void Renderer::DrawVertexNormals(
 	
 	vec3 pink(1, 140 / 255.0f, 1);
 	// Use our shader
-	glUseProgram(normalsProgramID);
-	activeProgramID = normalsProgramID;
+	normalsProgram.Activate();
 
 	mat4 mvp = m_projection * m_cTransform * m_oTransform;
 	//mat4 nvp = m_projection * m_cTransform * m_nTransform;
@@ -456,7 +389,7 @@ void Renderer::DrawVertexNormals(
 	//	lines.push_back(convert4dTo3d(nvp*vec4((*vertices)[i], 0)));
 	//}
 	// uniform parameters
-	SetUniformParameter(m_oTransform, "color");
+	normalsProgram.SetUniformParameter(m_oTransform, "color");
 
 }
 void Renderer::DrawFaceNormals(
@@ -517,8 +450,8 @@ void Renderer::DrawLight(const vec3& color, const vec3& position)
 	vec3 light_location = convert4dTo3d(mvp * vec4(position, 1));
 
 	// Use our shader
-	SetShaderProgram(normalsProgramID);
-	SetUniformParameter(color, "color");
+	normalsProgram.Activate();
+	normalsProgram.SetUniformParameter(color, "color");
 
 	vector<vec3> star;
 	GLfloat offset = 5.0f * anti_factor / min_size;
@@ -531,19 +464,12 @@ void Renderer::DrawLight(const vec3& color, const vec3& position)
 	star.push_back(light_location + vec3(-offset, 0, 0)); // -
 	star.push_back(light_location + vec3(offset, 0, 0));
 
-	GLuint buffer = SetInParameter(star, 0);			//in vec3 vertexPosition;
+	GLuint buffer = normalsProgram.SetInParameter(star, 0);			//in vec3 vertexPosition;
 	
 	glDrawArrays(GL_LINES, 0, star.size());
 	
-	glDisableVertexAttribArray(0);
+	normalsProgram.ClearAttributes();
 	//glDeleteBuffers(1, &buffer);
-
-	//for (int i = -5 * anti_factor; i <= 5 * anti_factor; ++i) {
-	//	PlotPixel(light_location.x + i, light_location.y + i, light_location.z, color);	// \ 
-	//	PlotPixel(light_location.x + i, light_location.y - i, light_location.z, color);	// /
-	//	PlotPixel(light_location.x, light_location.y + i, light_location.z, color);		// |
-	//	PlotPixel(light_location.x + i, light_location.y, light_location.z, color);		// -
-	//}
 }
 
 void Renderer::SetShaderLights(const AmbientLight& amb_light, const vector<DirectionalLightSource *>& lights) {
@@ -551,21 +477,23 @@ void Renderer::SetShaderLights(const AmbientLight& amb_light, const vector<Direc
 		std::ostringstream position_ss, intensity_ss;
 		position_ss << "lights[" << i << "].position";
 		intensity_ss << "lights[" << i << "].intensity";
-		SetUniformParameter(lights[i]->GetPositionForShader(), position_ss.str().c_str());
-		SetUniformParameter(lights[i]->getIntensity(), intensity_ss.str().c_str());
+		objectsProgram.SetUniformParameter(lights[i]->GetPositionForShader(), position_ss.str().c_str());
+		objectsProgram.SetUniformParameter(lights[i]->getIntensity(), intensity_ss.str().c_str());
 	}
 
-	SetUniformParameter(amb_light.getIntensity(), "ambientLightColor");
-	SetUniformParameter(lights.size(), "numberOfLights");
+	objectsProgram.SetUniformParameter(amb_light.getIntensity(), "ambientLightColor");
+	objectsProgram.SetUniformParameter(int(lights.size()), "numberOfLights");
 }
 
 void Renderer::SetCameraTransform(const mat4& cInverseTransform, const mat4 & cTransform)
 {
 	m_cTransform = cInverseTransform;
-	vec3 camera_position = convert4dTo3d(cTransform * vec4(0, 0, 0, 1));
-	SetUniformParameter(camera_position, "cameraPosition");
 	m_cnTransform = convert4dTo3d(m_cTransform);
-	mvp = m_projection * m_cTransform * m_oTransform;
+	
+	vec3 camera_position = convert4dTo3d(cTransform * vec4(0, 0, 0, 1));
+	mv = m_cTransform * m_oTransform;
+	mvp = m_projection * mv;
+	objectsProgram.SetUniformParameter(camera_position, "cameraPosition");
 }
 
 void Renderer::SetProjection(const mat4 & projection)
@@ -584,13 +512,13 @@ void Renderer::SetObjectMatrices(const mat4 & oTransform, const mat3 & nTransfor
 {
 	m_oTransform = oTransform;
 	m_nTransform = nTransform;
-	mvp = m_projection * m_cTransform * m_oTransform;
+	mv = m_cTransform * m_oTransform;
+	mvp = m_projection * mv;
 }
 
 void Renderer::SetDemoBuffer()
 {
-	SetShaderProgram(normalsProgramID);
-	SetUniformParameter(vec3(1, 0, 1), "color");
+	normalsProgram.SetUniformParameter(vec3(1, 0, 1), "color");
 
 	static const GLfloat g_vertex_buffer_data[] = {
 		-1.0f, -1.0f, 0.0f,
@@ -633,11 +561,25 @@ void Renderer::SetAntiAliasing(int new_factor)
 	CreateBuffers(m_screen_width, m_screen_height);
 }
 
-void Renderer::SetBaseShader(Shader * s) {
+void Renderer::SetBaseShader(Renderer::ShaderType s) {
+	objectsProgram.SetUniformParameter(int(s == ShaderType::Flat), "is_flat");
+	objectsProgram.SetUniformParameter(int(s == ShaderType::Gouraud), "gouraud");
+	objectsProgram.SetUniformParameter(int(s == ShaderType::Phong), "phong");
+	objectsProgram.SetUniformParameter(int(false), "fog"); 
+	//shader = s;
+	//has_fog = false;
 }
 
 void Renderer::SetFog(const vec3& color, const float extinction, const float scattering)
 {
+	objectsProgram.SetUniformParameter(int(true), "fog");
+	objectsProgram.SetUniformParameter(color, "fogColor");
+	objectsProgram.SetUniformParameter(extinction, "extinctionCoefficient");
+	objectsProgram.SetUniformParameter(scattering, "inScatteringCoefficient");
+	//fog_color = color;
+	//fog_extinction = extinction;
+	//fog_scattering = scattering;
+	//has_fog = true;
 }
 
 /////////////////////////////////////////////////////
@@ -693,20 +635,15 @@ void Renderer::InitOpenGLRendering()
 
 	// shai's code
 	// Create and compile our GLSL program from the shaders
-	normalsProgramID = InitShader("vshader_basic.glsl", "fshader_basic.glsl");
-	objectsProgramID = InitShader("vshader_shading.glsl", "fshader_shading.glsl");
+	normalsProgram = ShaderProgram("vshader_basic.glsl", "fshader_basic.glsl", 1);
+	objectsProgram = ShaderProgram("vshader_fog.glsl", "fshader_fog.glsl", 8);
+	//objectsProgram = ShaderProgram("vshader_shading.glsl", "fshader_shading.glsl", 6);
 
 	glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
 
 	glEnable(GL_DEPTH_TEST);
 	glDepthFunc(GL_LESS);
 	glEnable(GL_CULL_FACE);
-}
-
-void Renderer::SetShaderProgram(GLuint new_program)
-{
-	glUseProgram(new_program);
-	activeProgramID = new_program;
 }
 
 void Renderer::CreateOpenGLBuffer()

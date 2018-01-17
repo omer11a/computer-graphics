@@ -101,6 +101,7 @@
   <ItemGroup>
     <ClCompile Include="BaseRenderer.cpp" />
     <ClCompile Include="CG_skel_w_MFC.cpp" />
+    <ClCompile Include="ShaderProgram.cpp" />
     <ClCompile Include="InitShader.cpp" />
     <ClCompile Include="InputDialog.cpp" />
     <ClCompile Include="Light.cpp" />
@@ -119,6 +120,7 @@
   <ItemGroup>
     <ClInclude Include="BaseRenderer.h" />
     <ClInclude Include="CG_skel_w_MFC.h" />
+    <ClInclude Include="ShaderProgram.h" />
     <ClInclude Include="InitShader.h" />
     <ClInclude Include="InputDialog.h" />
     <ClInclude Include="Light.h" />

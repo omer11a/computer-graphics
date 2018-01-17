@@ -7,7 +7,7 @@ struct Light {
 	vec3 intensity;
 };
 
-uniform bool flat;
+uniform bool is_flat;
 uniform bool gouraud;
 uniform bool phong;
 uniform bool fog;
