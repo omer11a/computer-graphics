@@ -830,3 +830,117 @@ void CFogDialog::OnPaint()
 
 	v1Edit.SetFocus();
 }
+
+// ----------------------
+//    Class CTextureDialog
+// ----------------------
+void CTextureDialog::set_ambient() {
+	CColorDialog dlg;
+	if (dlg.DoModal() == IDOK) {
+		ambient = dlg.GetColor();
+	}
+}
+
+void CTextureDialog::set_specular() {
+	CColorDialog dlg;
+	if (dlg.DoModal() == IDOK) {
+		specular = dlg.GetColor();
+	}
+}
+
+void CTextureDialog::set_path() {
+	CFileDialog tfdlg(TRUE, _T(".png"), NULL, NULL, _T("*.png|*.*"));
+	if (tfdlg.DoModal() == IDOK) {
+		path = tfdlg.GetPathName();
+	}
+}
+
+CTextureDialog::CTextureDialog(CString title)
+	: CInputDialog(title), ambient(0xFFFFFF), specular(0), path(""), shininess(1)
+{ }
+
+CTextureDialog::~CTextureDialog()
+{ }
+
+vec3 CTextureDialog::GetAmbientColor() const
+{
+	return ColorToVec(ambient);
+}
+
+vec3 CTextureDialog::GetSpecularColor() const
+{
+	return ColorToVec(specular);
+}
+
+CString CTextureDialog::GetTexturePath() const
+{
+	return path;
+}
+
+float CTextureDialog::GetShininess() const
+{
+	return shininess;
+}
+
+void CTextureDialog::DoDataExchange(CDataExchange* pDX)
+{
+	CInputDialog::DoDataExchange(pDX);
+	DDX_Text(pDX, IDC_VALUE_EDIT, shininess);
+}
+
+// CTextureDialog message handlers
+BEGIN_MESSAGE_MAP(CTextureDialog, CInputDialog)
+	ON_WM_CREATE()
+	ON_WM_PAINT()
+	ON_BN_CLICKED(IDC_COLOR_EDIT, set_ambient)
+	ON_BN_CLICKED(IDC_COLOR_EDIT + 1, set_specular)
+	ON_BN_CLICKED(IDC_COLOR_EDIT + 2, set_path)
+END_MESSAGE_MAP()
+
+int CTextureDialog::OnCreate(LPCREATESTRUCT lpcs)
+{
+	int height = 70;
+	int sx = 220, ex = 300;
+
+	ambientEdit.Create("Choose...", BS_PUSHBUTTON | WS_CHILD | WS_VISIBLE | WS_TABSTOP | WS_BORDER,
+		CRect(sx, height, ex, height + 20), this, IDC_COLOR_EDIT);
+	height += 40;
+
+	specularEdit.Create("Choose...", BS_PUSHBUTTON | WS_CHILD | WS_VISIBLE | WS_TABSTOP | WS_BORDER,
+		CRect(sx, height, ex, height + 20), this, IDC_COLOR_EDIT + 1);
+	height += 40;
+
+	pathEdit.Create("Browse...", BS_PUSHBUTTON | WS_CHILD | WS_VISIBLE | WS_TABSTOP | WS_BORDER,
+		CRect(sx, height, ex, height + 20), this, IDC_COLOR_EDIT + 2);
+	height += 40;
+
+	shininessEdit.Create(ES_MULTILINE | WS_CHILD | WS_VISIBLE | WS_TABSTOP | WS_BORDER,
+		CRect(sx, height, ex, height + 20), this, IDC_VALUE_EDIT);
+	height += 40;
+
+	return 0;
+}
+
+void CTextureDialog::OnPaint()
+{
+	CPaintDC dc(this);
+	dc.SetBkMode(TRANSPARENT);
+	int height = 72;
+
+	CRect rect(50, height, 200, height + 18);
+	dc.DrawText("Ambient:", -1, &rect, DT_SINGLELINE);
+
+	rect.bottom += 40;
+	rect.top += 40;
+	dc.DrawText("Specular:", -1, &rect, DT_SINGLELINE);
+
+	rect.bottom += 40;
+	rect.top += 40;
+	dc.DrawText("Texture Path:", -1, &rect, DT_SINGLELINE);
+
+	rect.bottom += 40;
+	rect.top += 40;
+	dc.DrawText("Shininess:", -1, &rect, DT_SINGLELINE);
+
+	ambientEdit.SetFocus();
+}

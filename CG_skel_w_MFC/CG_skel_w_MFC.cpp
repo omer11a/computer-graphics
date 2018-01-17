@@ -466,10 +466,17 @@ void modelMenu(int id)
 		break;
 	case ADD_TEXTURE:
 		if (scene->getNumberOfModels() > 0) {
-			CFileDialog tfdlg(TRUE, _T(".png"), NULL, NULL, _T("*.png|*.*"));
-			if (tfdlg.DoModal() == IDOK) {
-				std::string s((LPCTSTR)fdlg.GetPathName());
-				scene->getActiveModel()->setTextures((LPCTSTR)fdlg.GetPathName());
+			CTextureDialog tdlg;
+			if (tdlg.DoModal() == IDOK) {
+				if (tdlg.GetShininess() < 0) {
+					cout << "model properties error: shininess must be non-negative." << endl;
+					break;
+				}
+				scene->getActiveModel()->setTextures(
+					tdlg.GetAmbientColor(),
+					tdlg.GetSpecularColor(),
+					(LPCTSTR)tdlg.GetTexturePath(),
+					tdlg.GetShininess());
 				cout << "loaded texture file" << endl;
 				should_redraw = true;
 			}

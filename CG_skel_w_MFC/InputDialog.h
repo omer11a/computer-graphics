@@ -288,7 +288,7 @@ protected:
 // ----------------------
 class CFogDialog : public CInputDialog {
 public:
-	CFogDialog(CString title = "Add light Source");
+	CFogDialog(CString title = "Add Fog");
 	virtual ~CFogDialog();
 
 	float GetExtinction() const;
@@ -312,4 +312,38 @@ protected:
 	afx_msg void OnPaint();
 	DECLARE_MESSAGE_MAP()
 
+};
+
+// ----------------------
+//    Class CTextureDialog
+// ----------------------
+class CTextureDialog : public CInputDialog {
+public:
+	CTextureDialog(CString title = "Set Texture");
+	virtual ~CTextureDialog();
+
+	vec3 GetAmbientColor() const;
+	vec3 GetSpecularColor() const;
+	CString GetTexturePath() const;
+	float GetShininess() const;
+protected:
+
+	COLORREF ambient;
+	COLORREF specular;
+	CString path;
+	float shininess;
+
+	CButton ambientEdit;
+	CButton specularEdit;
+	CButton pathEdit;
+	CEdit shininessEdit;
+
+	afx_msg void set_ambient();
+	afx_msg void set_specular();
+	afx_msg void set_path();
+	virtual void DoDataExchange(CDataExchange* pDX);
+
+	afx_msg int OnCreate(LPCREATESTRUCT lpcs);
+	afx_msg void OnPaint();
+	DECLARE_MESSAGE_MAP()
 };

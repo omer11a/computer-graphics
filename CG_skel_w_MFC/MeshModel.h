@@ -62,7 +62,7 @@ public:
 	void switchBoundingBoxVisibility();
 	void setUniformMaterial(Material material);
 	void setRandomMaterial();
-	void setTextures(string fileName);
+	void setTextures(const vec3& ambient, const vec3& specular, const string fileName, const float shininess);
 	void draw(BaseRenderer * renderer) const;
 };
 

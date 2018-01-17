@@ -244,9 +244,27 @@ void MeshModel::setRandomMaterial() {
 	}
 }
 
-void MeshModel::setTextures(string fileName)
+void MeshModel::setTextures(const vec3& ambient, const vec3& specular, const string fileName, const float shininess)
 {
-	lodepng::load_file(textures, fileName);
+	unsigned width, height;
+	unsigned error = lodepng::decode(textures, width, height, fileName);
+
+	// If there's an error, display it.
+	if (error != 0) {
+		std::cout << "error " << error << ": " << lodepng_error_text(error) << std::endl;
+		return;
+	}
+
+	materials.clear();
+	Material m = {
+		ambient,
+		specular,
+		vec3(0),
+		shininess
+	};
+	for (int i = 0; i < vertexPositions.size(); ++i) {
+		materials.push_back(m);
+	}
 }
 
 void MeshModel::draw(BaseRenderer * renderer) const {
