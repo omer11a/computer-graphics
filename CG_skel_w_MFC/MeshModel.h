@@ -26,12 +26,14 @@ class MeshModel
 
 protected:
 	vector<vec3> vertexPositions;
+	vector<vec3> centerPositions;
 	vector<vec3> vertexNormals;
 	vector<vec3> faceNormals;
 	vector<Material> materials;
 
 	vec3 & getVecByIndex(vector<vec3> & vecs, int i);
 	void computeFaceNormals();
+	void computeCenterPositions();
 	MeshModel();
 
 public:

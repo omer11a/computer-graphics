@@ -18,6 +18,7 @@ public:
 	virtual void DrawTriangles(
 		const vector<vec3>* vertices,
 		const vector<Material>* materials, 
+		const vector<vec3>* centerPositions,
 		const vector<vec3>* vertexNormals = NULL, 
 		const vector<vec3>* faceNormals = NULL,
 		const bool allowVertexNormals = false, 

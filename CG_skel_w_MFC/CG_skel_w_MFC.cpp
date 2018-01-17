@@ -389,15 +389,15 @@ void shaderMenu(int id)
 	CFogDialog fdlg;
 	switch (id) {
 	case FLAT:
-		renderer->SetBaseShader(new FlatShader());
+		renderer->SetBaseShader(Renderer::ShaderType::Flat);
 		cout << "set flat shader" << endl;
 		break;
 	case GOURAUD:
-		renderer->SetBaseShader(new GouraudShader());
+		renderer->SetBaseShader(Renderer::ShaderType::Gouraud);
 		cout << "set gourued shader" << endl;
 		break;
 	case PHONG:
-		renderer->SetBaseShader(new PhongShader());
+		renderer->SetBaseShader(Renderer::ShaderType::Phong);
 		cout << "set phong shader" << endl;
 		break;
 	case FOG:
