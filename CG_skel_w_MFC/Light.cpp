@@ -1,7 +1,7 @@
 #include "stdafx.h"
 #include "Light.h"
 
-Light::Light(const vec3& intensity) : intensity(intensity), transform() {}
+Light::Light(const vec3& intensity) : intensity(intensity), transform(1) {}
 
 Light::Light(const Light& light) : intensity(light.intensity), transform(light.transform) {}
 
@@ -77,7 +77,7 @@ vec3 DirectionalLightSource::computeDiffuseColor(
 
 DirectionalLightSource::DirectionalLightSource(const vec3& intensity) :
 	Light(intensity),
-	modelTransform(), worldTransform()
+	modelTransform(1), worldTransform(1)
 {}
 
 DirectionalLightSource::DirectionalLightSource(const DirectionalLightSource& light) :

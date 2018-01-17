@@ -23,7 +23,6 @@ class Renderer : public BaseRenderer
 
 	mat4 m_cTransform, m_projection, m_oTransform, mvp;
 	mat3 m_cnTransform, m_nTransform;
-	Shader * shader, * default_shader;
 	float zNear;
 	float zFar;
 
@@ -58,20 +57,20 @@ class Renderer : public BaseRenderer
 	void SetUniformParameter(const int i, const char * const var_name);
 
 	GLuint SetInParameter(const vector<vec3>& v, const int attribute_id);
-	GLuint SetInParameter(const vector<vec3> * v, const int attribute_id);
 	GLuint SetInParameter(const vector<GLfloat>& v, const int attribute_id);
 	//////////////////////////////
 	// openGL stuff. Don't touch.
 
 	GLuint gScreenTex;
 	GLuint gScreenVtc;	// VertexArrayID in tutorials
-	GLuint programID;
+	GLuint activeProgramID, objectsProgramID, normalsProgramID;
 	void CreateOpenGLBuffer();
 	void InitOpenGLRendering();
+	void SetShaderProgram(GLuint new_program);
 	//////////////////////////////
 public:
 	Renderer();
-	Renderer(int width, int height, Shader * shader);
+	Renderer(int width, int height);
 	~Renderer(void);
 
 	void DrawTriangles(
@@ -81,6 +80,13 @@ public:
 		const vector<vec3>* faceNormals = NULL,
 		const bool allowVertexNormals = false,
 		const bool allowFaceNormals = false) override;
+	void DrawVertexNormals(
+		const vector<vec3>* vertices,
+		const vector<vec3>* vertexNormals);
+	void DrawFaceNormals(
+		const vector<vec3>* vertices,
+		const vector<vec3>* faceNormals);
+
 	void SwitchWire(); 
 	void SetAntiAliasing(int new_factor);
 	void SetBaseShader(Shader * s);
