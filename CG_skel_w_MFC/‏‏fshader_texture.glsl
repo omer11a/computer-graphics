@@ -7,14 +7,16 @@ struct Light {
 	vec3 intensity;
 };
 
-uniform bool isFlat;
-uniform bool isGouraud;
-uniform bool isPhong;
-uniform bool isFog;
+uniform bool flat;
+uniform bool gouraud;
+uniform bool phong;
+uniform bool texture;
+uniform bool fog;
 uniform vec3 cameraPosition;
 uniform vec3 ambientLightColor;
 uniform int numberOfLights;
 uniform Light lights[MAX_NUMBER_OF_LIGHTS];
+uniform sampler2D textureSampler;
 uniform vec3 fogColor;
 uniform float extinctionCoefficient;
 uniform float inScatteringCoefficient;
@@ -60,14 +62,12 @@ vec3 applyLight(
 }
 
 void main() {
-	vec3 finalColor = color;
-
-	if (isPhong) {
+	if (phong) {
 		vec3 normal = normalize(vertexNormal);
 		vec3 modelToCamera = normalize(cameraPosition - vertexPosition);
-		finalColor = ambientLightColor * ambientReflectance;
+		vec3 color = ambientLightColor * ambientReflectance;
 		for (int i = 0; i < numberOfLights; ++i) {
-			finalColor += applyLight(
+			color += applyLight(
 				lights[i],
 				specularReflectance,
 				diffuseReflectance,
@@ -79,14 +79,14 @@ void main() {
 		}
 	}
 	
-	if (isFog) {
+	if (fog) {
 		float dist = length(viewVertexPosition);
 		float be = abs(viewVertexPosition.y) * extinctionCoefficient;
 		float bi = abs(viewVertexPosition.y) * inScatteringCoefficient;
 		float ext = exp(-dist * be);
 		float insc = exp(-dist * bi);
-		finalColor = finalColor * ext + fogColor * (1 - insc);
+		color = color * ext + fogColor * (1 - insc);
 	}
     
-    outColor = vec4(clamp(finalColor, 0, 1), 1);
+    outColor = vec4(clamp(color, 0, 1), 1);
 }

@@ -336,10 +336,10 @@ void Renderer::DrawTriangles(
 	// TODO: if there are no normals, use the flat shader
 
 	// split material parameters
-	vector<vec3> ambiants, diffuses, speculars;
+	vector<vec3> ambients, diffuses, speculars;
 	vector<float> shininess;
 	for (auto i = materials->begin(); i != materials->end(); ++i) {
-		ambiants.push_back((*i).ambientReflectance);
+		ambients.push_back((*i).ambientReflectance);
 		diffuses.push_back((*i).diffuseReflectance);
 		speculars.push_back((*i).specularReflectance);
 		shininess.push_back((*i).shininess);
@@ -356,8 +356,8 @@ void Renderer::DrawTriangles(
 	buffers.push_back(objectsProgram.SetInParameter(*vertices, 0));			//in vec3 vertexPosition;
 	buffers.push_back(objectsProgram.SetInParameter(*centerPositions, 1));			//in vec3 centerPosition;
 	buffers.push_back(objectsProgram.SetInParameter(*vertexNormals, 2));		//in vec3 vertexNormal;
-	buffers.push_back(objectsProgram.SetInParameter(shader_faceNormals, 3));		//in vec3 vertexNormal;
-	buffers.push_back(objectsProgram.SetInParameter(ambiants, 4));			//in vec3 ambientReflectance;
+	buffers.push_back(objectsProgram.SetInParameter(shader_faceNormals, 3));		//in vec3 faceNormal;
+	buffers.push_back(objectsProgram.SetInParameter(ambients, 4));			//in vec3 ambientReflectance;
 	buffers.push_back(objectsProgram.SetInParameter(speculars, 5));			//in vec3 specularReflectance;
 	buffers.push_back(objectsProgram.SetInParameter(diffuses, 6));			//in vec3 diffuseReflectance;
 	buffers.push_back(objectsProgram.SetInParameter(shininess, 7));			//in float shininess;
@@ -562,17 +562,17 @@ void Renderer::SetAntiAliasing(int new_factor)
 }
 
 void Renderer::SetBaseShader(Renderer::ShaderType s) {
-	objectsProgram.SetUniformParameter(int(s == ShaderType::Flat), "is_flat");
-	objectsProgram.SetUniformParameter(int(s == ShaderType::Gouraud), "gouraud");
-	objectsProgram.SetUniformParameter(int(s == ShaderType::Phong), "phong");
-	objectsProgram.SetUniformParameter(int(false), "fog"); 
+	objectsProgram.SetUniformParameter(int(s == ShaderType::Flat), "isFlat");
+	objectsProgram.SetUniformParameter(int(s == ShaderType::Gouraud), "isGouraud");
+	objectsProgram.SetUniformParameter(int(s == ShaderType::Phong), "isPhong");
+	objectsProgram.SetUniformParameter(int(false), "isFog"); 
 	//shader = s;
 	//has_fog = false;
 }
 
 void Renderer::SetFog(const vec3& color, const float extinction, const float scattering)
 {
-	objectsProgram.SetUniformParameter(int(true), "fog");
+	objectsProgram.SetUniformParameter(int(true), "isFog");
 	objectsProgram.SetUniformParameter(color, "fogColor");
 	objectsProgram.SetUniformParameter(extinction, "extinctionCoefficient");
 	objectsProgram.SetUniformParameter(scattering, "inScatteringCoefficient");

@@ -7,10 +7,10 @@ struct Light {
 	vec3 intensity;
 };
 
-uniform bool isFlat;
-uniform bool isGouraud;
-uniform bool isPhong;
-uniform bool isFog;
+uniform bool flat;
+uniform bool gouraud;
+uniform bool phong;
+uniform bool fog;
 uniform mat4 modelMatrix;
 uniform mat3 normalMatrix;
 uniform mat4 modelViewMatrix;
@@ -76,14 +76,14 @@ void main() {
 	outShininess = shininess;
 	
 	vec3 color = vec3(0);
-	if ((isFlat) || (isGouraud)) {
+	if ((flat) || (gouraud)) {
 		vec3 worldVertexPosition = outVertexPosition;
-		if (isFlat) {
+		if (flat) {
 			worldVertexPosition = (modelMatrix * vec4(centerPosition, 1)).xyz;
 		}
 		
 		vec3 normal = vec3(0);
-		if (isFlat) {
+		if (flat) {
 			normal = normalize(normalMatrix * faceNormal);
 		} else {
 			normal = normalize(outVertexNormal);
@@ -107,7 +107,7 @@ void main() {
 	outColor = clamp(color, 0, 1);
 	
 	outViewVertexPosition = vec3(0);
-	if (isFog) {
+	if (fog) {
 		outViewVertexPosition = (modelViewMatrix * vec4(vertexPosition, 1)).xyz;
 	}
 	
