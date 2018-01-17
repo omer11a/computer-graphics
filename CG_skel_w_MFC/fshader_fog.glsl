@@ -7,10 +7,10 @@ struct Light {
 	vec3 intensity;
 };
 
-uniform bool is_flat;
-uniform bool gouraud;
-uniform bool phong;
-uniform bool fog;
+uniform bool isFlat;
+uniform bool isGouraud;
+uniform bool isPhong;
+uniform bool isFog;
 uniform vec3 cameraPosition;
 uniform vec3 ambientLightColor;
 uniform int numberOfLights;
@@ -60,12 +60,14 @@ vec3 applyLight(
 }
 
 void main() {
-	if (phong) {
+	vec3 finalColor = color;
+
+	if (isPhong) {
 		vec3 normal = normalize(vertexNormal);
 		vec3 modelToCamera = normalize(cameraPosition - vertexPosition);
-		vec3 color = ambientLightColor * ambientReflectance;
+		finalColor = ambientLightColor * ambientReflectance;
 		for (int i = 0; i < numberOfLights; ++i) {
-			color += applyLight(
+			finalColor += applyLight(
 				lights[i],
 				specularReflectance,
 				diffuseReflectance,
@@ -77,14 +79,14 @@ void main() {
 		}
 	}
 	
-	if (fog) {
+	if (isFog) {
 		float dist = length(viewVertexPosition);
 		float be = abs(viewVertexPosition.y) * extinctionCoefficient;
 		float bi = abs(viewVertexPosition.y) * inScatteringCoefficient;
 		float ext = exp(-dist * be);
 		float insc = exp(-dist * bi);
-		color = color * ext + fogColor * (1 - insc);
+		finalColor = finalColor * ext + fogColor * (1 - insc);
 	}
     
-    outColor = vec4(clamp(color, 0, 1), 1);
+    outColor = vec4(clamp(finalColor, 0, 1), 1);
 }
