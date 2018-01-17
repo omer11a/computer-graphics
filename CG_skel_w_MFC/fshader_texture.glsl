@@ -11,7 +11,7 @@ uniform bool isFlat;
 uniform bool isGouraud;
 uniform bool isPhong;
 uniform bool hasTexture;
-uniform bool isFog;
+uniform bool hasFog;
 uniform vec3 cameraPosition;
 uniform vec3 ambientLightColor;
 uniform int numberOfLights;

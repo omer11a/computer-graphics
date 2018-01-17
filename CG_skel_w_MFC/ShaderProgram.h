@@ -18,6 +18,7 @@ public:
 	void SetUniformParameter(const vec3& v, const char * const var_name);
 	void SetUniformParameter(const int i, const char * const var_name);
 	void SetUniformParameter(const GLfloat f, const char * const var_name);
+	void SetUniformParameter(const GLuint ui, const char * const var_name);
 
 	//GLuint SetInParameter(const vector<vec3>& v, const int attribute_id);
 	//GLuint SetInParameter(const vector<GLfloat>& v, const int attribute_id);

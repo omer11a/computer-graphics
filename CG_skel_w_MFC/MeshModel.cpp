@@ -272,18 +272,31 @@ void MeshModel::setTextures(const vec3& ambient, const vec3& specular, const str
 	unsigned width, height;
 	vector<unsigned char> pixels;
 	unsigned error = lodepng::decode(pixels, width, height, fileName);
-
+	
 	// If there's an error, display it.
 	if (error != 0) {
 		std::cout << "error " << error << ": " << lodepng_error_text(error) << std::endl;
 		return;
 	}
+	unsigned char * pixel_array = new unsigned char[pixels.size()];
+
+	int wInc = width * 4;//width in char
+	for (int i = 0; i < height / 2; i++) {
+		int top = i*wInc;
+		int bot = (height - i - 1) * wInc;
+		for (int j = 0; j < wInc; j++) {
+			// Swap the chars around.
+			pixel_array[top + j] = pixels[bot + j];
+			pixel_array[bot + j] = pixels[top + j];
+		}
+	}
+
 	hasTexture = true;
 
 	glGenTextures(1, &textureID);
 	try {
 		glBindTexture(GL_TEXTURE_2D, textureID);
-		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_BGR, GL_UNSIGNED_BYTE, &pixels[0]);
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_BGRA, GL_UNSIGNED_BYTE, pixel_array);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
 		glGenerateMipmap(GL_TEXTURE_2D);
