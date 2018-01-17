@@ -72,6 +72,8 @@ PrimMeshModels:
 #define GOURAUD 2
 #define PHONG 3
 #define FOG 4
+#define FOG_DISABLE 5
+
 
 #define ADD_CAMERA 1
 
@@ -415,6 +417,9 @@ void shaderMenu(int id)
 			should_redraw = false;
 		}
 		break;
+	case FOG_DISABLE:
+		renderer->DisableFog();
+		break;
 	}
 
 	redraw(should_redraw);
@@ -555,7 +560,8 @@ void initMenu()
 	glutAddMenuEntry("Gouraud", GOURAUD);
 	glutAddMenuEntry("Phong", PHONG);
 	glutAddMenuEntry("Fog", FOG);
-
+	glutAddMenuEntry("Disable Fog", FOG_DISABLE);
+	
 	// file sub menu
 	int menuFile = glutCreateMenu(fileMenu);
 	glutAddSubMenu("Model", menuModel);
