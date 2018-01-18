@@ -61,7 +61,7 @@ private:
 
 	GLuint gScreenTex;
 	GLuint gScreenVtc;	// VertexArrayID in tutorials
-	ShaderProgram objectsProgram, normalsProgram;
+	ShaderProgram basicProgram, objectsProgram, normalsProgram;
 	void CreateOpenGLBuffer();
 	void InitOpenGLRendering();
 	//////////////////////////////

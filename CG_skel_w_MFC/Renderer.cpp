@@ -389,7 +389,7 @@ void Renderer::DrawVertexNormals(
 	
 	vec3 pink(1, 140 / 255.0f, 1);
 	// Use our shader
-	normalsProgram.Activate();
+	basicProgram.Activate();
 
 	mat4 mvp = m_projection * m_cTransform * m_oTransform;
 	//mat4 nvp = m_projection * m_cTransform * m_nTransform;
@@ -400,7 +400,7 @@ void Renderer::DrawVertexNormals(
 	//	lines.push_back(convert4dTo3d(nvp*vec4((*vertices)[i], 0)));
 	//}
 	// uniform parameters
-	normalsProgram.SetUniformParameter(m_oTransform, "color");
+	basicProgram.SetUniformParameter(m_oTransform, "color");
 
 }
 void Renderer::DrawFaceNormals(
@@ -443,16 +443,23 @@ void Renderer::DrawBox(const vec3& minValues, const vec3& maxValues)
 void Renderer::DrawCamera()
 {
 	vec3 color(1, 140 / 255, 1);
-	vec3 camera_location;
-	bool in_sight = pointToScreen(vec3(), vec3(), camera_location);
-	if (!in_sight) {
-		return;
-	}
+	mat4 mvp = m_projection * m_cTransform * m_oTransform;
+	vec3 camera_location = convert4dTo3d(mvp * vec4(0, 0, 0, 1));
 
-	for (int i = -5 * anti_factor; i < 5 * anti_factor; ++i) {
-		PlotPixel(camera_location.x + i, camera_location.y, camera_location.z, color);
-		PlotPixel(camera_location.x, camera_location.y + i, camera_location.z, color);
-	}
+	// Use our shader
+	basicProgram.Activate();
+	basicProgram.SetUniformParameter(color, "color");
+
+	vector<vec3> plus;
+	GLfloat offset = 5.0f * anti_factor / min_size;
+	plus.push_back(camera_location + vec3(0, -offset, 0)); // |
+	plus.push_back(camera_location + vec3(0, offset, 0));
+	plus.push_back(camera_location + vec3(-offset, 0, 0)); // -
+	plus.push_back(camera_location + vec3(offset, 0, 0));
+
+	GLuint buffer = basicProgram.SetInParameter(plus, 0, 3);			//in vec3 vertexPosition;
+	glDrawArrays(GL_LINES, 0, plus.size());
+	basicProgram.ClearAttributes();
 }
 
 void Renderer::DrawLight(const vec3& color, const vec3& position)
@@ -461,8 +468,8 @@ void Renderer::DrawLight(const vec3& color, const vec3& position)
 	vec3 light_location = convert4dTo3d(mvp * vec4(position, 1));
 
 	// Use our shader
-	normalsProgram.Activate();
-	normalsProgram.SetUniformParameter(color, "color");
+	basicProgram.Activate();
+	basicProgram.SetUniformParameter(color, "color");
 
 	vector<vec3> star;
 	GLfloat offset = 5.0f * anti_factor / min_size;
@@ -475,11 +482,11 @@ void Renderer::DrawLight(const vec3& color, const vec3& position)
 	star.push_back(light_location + vec3(-offset, 0, 0)); // -
 	star.push_back(light_location + vec3(offset, 0, 0));
 
-	GLuint buffer = normalsProgram.SetInParameter(star, 0, 3);			//in vec3 vertexPosition;
+	GLuint buffer = basicProgram.SetInParameter(star, 0, 3);			//in vec3 vertexPosition;
 	
 	glDrawArrays(GL_LINES, 0, star.size());
 	
-	normalsProgram.ClearAttributes();
+	basicProgram.ClearAttributes();
 	//glDeleteBuffers(1, &buffer);
 }
 
@@ -531,7 +538,7 @@ void Renderer::SetObjectMatrices(const mat4 & oTransform, const mat3 & nTransfor
 
 void Renderer::SetDemoBuffer()
 {
-	normalsProgram.SetUniformParameter(vec3(1, 0, 1), "color");
+	basicProgram.SetUniformParameter(vec3(1, 0, 1), "color");
 
 	static const GLfloat g_vertex_buffer_data[] = {
 		-1.0f, -1.0f, 0.0f,
@@ -606,55 +613,13 @@ void Renderer::DisableFog()
 void Renderer::InitOpenGLRendering()
 {
 	int a = glGetError();
-	//a = glGetError();
-	//glGenTextures(1, &gScreenTex);
-	//a = glGetError();
 	glGenVertexArrays(1, &gScreenVtc);
 	glBindVertexArray(gScreenVtc);
 
-	//const GLfloat vtc[] = {
-	//	-1, -1,
-	//	1, -1,
-	//	-1, 1,
-	//	-1, 1,
-	//	1, -1,
-	//	1, 1
-	//};
-	//const GLfloat tex[] = {
-	//	0,0,
-	//	1,0,
-	//	0,1,
-	//	0,1,
-	//	1,0,
-	//	1,1 };
-	//
-	//GLuint buffer;
-	//glGenBuffers(1, &buffer);
-	//glBindBuffer(GL_ARRAY_BUFFER, buffer);
-	//glBufferData(GL_ARRAY_BUFFER, sizeof(vtc) + sizeof(tex), NULL, GL_STATIC_DRAW);
-
-	//glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(vtc), vtc);
-	//glBufferSubData(GL_ARRAY_BUFFER, sizeof(vtc), sizeof(tex), tex);
-
-	//GLuint program = InitShader("vshader.glsl", "fshader.glsl");
-	//glUseProgram(program);
-	//GLint  vPosition = glGetAttribLocation(program, "vPosition");
-
-	//glEnableVertexAttribArray(vPosition);
-	//glVertexAttribPointer(vPosition, 2, GL_FLOAT, GL_FALSE, 0,
-	//	0);
-
-	//GLint  vTexCoord = glGetAttribLocation(program, "vTexCoord");
-	//glEnableVertexAttribArray(vTexCoord);
-	//glVertexAttribPointer(vTexCoord, 2, GL_FLOAT, GL_FALSE, 0,
-	//	(GLvoid *) sizeof(vtc));
-	//glProgramUniform1i(program, glGetUniformLocation(program, "texture"), 0);
-	//a = glGetError();
-
-	// shai's code
 	// Create and compile our GLSL program from the shaders
-	normalsProgram = ShaderProgram("vshader_basic.glsl", "fshader_basic.glsl", 1);
+	basicProgram = ShaderProgram("vshader_basic.glsl", "fshader_basic.glsl", 1);
 	objectsProgram = ShaderProgram("vshader_texture.glsl", "fshader_texture.glsl", 10);
+	//normalsProgram = ShaderProgram("vshader_normal.glsl", "fshader_normal.glsl", 10);
 	objectsProgram.Activate();
 	SetBaseShader(ShaderType::Flat);
 	DisableFog();
