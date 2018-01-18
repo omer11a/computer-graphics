@@ -2,8 +2,8 @@
 
 uniform vec3 color;
 
-layout (location = 0) out outColor;
+layout (location = 0) out vec4 outColor;
 
 void main() {
-	outColor = color;
+	outColor = vec4(clamp(color, 0, 1), 1);
 }
