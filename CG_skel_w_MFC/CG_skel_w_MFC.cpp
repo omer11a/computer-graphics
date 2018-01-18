@@ -66,7 +66,8 @@ PrimMeshModels:
 #define ADD_TEXTURE 3
 #define ADD_NORMAL_MAP 4
 #define DEL_NORMAL_MAP 5
-
+#define ADD_ANIMATION 6
+#define DEL_ANIMATION 7
 #define AMBIENT 3
 
 // shaders menu
@@ -502,6 +503,19 @@ void modelMenu(int id)
 			should_redraw = true;
 		}
 		break;
+	case ADD_ANIMATION:
+		//if (scene->getNumberOfModels() > 0) 
+		{
+			CAnimationDialog adlg;
+			if (adlg.DoModal() == IDOK) {
+				cout << "adding animation" << endl;
+				should_redraw = true;
+			}
+		}
+		break;
+	case DEL_ANIMATION:
+		cout << "disabling animation" << endl;
+		break;
 	}
 	redraw(should_redraw);
 }
@@ -576,6 +590,8 @@ void initMenu()
 	glutAddMenuEntry("Add Texture", ADD_TEXTURE);
 	glutAddMenuEntry("Enable Normal Mapping", ADD_NORMAL_MAP);
 	glutAddMenuEntry("Disable Normal Mapping", DEL_NORMAL_MAP);
+	glutAddMenuEntry("Enable Animation", ADD_ANIMATION);
+	glutAddMenuEntry("Disable Animation", DEL_ANIMATION);
 
 	// light sub menu
 	int menuLight = glutCreateMenu(lightMenu);

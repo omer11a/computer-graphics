@@ -19,8 +19,9 @@
 #define IDC_VALUE_EDIT		212
 
 #define IDC_COLOR_EDIT		300
-#define IDC_POINT_EDIT		301
-#define IDC_PARALLEL_EDIT	302
+#define IDC_RADIO1_EDIT		301
+#define IDC_RADIO2_EDIT		302
+#define IDC_RADIO3_EDIT		303
 
 #define CMD_EDIT_TITLE "Command"
 #define X_EDIT_TITLE "X:"
@@ -551,8 +552,8 @@ BEGIN_MESSAGE_MAP(CLightDialog, CInputDialog)
 	ON_WM_CREATE()
 	ON_WM_PAINT()
 	ON_BN_CLICKED(IDC_COLOR_EDIT, choose_color)
-	ON_BN_CLICKED(IDC_PARALLEL_EDIT, radio_pressed)
-	ON_BN_CLICKED(IDC_POINT_EDIT, radio_pressed)
+	ON_BN_CLICKED(IDC_RADIO2_EDIT, radio_pressed)
+	ON_BN_CLICKED(IDC_RADIO1_EDIT, radio_pressed)
 END_MESSAGE_MAP()
 
 int CLightDialog::OnCreate(LPCREATESTRUCT lpcs)
@@ -561,9 +562,9 @@ int CLightDialog::OnCreate(LPCREATESTRUCT lpcs)
 	int lsx = 220, lex = 300;
 
 	point_radio.Create("Point", BS_AUTORADIOBUTTON | WS_CHILD | WS_VISIBLE | WS_TABSTOP,
-		CRect(200, 30, 280, 45), this, IDC_POINT_EDIT);
+		CRect(200, 30, 280, 45), this, IDC_RADIO1_EDIT);
 	parallel_radio.Create("Parallel", BS_AUTORADIOBUTTON | WS_CHILD | WS_VISIBLE | WS_TABSTOP,
-		CRect(300, 30, 380, 45), this, IDC_PARALLEL_EDIT);
+		CRect(300, 30, 380, 45), this, IDC_RADIO2_EDIT);
 
 	coordinatesxEdit.Create(ES_MULTILINE | WS_CHILD | WS_VISIBLE | WS_TABSTOP | WS_BORDER,
 		CRect(lsx, height, lex, height + 20), this, IDC_X_EDIT);
@@ -943,4 +944,104 @@ void CTextureDialog::OnPaint()
 	dc.DrawText("Shininess:", -1, &rect, DT_SINGLELINE);
 
 	ambientEdit.SetFocus();
+}
+
+// ----------------------
+//    Class CAnimationDialog
+// ----------------------
+
+void CAnimationDialog::radio_pressed() {
+	if (hue_radio.GetCheck()) {
+		animation_type = HUE;
+	} else if (sat_radio.GetCheck()) {
+		animation_type = SAT;
+	} else {
+		animation_type = LUM;
+	}
+}
+
+CAnimationDialog::CAnimationDialog(CString title)
+	: CInputDialog(title), animation_type(HUE), duration(0), speed(0)
+{ }
+
+CAnimationDialog::~CAnimationDialog()
+{ }
+
+CAnimationDialog::AnimationType CAnimationDialog::GetAnimationType() const
+{
+	return animation_type;
+}
+
+GLfloat CAnimationDialog::GetDuration() const
+{
+	return duration;
+}
+
+GLfloat CAnimationDialog::GetSpeed() const
+{
+	return speed;
+}
+
+
+
+void CAnimationDialog::DoDataExchange(CDataExchange* pDX)
+{
+	CInputDialog::DoDataExchange(pDX);
+	DDX_Text(pDX, IDC_VALUE_EDIT, duration);
+	DDX_Text(pDX, IDC_VALUE_EDIT + 1, speed);
+}
+
+// CAnimationDialog message handlers
+BEGIN_MESSAGE_MAP(CAnimationDialog, CInputDialog)
+	ON_WM_CREATE()
+	ON_WM_PAINT()
+	ON_BN_CLICKED(IDC_RADIO2_EDIT, radio_pressed)
+	ON_BN_CLICKED(IDC_RADIO1_EDIT, radio_pressed)
+END_MESSAGE_MAP()
+
+int CAnimationDialog::OnCreate(LPCREATESTRUCT lpcs)
+{
+	int height = 140;
+	int lsx = 220, lex = 300;
+
+	hue_radio.Create("Hue", BS_AUTORADIOBUTTON | WS_CHILD | WS_VISIBLE | WS_TABSTOP,
+		CRect(200, 60, 260, 75), this, IDC_RADIO1_EDIT);
+	sat_radio.Create("Sat", BS_AUTORADIOBUTTON | WS_CHILD | WS_VISIBLE | WS_TABSTOP,
+		CRect(265, 60, 315, 75), this, IDC_RADIO2_EDIT);
+	lum_radio.Create("Lum", BS_AUTORADIOBUTTON | WS_CHILD | WS_VISIBLE | WS_TABSTOP,
+		CRect(320, 60, 380, 75), this, IDC_RADIO3_EDIT);
+
+	durationEdit.Create(ES_MULTILINE | WS_CHILD | WS_VISIBLE | WS_TABSTOP | WS_BORDER,
+		CRect(lsx, height, lex, height + 20), this, IDC_VALUE_EDIT);
+	height += 40;
+
+	speedEdit.Create(ES_MULTILINE | WS_CHILD | WS_VISIBLE | WS_TABSTOP | WS_BORDER,
+		CRect(lsx, height, lex, height + 20), this, IDC_VALUE_EDIT + 1);
+	height += 40;
+
+	return 0;
+}
+
+void CAnimationDialog::OnPaint()
+{
+	CPaintDC dc(this);
+	dc.SetBkMode(TRANSPARENT);
+	int height = 62;
+
+	CRect rect(90, height, 250, height + 18);
+	dc.DrawText("Animation Type:", -1, &rect, DT_SINGLELINE);
+
+	rect.bottom += 50;
+	rect.top += 50;
+	dc.DrawText("Animation Parameters:", -1, &rect, DT_SINGLELINE);
+
+	rect.bottom += 30;
+	rect.top += 30;
+	dc.DrawText("Duration:", -1, &rect, DT_SINGLELINE);
+
+	rect.bottom += 40;
+	rect.top += 40;
+	dc.DrawText("Speed:", -1, &rect, DT_SINGLELINE);
+
+	durationEdit.SetFocus();
 }
