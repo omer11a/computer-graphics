@@ -601,7 +601,6 @@ void redraw(bool should_redraw)
 			scene->drawDemo();
 		} else {
 			renderer->ClearColorBuffer();
-			renderer->ClearDepthBuffer();
 			scene->draw();
 		};
 	}

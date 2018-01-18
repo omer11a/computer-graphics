@@ -39,6 +39,5 @@ public:
 	virtual void UpdateBuffers(int width, int height);
 	virtual void SwapBuffers();
 	virtual void ClearColorBuffer();
-	virtual void ClearDepthBuffer();
 	virtual void SetDemoBuffer();
 };

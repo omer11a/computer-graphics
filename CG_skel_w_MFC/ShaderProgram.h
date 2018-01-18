@@ -20,9 +20,6 @@ public:
 	void SetUniformParameter(const GLfloat f, const char * const var_name);
 	void SetUniformParameter(const GLuint ui, const char * const var_name);
 
-	//GLuint SetInParameter(const vector<vec3>& v, const int attribute_id);
-	//GLuint SetInParameter(const vector<GLfloat>& v, const int attribute_id);
-
 	template <class T>
 	GLuint SetInParameter(const vector<T>& v, const int attribute_id, const int size) {
 		GLuint buffer;
@@ -43,8 +40,6 @@ public:
 		);
 		return buffer;
 	}
-
-
 
 	void Activate();
 	void ClearAttributes();

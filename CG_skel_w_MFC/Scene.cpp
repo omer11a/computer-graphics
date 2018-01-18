@@ -438,7 +438,6 @@ void Scene::draw() const {
 	Camera * camera = cameras.at(activeCamera);
 	renderer->SetCameraTransform(camera->getInverseTransform(), camera->getTransform());
 	renderer->SetProjection(camera->getProjection());
-	renderer->SetZRange(camera->getNear(), camera->getFar());
 
 	// 2. Tell all models to draw themselves
 	for (MeshModel * model : models) {

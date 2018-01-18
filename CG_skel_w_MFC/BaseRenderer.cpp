@@ -20,8 +20,6 @@ void BaseRenderer::SwapBuffers() { }
 
 void BaseRenderer::ClearColorBuffer() { }
 
-void BaseRenderer::ClearDepthBuffer() { }
-
 void BaseRenderer::SetDemoBuffer() { }
 
 void BaseRenderer::DrawTriangles(
