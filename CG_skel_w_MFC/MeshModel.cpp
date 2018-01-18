@@ -374,8 +374,8 @@ void MeshModel::draw(BaseRenderer * renderer) const {
 	}
 
 	renderer->SetObjectMatrices(worldTransform * modelTransform, normalWorldTransform * normalModelTransform);
-	renderer->DrawTriangles(&vertexPositions, &materials, &centerPositions, hasTexture, textureID, &textureCoordinates, &textureCenters,
-		&vertexNormals, &faceNormals);
+	renderer->DrawTriangles(&vertexPositions, &materials, &centerPositions, hasTexture, textureID, hasNormalMap, normalMapID,
+		&textureCoordinates, &textureCenters, &vertexNormals, &faceNormals);
 
 	if (allowBoundingBox) {
 		renderer->DrawBox(minValues, maxValues);

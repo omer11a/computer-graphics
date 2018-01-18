@@ -28,6 +28,8 @@ void BaseRenderer::DrawTriangles(
 	const vector<vec3>* centerPositions,
 	const bool hasTexture,
 	const GLuint textureID,
+	const bool hasNormalMap,
+	const GLuint normalMapID,
 	const vector<vec2>* textureCoordinates,
 	const vector<vec2>* textureCenters,
 	const vector<vec3>* vertexNormals,
