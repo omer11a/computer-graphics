@@ -27,7 +27,7 @@ layout (location = 2) in vec3 ambientReflectance;
 layout (location = 3) in vec3 specularReflectance;
 layout (location = 4) in vec3 diffuseReflectance;
 layout (location = 5) in float shininess;
-layout (location = 6) out vec2 uv;
+layout (location = 6) in vec2 uv;
 layout (location = 7) in vec3 color;
 layout (location = 8) in vec3 viewVertexPosition;
 
@@ -67,16 +67,20 @@ void main() {
 	if (isPhong) {
 		vec3 normal = normalize(vertexNormal);
 		vec3 modelToCamera = normalize(cameraPosition - vertexPosition);
+		vec3 ambientColor = ambientReflectance;
+		vec3 specularColor = specularReflectance;
 		vec3 diffuseColor = diffuseReflectance;
 		if (hasTexture) {
-			diffuseColor = texture(textureSampler, uv).rgb;
+			ambientColor = texture(textureSampler, uv).rgb;
+			specularColor = ambientColor;
+			diffuseColor = ambientColor;
 		}
 		
-		finalColor = ambientLightColor * ambientReflectance;
+		finalColor = ambientLightColor * ambientColor;
 		for (int i = 0; i < numberOfLights; ++i) {
 			finalColor += applyLight(
 				lights[i],
-				specularReflectance,
+				specularColor,
 				diffuseColor,
 				shininess,
 				normal,
