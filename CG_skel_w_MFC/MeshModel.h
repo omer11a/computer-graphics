@@ -31,8 +31,10 @@ protected:
 	vector<vec2> textureCoordinates;
 	vector<vec2> textureCenters;
 	vector<vec3> faceNormals;
+	vector<vec3> tangentNormals;
+	vector<vec3> bitangentNormals;
 	vector<Material> materials;
-	GLuint textureID;
+	GLuint textureID, normalMapID;
 	bool hasTexture;
 
 	template<class T>
@@ -52,6 +54,7 @@ protected:
 	void computeFaceNormals();
 	void computeCenterPositions();
 	void clearTexture();
+	bool readPng(const string fileName, int element_size, unsigned int * width, unsigned int * height, unsigned char ** pixel_array);
 	MeshModel();
 
 public:
@@ -66,6 +69,7 @@ public:
 	void setUniformMaterial(Material material);
 	void setRandomMaterial();
 	void setTextures(const vec3& ambient, const vec3& specular, const string fileName, const float shininess);
+	void setNormalMap(const string fileName);
 	void draw(BaseRenderer * renderer) const;
 };
 

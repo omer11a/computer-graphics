@@ -169,6 +169,32 @@ void MeshModel::clearTexture()
 	hasTexture = false;
 }
 
+bool MeshModel::readPng(const string fileName, int element_size, unsigned int * width, unsigned int * height, unsigned char ** pixel_array)
+{
+	vector<unsigned char> pixels;
+	unsigned error = lodepng::decode(pixels, *width, *height, fileName);
+
+	// If there's an error, display it.
+	if (error != 0) {
+		std::cout << "error " << error << ": " << lodepng_error_text(error) << std::endl;
+		return false;
+	}
+	*pixel_array = new unsigned char[pixels.size()];
+
+	int wInc = (*width) * element_size;//width in char
+	for (int i = 0; i < (*height) / 2; i++) {
+		int top = i*wInc;
+		int bot = (*height - i - 1) * wInc;
+		for (int j = 0; j < wInc; j++) {
+			// Swap the chars around.
+			(*pixel_array)[top + j] = pixels[bot + j];
+			(*pixel_array)[bot + j] = pixels[top + j];
+		}
+	}
+
+	return true;
+}
+
 void MeshModel::computeBoundingBox() {
 	minValues = maxValues = vertexPositions.at(0);
 	for (unsigned int i = 1; i < vertexPositions.size(); ++i) {
@@ -185,15 +211,17 @@ void MeshModel::computeBoundingBox() {
 }
 
 MeshModel::MeshModel() :
-	vertexPositions(), vertexNormals(), textureCoordinates(), textureCenters(), faceNormals(), materials(),
+	vertexPositions(), vertexNormals(), textureCoordinates(), textureCenters(),
+	faceNormals(), tangentNormals(), bitangentNormals(), materials(),
 	worldTransform(1), modelTransform(1), normalModelTransform(1), normalWorldTransform(1),
-	allowVertexNormals(false), allowFaceNormals(false), allowBoundingBox(false), textureID(0), hasTexture(false)
+	allowVertexNormals(false), allowFaceNormals(false), allowBoundingBox(false), textureID(0), hasTexture(false), normalMapID(0)
 { }
 
 MeshModel::MeshModel(string fileName) :
-	vertexPositions(), vertexNormals(), textureCoordinates(), textureCenters(), faceNormals(), materials(),
+	vertexPositions(), vertexNormals(), textureCoordinates(), textureCenters(), 
+	faceNormals(), tangentNormals(), bitangentNormals(), materials(),
 	worldTransform(1), modelTransform(1), normalModelTransform(1), normalWorldTransform(1),
-	allowVertexNormals(false), allowFaceNormals(false), allowBoundingBox(false), textureID(0), hasTexture(false)
+	allowVertexNormals(false), allowFaceNormals(false), allowBoundingBox(false), textureID(0), hasTexture(false), normalMapID(0)
 {
 	loadFile(fileName);
 	setUniformMaterial({ vec3(1), vec3(1), vec3(1), 1 });
@@ -269,30 +297,13 @@ void MeshModel::setRandomMaterial() {
 
 void MeshModel::setTextures(const vec3& ambient, const vec3& specular, const string fileName, const float shininess)
 {
-	unsigned width, height;
-	vector<unsigned char> pixels;
-	unsigned error = lodepng::decode(pixels, width, height, fileName);
-	
-	// If there's an error, display it.
-	if (error != 0) {
-		std::cout << "error " << error << ": " << lodepng_error_text(error) << std::endl;
+	unsigned int width, height;
+	unsigned char * pixel_array;
+	if (!readPng(fileName, 4, &width, &height, &pixel_array)) {
 		return;
-	}
-	unsigned char * pixel_array = new unsigned char[pixels.size()];
-
-	int wInc = width * 4;//width in char
-	for (int i = 0; i < height / 2; i++) {
-		int top = i*wInc;
-		int bot = (height - i - 1) * wInc;
-		for (int j = 0; j < wInc; j++) {
-			// Swap the chars around.
-			pixel_array[top + j] = pixels[bot + j];
-			pixel_array[bot + j] = pixels[top + j];
-		}
 	}
 
 	hasTexture = true;
-
 	glGenTextures(1, &textureID);
 	try {
 		glBindTexture(GL_TEXTURE_2D, textureID);
@@ -318,6 +329,29 @@ void MeshModel::setTextures(const vec3& ambient, const vec3& specular, const str
 	for (int i = 0; i < vertexPositions.size(); ++i) {
 		materials.push_back(m);
 	}
+}
+
+void MeshModel::setNormalMap(const string fileName)
+{
+	unsigned int width, height;
+	unsigned char * pixel_array;
+	if (!readPng(fileName, 3, &width, &height, &pixel_array)) {// should be 3 or also 4?
+		return;
+	}
+
+	//glGenTextures(1, &normalMapID);
+	//try {
+	//	glBindTexture(GL_TEXTURE_2D, normalMapID);
+	//	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, pixel_array);
+	//	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	//	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+	//	glGenerateMipmap(GL_TEXTURE_2D);
+	//}
+	//catch (...) {
+	//	clearTexture();
+	//	delete[] pixel_array;
+	//	return;
+	//}
 }
 
 void MeshModel::draw(BaseRenderer * renderer) const {

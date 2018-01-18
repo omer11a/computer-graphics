@@ -336,6 +336,8 @@ void Renderer::InitOpenGLRendering()
 	int a = glGetError();
 	glGenVertexArrays(1, &gScreenVtc);
 	glBindVertexArray(gScreenVtc);
+	glGenTextures(1, &gScreenTex);
+	a = glGetError();
 
 	// Create and compile our GLSL program from the shaders
 	basicProgram = ShaderProgram("vshader_basic.glsl", "fshader_basic.glsl", 1);
@@ -355,8 +357,8 @@ void Renderer::InitOpenGLRendering()
 void Renderer::CreateOpenGLBuffer()
 {
 	int view_size = min_size * 2;
-	glActiveTexture(GL_TEXTURE0);
-	glBindTexture(GL_TEXTURE_2D, gScreenTex);
+	//glActiveTexture(GL_TEXTURE0);
+	//glBindTexture(GL_TEXTURE_2D, gScreenTex);
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB8, view_size, view_size, 0, GL_RGB, GL_FLOAT, NULL);
 	glViewport((m_screen_width - view_size) / 2, (m_screen_height - view_size) / 2, view_size, view_size);
 }
@@ -366,7 +368,6 @@ void Renderer::SwapBuffers()
 	//FillAntiAliasingBuffer();
 	int a = glGetError();
 	//glActiveTexture(GL_TEXTURE0);
-	//a = glGetError();
 	//glBindTexture(GL_TEXTURE_2D, gScreenTex);
 	//a = glGetError();
 	//glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, m_screen_width, m_screen_height, GL_RGB, GL_FLOAT, m_screenBuffer);
