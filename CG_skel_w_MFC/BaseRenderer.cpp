@@ -4,12 +4,12 @@
 
 using namespace std;
 BaseRenderer::BaseRenderer() : m_width(512), m_height(512) {
-	min_size = min(m_width, m_height) * 0.5;
+	min_size = min(m_width, m_height) / 2;
 }
 
 BaseRenderer::BaseRenderer(int width, int height) : m_width(width), m_height(height)
 {
-	min_size = min(m_width, m_height) * 0.5;
+	min_size = min(m_width, m_height) / 2;
 }
 
 void BaseRenderer::SetObjectMatrices(const mat4 & oTransform, const mat3 & nTransform) { }

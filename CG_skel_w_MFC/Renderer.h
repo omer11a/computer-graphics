@@ -20,7 +20,6 @@ private:
 	float *m_outBuffer;		// width * height * 3
 	float *m_screenBuffer;		// screen_width * screen_height * 3
 	float *m_zBuffer;		// width * height
-	bool *m_paintBuffer;	// width * height
 	float zNear;
 	float zFar;
 
@@ -32,11 +31,8 @@ private:
 
 	ShaderType shader;
 	bool has_fog;
-	//vec3 fog_color;
-	//GLfloat fog_extinction, fog_scattering;
 
 	void CreateBuffers(int width, int height);
-	void CreateLocalBuffer();
 	void DestroyBuffers();
 
 	vec4 applyCameraTransformation(const vec3& p, const vec3& n) const;

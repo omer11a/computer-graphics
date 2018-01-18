@@ -44,18 +44,6 @@ void Renderer::CreateBuffers(int width, int height)
 	m_outBuffer = new float[3 * m_width * m_height];
 	m_screenBuffer = new float[3 * m_screen_width * m_screen_height];
 	m_zBuffer = new float[m_width * m_height];
-	m_paintBuffer = NULL;
-}
-
-void Renderer::CreateLocalBuffer()
-{
-	if (m_paintBuffer != NULL) {
-		delete[] m_paintBuffer;
-	}
-	m_paintBuffer = new bool[m_width * m_height];
-	for (int i = 0; i < m_width * m_height; ++i) {
-		m_paintBuffer[i] = false;
-	}
 }
 
 void Renderer::DestroyBuffers()
@@ -220,9 +208,6 @@ bool Renderer::PlotPixel(const int x, const int y, const float z, const vec3& co
 		m_outBuffer[INDEX(m_width, x, y, 1)] = color.y;
 		m_outBuffer[INDEX(m_width, x, y, 2)] = color.z;
 		m_zBuffer[y * m_width + x] = z;
-	}
-	if (m_paintBuffer != NULL) {
-		m_paintBuffer[y * m_width + x] = true;
 	}
 	return true;
 }
@@ -633,10 +618,11 @@ void Renderer::InitOpenGLRendering()
 
 void Renderer::CreateOpenGLBuffer()
 {
-	//glActiveTexture(GL_TEXTURE0);
-	//glBindTexture(GL_TEXTURE_2D, gScreenTex);
-	//glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB8, m_screen_width, m_screen_height, 0, GL_RGB, GL_FLOAT, NULL);
-	//glViewport(0, 0, m_screen_width, m_screen_height);
+	int view_size = min_size * 2;
+	glActiveTexture(GL_TEXTURE0);
+	glBindTexture(GL_TEXTURE_2D, gScreenTex);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB8, view_size, view_size, 0, GL_RGB, GL_FLOAT, NULL);
+	glViewport((m_screen_width - view_size) / 2, (m_screen_height - view_size) / 2, view_size, view_size);
 }
 
 void Renderer::UpdateBuffers(int width, int height)
