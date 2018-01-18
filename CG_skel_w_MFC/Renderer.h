@@ -47,14 +47,11 @@ public:
 		const vector<vec2>* textureCoordinates,
 		const vector<vec2>* textureCenters,
 		const vector<vec3>* vertexNormals = NULL,
-		const vector<vec3>* faceNormals = NULL,
-		const bool allowVertexNormals = false,
-		const bool allowFaceNormals = false) override;
-	void DrawVertexNormals(
+		const vector<vec3>* faceNormals = NULL) override;
+	void DrawModelNormals(
 		const vector<vec3>* vertices,
-		const vector<vec3>* vertexNormals);
-	void DrawFaceNormals(
-		const vector<vec3>* vertices,
+		const vector<vec3>* centerPositions,
+		const vector<vec3>* vertexNormals,
 		const vector<vec3>* faceNormals);
 
 	void SwitchWire(); 

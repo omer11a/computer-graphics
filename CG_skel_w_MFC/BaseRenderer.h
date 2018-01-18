@@ -17,16 +17,19 @@ public:
 	
 	virtual void DrawTriangles(
 		const vector<vec3>* vertices,
-		const vector<Material>* materials, 
+		const vector<Material>* materials,
 		const vector<vec3>* centerPositions,
 		const bool hasTexture,
 		const GLuint textureID,
 		const vector<vec2>* textureCoordinates,
 		const vector<vec2>* textureCenters,
-		const vector<vec3>* vertexNormals = NULL, 
-		const vector<vec3>* faceNormals = NULL,
-		const bool allowVertexNormals = false, 
-		const bool allowFaceNormals = false);
+		const vector<vec3>* vertexNormals = NULL,
+		const vector<vec3>* faceNormals = NULL);
+	virtual void DrawModelNormals(
+		const vector<vec3>* vertices,
+		const vector<vec3>* centerPositions,
+		const vector<vec3>* vertexNormals,
+		const vector<vec3>* faceNormals);
 	virtual void DrawBox(const vec3& minValues, const vec3& maxValues);
 	virtual void DrawCamera();
 	virtual void DrawLight(const vec3& color, const vec3& position);

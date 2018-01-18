@@ -48,14 +48,8 @@ void Renderer::DrawTriangles(
 	const vector<vec2>* textureCoordinates,
 	const vector<vec2>* textureCenters,
 	const vector<vec3>* vertexNormals,
-	const vector<vec3>* faceNormals,
-	const bool allowVertexNormals,
-	const bool allowFaceNormals)
+	const vector<vec3>* faceNormals)
 {
-	vec3 white(1);
-	int fn_index = 0;
-	int vn_index = 0;
-	vec3 v_normal, f_normal;
 
 	// Use object shader
 	objectsProgram.Activate();
@@ -80,18 +74,11 @@ void Renderer::DrawTriangles(
 		shininess.push_back((*i).shininess);
 	}
 
-	vector<vec3> shader_faceNormals;
-	for (auto i = faceNormals->begin(); i != faceNormals->end(); ++i) {
-		shader_faceNormals.push_back((*i));
-		shader_faceNormals.push_back((*i));
-		shader_faceNormals.push_back((*i));
-	}
-
 	vector<GLuint> buffers;
 	buffers.push_back(objectsProgram.SetInParameter(*vertices, 0 , 3));				//in vec3 vertexPosition;
 	buffers.push_back(objectsProgram.SetInParameter(*centerPositions, 1 , 3));		//in vec3 centerPosition;
 	buffers.push_back(objectsProgram.SetInParameter(*vertexNormals, 2, 3));			//in vec3 vertexNormal;
-	buffers.push_back(objectsProgram.SetInParameter(shader_faceNormals, 3, 3));		//in vec3 faceNormal;
+	buffers.push_back(objectsProgram.SetInParameter(*faceNormals, 3, 3));		//in vec3 faceNormal;
 	buffers.push_back(objectsProgram.SetInParameter(ambients, 4, 3));				//in vec3 ambientReflectance;
 	buffers.push_back(objectsProgram.SetInParameter(speculars, 5, 3));				//in vec3 specularReflectance;
 	buffers.push_back(objectsProgram.SetInParameter(diffuses, 6, 3));				//in vec3 diffuseReflectance;
@@ -115,30 +102,68 @@ void Renderer::DrawTriangles(
 	}
 }
 
-void Renderer::DrawVertexNormals(
+void Renderer::DrawModelNormals(
 	const vector<vec3>* vertices,
-	const vector<vec3>* vertexNormals) {
-	
-	vec3 pink(1, 140 / 255.0f, 1);
-	// Use our shader
-	basicProgram.Activate();
-
-	mat4 mvp = m_projection * m_cTransform * m_oTransform;
-	//mat4 nvp = m_projection * m_cTransform * m_nTransform;
-	vector<vec3> lines;
-
-	//for (int i = 0; i < vertices->size(); ++i) {
-	//	lines.push_back(convert4dTo3d(mvp*vec4((*vertices)[i], 1)));
-	//	lines.push_back(convert4dTo3d(nvp*vec4((*vertices)[i], 0)));
-	//}
-	// uniform parameters
-	basicProgram.SetUniformParameter(m_oTransform, "color");
-
-}
-void Renderer::DrawFaceNormals(
-	const vector<vec3>* vertices,
+	const vector<vec3>* centerPositions,
+	const vector<vec3>* vertexNormals,
 	const vector<vec3>* faceNormals) {
+	vec3 pink(1, 140 / 255.0f, 1);
 	vec3 yellow(1, 1, 0);
+	vector<vec3> vertex_copy, center_copy, vnormal_copy, fnormal_copy;
+	vector<int> is_normal;
+
+	if ((vertexNormals == NULL) && (faceNormals == NULL)) {
+		return;
+	}
+
+	for (int i = 0; i < vertices->size(); ++i) {
+		if (vertexNormals != NULL) {
+			vertex_copy.push_back((*vertices)[i]);
+			vertex_copy.push_back((*vertices)[i]);
+			vnormal_copy.push_back((*vertexNormals)[i]);
+			vnormal_copy.push_back((*vertexNormals)[i]);
+		}
+		if (faceNormals != NULL) {
+			center_copy.push_back((*centerPositions)[i]);
+			center_copy.push_back((*centerPositions)[i]);
+			fnormal_copy.push_back((*faceNormals)[i]);
+			fnormal_copy.push_back((*faceNormals)[i]);
+			
+		}
+		is_normal.push_back(0);
+		is_normal.push_back(1);
+	}
+
+	// Use our shader
+	normalsProgram.Activate();
+	mat4 vp = m_projection * m_cTransform;
+	// uniform parameters
+	normalsProgram.SetUniformParameter(m_oTransform, "modelMatrix");
+	normalsProgram.SetUniformParameter(m_nTransform, "normalModelMatrix");
+	normalsProgram.SetUniformParameter(vp, "viewProjectionMatrix");
+	normalsProgram.SetUniformParameter(mvp, "modelViewProjectionMatrix");
+
+	vector<GLuint> buffers;
+	buffers.push_back(normalsProgram.SetInParameter(is_normal, 2, 1));
+
+	if (vertexNormals != NULL) {
+		normalsProgram.SetUniformParameter(pink, "color");
+		buffers.push_back(normalsProgram.SetInParameter(vertex_copy, 0, 3));
+		buffers.push_back(normalsProgram.SetInParameter(vnormal_copy, 1, 3));
+		glDrawArrays(GL_LINES, 0, vertex_copy.size());
+	}
+
+	if (faceNormals != NULL) {
+		normalsProgram.SetUniformParameter(yellow, "color");
+		buffers.push_back(normalsProgram.SetInParameter(center_copy, 0, 3));
+		buffers.push_back(normalsProgram.SetInParameter(fnormal_copy, 1, 3));
+		glDrawArrays(GL_LINES, 0, center_copy.size());
+	}
+
+	normalsProgram.ClearAttributes();
+	for (int i = 0; i < buffers.size(); ++i) {
+		glDeleteBuffers(1, &buffers[i]);
+	}
 }
 
 void Renderer::DrawSquare(const vec3& p1, const vec3& p2, const vec3& p3, const vec3& p4, const vec3& color)
@@ -342,7 +367,7 @@ void Renderer::InitOpenGLRendering()
 	// Create and compile our GLSL program from the shaders
 	basicProgram = ShaderProgram("vshader_basic.glsl", "fshader_basic.glsl", 1);
 	objectsProgram = ShaderProgram("vshader_texture.glsl", "fshader_texture.glsl", 10);
-	normalsProgram = ShaderProgram("vshader_normal.glsl", "fshader_normal.glsl", 10);
+	normalsProgram = ShaderProgram("vshader_normal.glsl", "fshader_normal.glsl", 3);
 	objectsProgram.Activate();
 	SetBaseShader(ShaderType::Flat);
 	DisableFog();

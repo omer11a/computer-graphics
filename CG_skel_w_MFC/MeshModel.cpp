@@ -139,7 +139,10 @@ void MeshModel::computeFaceNormals() {
 	for (unsigned int i = 0; i < vertexPositions.size(); i += 3) {
 		vec3 v1 = vertexPositions.at(i + 1) - vertexPositions.at(i);
 		vec3 v2 = vertexPositions.at(i + 2) - vertexPositions.at(i);
-		faceNormals.push_back(normalize(cross(v1, v2)));
+		vec3 fn = normalize(cross(v1, v2));
+		faceNormals.push_back(fn);
+		faceNormals.push_back(fn);
+		faceNormals.push_back(fn);
 	}
 }
 
@@ -372,11 +375,26 @@ void MeshModel::draw(BaseRenderer * renderer) const {
 
 	renderer->SetObjectMatrices(worldTransform * modelTransform, normalWorldTransform * normalModelTransform);
 	renderer->DrawTriangles(&vertexPositions, &materials, &centerPositions, hasTexture, textureID, &textureCoordinates, &textureCenters,
-		&vertexNormals, &faceNormals, allowVertexNormals, allowFaceNormals);
+		&vertexNormals, &faceNormals);
 
 	if (allowBoundingBox) {
 		renderer->DrawBox(minValues, maxValues);
 	}
+}
+
+void MeshModel::drawNormals(BaseRenderer * renderer) const {
+	if (renderer == NULL) {
+		throw invalid_argument("Renderer is null");
+	}
+
+	if (!allowVertexNormals && !allowFaceNormals) {
+		return;
+	}
+
+	renderer->SetObjectMatrices(worldTransform * modelTransform, normalWorldTransform * normalModelTransform);
+	renderer->DrawModelNormals(&vertexPositions, &centerPositions, 
+		allowVertexNormals ? &vertexNormals : NULL,
+		allowFaceNormals ? &faceNormals : NULL);
 }
 
 PrimMeshModel::PrimMeshModel() : MeshModel()

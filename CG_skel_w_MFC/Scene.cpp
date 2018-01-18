@@ -444,12 +444,19 @@ void Scene::draw() const {
 		model->draw(renderer);
 	}
 
+	// 3. Tell all models to draw their normals
+	for (MeshModel * model : models) {
+		model->drawNormals(renderer);
+	}
+
+	// 4. Tell all cameras to draw themselves
 	for (int i = 0; i < (signed int) cameras.size(); ++i) {
 		if (i != activeCamera) {
 			cameras.at(i)->draw(renderer);
 		}
 	}
 
+	// 5. Tell all lights to draw themselves
 	for (auto i = lights.begin(); i != lights.end(); ++i) {
 		(*i)->draw(renderer);
 	}

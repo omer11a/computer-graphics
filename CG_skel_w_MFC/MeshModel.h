@@ -70,6 +70,7 @@ public:
 	void enableNormalMap(const string fileName);
 	void disableNormalMap();
 	void draw(BaseRenderer * renderer) const;
+	void drawNormals(BaseRenderer * renderer) const;
 };
 
 class PrimMeshModel : public MeshModel

@@ -31,9 +31,13 @@ void BaseRenderer::DrawTriangles(
 	const vector<vec2>* textureCoordinates,
 	const vector<vec2>* textureCenters,
 	const vector<vec3>* vertexNormals,
-	const vector<vec3>* faceNormals,
-	const bool allowVertexNormals,
-	const bool allowFaceNormals) { }
+	const vector<vec3>* faceNormals) { }
+
+void BaseRenderer::DrawModelNormals(
+	const vector<vec3>* vertices,
+	const vector<vec3>* centerPositions,
+	const vector<vec3>* vertexNormals,
+	const vector<vec3>* faceNormals) { }
 
 void BaseRenderer::DrawBox(const vec3 & minValues, const vec3 & maxValues) { }
 
