@@ -65,6 +65,7 @@ PrimMeshModels:
 #define EDIT_ITEM 2
 #define ADD_TEXTURE 3
 #define ADD_NORMAL_MAP 4
+#define DEL_NORMAL_MAP 5
 
 #define AMBIENT 3
 
@@ -487,11 +488,18 @@ void modelMenu(int id)
 		if (scene->getNumberOfModels() > 0) {
 			CFileDialog fdlg(TRUE, _T(".png"), NULL, NULL, _T("*.png|*.*"));
 			if (fdlg.DoModal() == IDOK) {
-				scene->getActiveModel()->setNormalMap(
+				scene->getActiveModel()->enableNormalMap(
 					(LPCTSTR)fdlg.GetPathName());
 				cout << "loaded normal map file" << endl;
 				should_redraw = true;
 			}
+		}
+		break;
+	case DEL_NORMAL_MAP:
+		if (scene->getNumberOfModels() > 0) {
+			scene->getActiveModel()->disableNormalMap();
+			cout << "unloaded normal map file" << endl;
+			should_redraw = true;
 		}
 		break;
 	}
@@ -566,7 +574,8 @@ void initMenu()
 	glutAddMenuEntry("New", NEW_ITEM);
 	glutAddMenuEntry("Edit", EDIT_ITEM);
 	glutAddMenuEntry("Add Texture", ADD_TEXTURE);
-	glutAddMenuEntry("Add Normal Mapping", ADD_NORMAL_MAP);
+	glutAddMenuEntry("Enable Normal Mapping", ADD_NORMAL_MAP);
+	glutAddMenuEntry("Disable Normal Mapping", DEL_NORMAL_MAP);
 
 	// light sub menu
 	int menuLight = glutCreateMenu(lightMenu);

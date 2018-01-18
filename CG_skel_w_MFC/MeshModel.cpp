@@ -212,16 +212,18 @@ void MeshModel::computeBoundingBox() {
 
 MeshModel::MeshModel() :
 	vertexPositions(), vertexNormals(), textureCoordinates(), textureCenters(),
-	faceNormals(), tangentNormals(), bitangentNormals(), materials(),
+	faceNormals(), materials(),
 	worldTransform(1), modelTransform(1), normalModelTransform(1), normalWorldTransform(1),
-	allowVertexNormals(false), allowFaceNormals(false), allowBoundingBox(false), textureID(0), hasTexture(false), normalMapID(0)
+	allowVertexNormals(false), allowFaceNormals(false), allowBoundingBox(false), 
+	textureID(0), hasTexture(false), normalMapID(0), hasNormalMap(false)
 { }
 
 MeshModel::MeshModel(string fileName) :
 	vertexPositions(), vertexNormals(), textureCoordinates(), textureCenters(), 
-	faceNormals(), tangentNormals(), bitangentNormals(), materials(),
+	faceNormals(), materials(),
 	worldTransform(1), modelTransform(1), normalModelTransform(1), normalWorldTransform(1),
-	allowVertexNormals(false), allowFaceNormals(false), allowBoundingBox(false), textureID(0), hasTexture(false), normalMapID(0)
+	allowVertexNormals(false), allowFaceNormals(false), allowBoundingBox(false),
+	textureID(0), hasTexture(false), normalMapID(0), hasNormalMap(false)
 {
 	loadFile(fileName);
 	setUniformMaterial({ vec3(1), vec3(1), vec3(1), 1 });
@@ -331,7 +333,7 @@ void MeshModel::setTextures(const vec3& ambient, const vec3& specular, const str
 	}
 }
 
-void MeshModel::setNormalMap(const string fileName)
+void MeshModel::enableNormalMap(const string fileName)
 {
 	unsigned int width, height;
 	unsigned char * pixel_array;
@@ -339,6 +341,7 @@ void MeshModel::setNormalMap(const string fileName)
 		return;
 	}
 
+	hasNormalMap = true;
 	//glGenTextures(1, &normalMapID);
 	//try {
 	//	glBindTexture(GL_TEXTURE_2D, normalMapID);
@@ -348,10 +351,18 @@ void MeshModel::setNormalMap(const string fileName)
 	//	glGenerateMipmap(GL_TEXTURE_2D);
 	//}
 	//catch (...) {
-	//	clearTexture();
+	//	disableNormalMap();
 	//	delete[] pixel_array;
 	//	return;
 	//}
+}
+
+void MeshModel::disableNormalMap()
+{
+	if (hasNormalMap) {
+		glDeleteTextures(1, &normalMapID);
+	}
+	hasNormalMap = false;
 }
 
 void MeshModel::draw(BaseRenderer * renderer) const {
