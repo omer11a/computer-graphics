@@ -604,7 +604,7 @@ void Renderer::InitOpenGLRendering()
 	// Create and compile our GLSL program from the shaders
 	basicProgram = ShaderProgram("vshader_basic.glsl", "fshader_basic.glsl", 1);
 	objectsProgram = ShaderProgram("vshader_texture.glsl", "fshader_texture.glsl", 10);
-	//normalsProgram = ShaderProgram("vshader_normal.glsl", "fshader_normal.glsl", 10);
+	normalsProgram = ShaderProgram("vshader_normal.glsl", "fshader_normal.glsl", 10);
 	objectsProgram.Activate();
 	SetBaseShader(ShaderType::Flat);
 	DisableFog();
