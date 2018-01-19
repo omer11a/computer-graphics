@@ -504,7 +504,7 @@ void modelMenu(int id)
 		}
 		break;
 	case ADD_ANIMATION:
-		//if (scene->getNumberOfModels() > 0) 
+		if (scene->getNumberOfModels() > 0) 
 		{
 			CAnimationDialog adlg;
 			if (adlg.DoModal() == IDOK) {

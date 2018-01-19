@@ -563,6 +563,7 @@ int CLightDialog::OnCreate(LPCREATESTRUCT lpcs)
 
 	point_radio.Create("Point", BS_AUTORADIOBUTTON | WS_CHILD | WS_VISIBLE | WS_TABSTOP,
 		CRect(200, 30, 280, 45), this, IDC_RADIO1_EDIT);
+	point_radio.SetCheck(true);
 	parallel_radio.Create("Parallel", BS_AUTORADIOBUTTON | WS_CHILD | WS_VISIBLE | WS_TABSTOP,
 		CRect(300, 30, 380, 45), this, IDC_RADIO2_EDIT);
 
@@ -1006,6 +1007,7 @@ int CAnimationDialog::OnCreate(LPCREATESTRUCT lpcs)
 
 	hue_radio.Create("Hue", BS_AUTORADIOBUTTON | WS_CHILD | WS_VISIBLE | WS_TABSTOP,
 		CRect(200, 60, 260, 75), this, IDC_RADIO1_EDIT);
+	hue_radio.SetCheck(true);
 	sat_radio.Create("Sat", BS_AUTORADIOBUTTON | WS_CHILD | WS_VISIBLE | WS_TABSTOP,
 		CRect(265, 60, 315, 75), this, IDC_RADIO2_EDIT);
 	lum_radio.Create("Lum", BS_AUTORADIOBUTTON | WS_CHILD | WS_VISIBLE | WS_TABSTOP,

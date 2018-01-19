@@ -57,6 +57,7 @@ void Renderer::DrawTriangles(
 	objectsProgram.Activate();
 
 	// uniform parameters
+	glActiveTexture(GL_TEXTURE1);
 	objectsProgram.SetUniformParameter(int(hasTexture), "hasTexture");
 	objectsProgram.SetUniformParameter(textureID, "textureSampler");
 	objectsProgram.SetUniformParameter(m_oTransform, "modelMatrix");
@@ -389,8 +390,8 @@ void Renderer::InitOpenGLRendering()
 void Renderer::CreateOpenGLBuffer()
 {
 	int view_size = min_size * 2;
-	//glActiveTexture(GL_TEXTURE0);
-	//glBindTexture(GL_TEXTURE_2D, gScreenTex);
+	glActiveTexture(GL_TEXTURE0);
+	glBindTexture(GL_TEXTURE_2D, gScreenTex);
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB8, view_size, view_size, 0, GL_RGB, GL_FLOAT, NULL);
 	glViewport((m_screen_width - view_size) / 2, (m_screen_height - view_size) / 2, view_size, view_size);
 }
