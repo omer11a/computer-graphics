@@ -217,6 +217,9 @@ void MeshModel::computeTangents() {
 	//if (faceNormals.empty()) {
 	//	computeFaceNormals();
 	//}
+	if (textureCoordinates.empty()) {
+		return;
+	}
 
 	tangents.clear();
 	//bitangents.clear();
@@ -382,24 +385,32 @@ void MeshModel::enableNormalMap(const string fileName)
 {
 	unsigned int width, height;
 	unsigned char * pixel_array;
-	if (!readPng(fileName, 3, &width, &height, &pixel_array)) {// should be 3 or also 4?
+	computeTangents();
+	if (tangents.size() == 0) {
+		return;
+	}
+
+	if (!readPng(fileName, 3, &width, &height, &pixel_array)) {
 		return;
 	}
 
 	hasNormalMap = true;
-	//glGenTextures(1, &normalMapID);
-	//try {
-	//	glBindTexture(GL_TEXTURE_2D, normalMapID);
-	//	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, pixel_array);
-	//	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-	//	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-	//	glGenerateMipmap(GL_TEXTURE_2D);
-	//}
-	//catch (...) {
-	//	disableNormalMap();
-	//	delete[] pixel_array;
-	//	return;
-	//}
+	glGenTextures(1, &normalMapID);
+	try {
+		glActiveTexture(GL_TEXTURE1);
+		glBindTexture(GL_TEXTURE_2D, normalMapID);
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, pixel_array);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+		glGenerateMipmap(GL_TEXTURE_2D);
+	}
+	catch (...) {
+		disableNormalMap();
+		delete[] pixel_array;
+		return;
+	}
+
+	delete[] pixel_array;
 }
 
 void MeshModel::disableNormalMap()
@@ -417,7 +428,7 @@ void MeshModel::draw(BaseRenderer * renderer) const {
 
 	renderer->SetObjectMatrices(worldTransform * modelTransform, normalWorldTransform * normalModelTransform);
 	renderer->DrawTriangles(&vertexPositions, &materials, &centerPositions, hasTexture, textureID, hasNormalMap, normalMapID,
-		&textureCoordinates, &textureCenters, &vertexNormals, &faceNormals);
+		&textureCoordinates, &textureCenters, &tangents, &vertexNormals, &faceNormals);
 
 	if (allowBoundingBox) {
 		renderer->DrawBox(minValues, maxValues);

@@ -25,6 +25,7 @@ public:
 		const GLuint normalMapID,
 		const vector<vec2>* textureCoordinates,
 		const vector<vec2>* textureCenters,
+		const vector<vec3>* tangents,
 		const vector<vec3>* vertexNormals = NULL,
 		const vector<vec3>* faceNormals = NULL);
 	virtual void DrawModelNormals(

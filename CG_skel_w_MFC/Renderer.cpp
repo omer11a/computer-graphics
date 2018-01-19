@@ -49,6 +49,7 @@ void Renderer::DrawTriangles(
 	const GLuint normalMapID,
 	const vector<vec2>* textureCoordinates,
 	const vector<vec2>* textureCenters,
+	const vector<vec3>* tangents,
 	const vector<vec3>* vertexNormals,
 	const vector<vec3>* faceNormals)
 {
@@ -74,7 +75,7 @@ void Renderer::DrawTriangles(
 	objectsProgram.SetUniformParameter(mv, "modelViewMatrix");
 	objectsProgram.SetUniformParameter(mvp, "modelViewProjectionMatrix");
 
-	// TODO: if there are no normals, use the flat shader
+	// if there are no normals, use the flat shader
 	ShaderType temp = shader;
 	if ((vertexNormals == NULL) || (vertexNormals->size() == 0)) {
 		SetBaseShader(ShaderType::Flat);
@@ -94,7 +95,7 @@ void Renderer::DrawTriangles(
 	buffers.push_back(objectsProgram.SetInParameter(*vertices, 0 , 3));				//in vec3 vertexPosition;
 	buffers.push_back(objectsProgram.SetInParameter(*centerPositions, 1 , 3));		//in vec3 centerPosition;
 	buffers.push_back(objectsProgram.SetInParameter(*vertexNormals, 2, 3));			//in vec3 vertexNormal;
-	buffers.push_back(objectsProgram.SetInParameter(*faceNormals, 3, 3));		//in vec3 faceNormal;
+	buffers.push_back(objectsProgram.SetInParameter(*faceNormals, 3, 3));			//in vec3 faceNormal;
 	buffers.push_back(objectsProgram.SetInParameter(ambients, 4, 3));				//in vec3 ambientReflectance;
 	buffers.push_back(objectsProgram.SetInParameter(speculars, 5, 3));				//in vec3 specularReflectance;
 	buffers.push_back(objectsProgram.SetInParameter(diffuses, 6, 3));				//in vec3 diffuseReflectance;
@@ -103,6 +104,9 @@ void Renderer::DrawTriangles(
 	if (hasTexture) {
 		buffers.push_back(objectsProgram.SetInParameter(*textureCoordinates, 8, 2));	//in vec2 uv;
 		buffers.push_back(objectsProgram.SetInParameter(*textureCenters, 9, 2));		//in vec2 centerUv;
+	}
+	if (hasNormalMap) {
+		buffers.push_back(objectsProgram.SetInParameter(*tangents, 10, 3));		//in vec3 tangent;
 	}
 	
 	// Draw the triangle !

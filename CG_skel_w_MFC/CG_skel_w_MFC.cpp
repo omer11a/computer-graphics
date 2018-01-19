@@ -60,7 +60,7 @@ PrimMeshModels:
 
 #define BUFFER_OFFSET( offset )   ((GLvoid*) (offset))
 
-// model / light menu
+// model menu
 #define NEW_ITEM 1
 #define EDIT_ITEM 2
 #define ADD_TEXTURE 3
@@ -68,6 +68,8 @@ PrimMeshModels:
 #define DEL_NORMAL_MAP 5
 #define ADD_ANIMATION 6
 #define DEL_ANIMATION 7
+
+// light extra menu
 #define AMBIENT 3
 
 // shaders menu
