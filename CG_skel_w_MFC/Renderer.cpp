@@ -105,7 +105,9 @@ void Renderer::DrawTriangles(
 	vector<GLuint> buffers;
 	buffers.push_back(objectsProgram.SetInParameter(*vertices, 0 , 3));				//in vec3 vertexPosition;
 	buffers.push_back(objectsProgram.SetInParameter(*centerPositions, 1 , 3));		//in vec3 centerPosition;
-	buffers.push_back(objectsProgram.SetInParameter(*vertexNormals, 2, 3));			//in vec3 vertexNormal;
+	if ((vertexNormals != NULL) && (vertexNormals->size() != 0)) {
+		buffers.push_back(objectsProgram.SetInParameter(*vertexNormals, 2, 3));			//in vec3 vertexNormal;
+	}
 	buffers.push_back(objectsProgram.SetInParameter(*faceNormals, 3, 3));			//in vec3 faceNormal;
 	buffers.push_back(objectsProgram.SetInParameter(ambients, 4, 3));				//in vec3 ambientReflectance;
 	buffers.push_back(objectsProgram.SetInParameter(speculars, 5, 3));				//in vec3 specularReflectance;
