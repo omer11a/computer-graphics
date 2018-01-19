@@ -65,7 +65,7 @@ void Renderer::DrawTriangles(
 		glBindTexture(GL_TEXTURE_2D, textureID);
 		objectsProgram.SetUniformParameter(textureID, "textureSampler");
 	}
-	objectsProgram.SetUniformParameter(int(hasTexture), "hasTexture");
+	objectsProgram.SetUniformParameter(int(hasNormalMap), "hasNormalMapping");
 	if (hasNormalMap) {
 		glActiveTexture(GL_TEXTURE1);
 		glBindTexture(GL_TEXTURE_2D, normalMapID);
