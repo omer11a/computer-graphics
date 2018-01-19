@@ -57,15 +57,28 @@ void Renderer::DrawTriangles(
 	objectsProgram.Activate();
 
 	// uniform parameters
-	glActiveTexture(GL_TEXTURE1);
 	objectsProgram.SetUniformParameter(int(hasTexture), "hasTexture");
-	objectsProgram.SetUniformParameter(textureID, "textureSampler");
+	if (hasTexture) {
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_2D, textureID);
+		objectsProgram.SetUniformParameter(textureID, "textureSampler");
+	}
+	objectsProgram.SetUniformParameter(int(hasTexture), "hasTexture");
+	if (hasNormalMap) {
+		glActiveTexture(GL_TEXTURE1);
+		glBindTexture(GL_TEXTURE_2D, normalMapID);
+		objectsProgram.SetUniformParameter(normalMapID, "textureSampler");
+	}
 	objectsProgram.SetUniformParameter(m_oTransform, "modelMatrix");
 	objectsProgram.SetUniformParameter(m_nTransform, "normalMatrix");
 	objectsProgram.SetUniformParameter(mv, "modelViewMatrix");
 	objectsProgram.SetUniformParameter(mvp, "modelViewProjectionMatrix");
 
 	// TODO: if there are no normals, use the flat shader
+	ShaderType temp = shader;
+	if ((vertexNormals == NULL) || (vertexNormals->size() == 0)) {
+		SetBaseShader(ShaderType::Flat);
+	}
 
 	// split material parameters
 	vector<vec3> ambients, diffuses, speculars;
@@ -99,9 +112,14 @@ void Renderer::DrawTriangles(
 		glDrawArrays(GL_TRIANGLES, 0, vertices->size());
 	}
 
+	// cleanup
 	objectsProgram.ClearAttributes();
 	for (int i = 0; i < buffers.size(); ++i) {
 		glDeleteBuffers(1, &buffers[i]);
+	}
+
+	if ((vertexNormals == NULL) || (vertexNormals->size() == 0)) {
+		SetBaseShader(temp);
 	}
 }
 
@@ -367,11 +385,11 @@ void Renderer::DisableFog()
 void Renderer::InitOpenGLRendering()
 {
 	int a = glGetError();
+	glGenTextures(1, &gScreenTex);
 	glGenVertexArrays(1, &gScreenVtc);
 	glBindVertexArray(gScreenVtc);
-	glGenTextures(1, &gScreenTex);
 	a = glGetError();
-
+	
 	// Create and compile our GLSL program from the shaders
 	basicProgram = ShaderProgram("vshader_basic.glsl", "fshader_basic.glsl", 1);
 	objectsProgram = ShaderProgram("vshader_texture.glsl", "fshader_texture.glsl", 10);
@@ -398,7 +416,6 @@ void Renderer::CreateOpenGLBuffer()
 
 void Renderer::SwapBuffers()
 {
-	//FillAntiAliasingBuffer();
 	int a = glGetError();
 	//glActiveTexture(GL_TEXTURE0);
 	//glBindTexture(GL_TEXTURE_2D, gScreenTex);
