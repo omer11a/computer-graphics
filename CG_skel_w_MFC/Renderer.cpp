@@ -53,7 +53,8 @@ void Renderer::DrawTriangles(
 	const vector<vec3>* vertexNormals,
 	const vector<vec3>* faceNormals)
 {
-
+	bool hasColorAnimation = false; //TODO:convert to parmeters
+	bool hasVertexAnimation = false;
 	// Use object shader
 	objectsProgram.Activate();
 
@@ -68,8 +69,18 @@ void Renderer::DrawTriangles(
 	if (hasNormalMap) {
 		glActiveTexture(GL_TEXTURE1);
 		glBindTexture(GL_TEXTURE_2D, normalMapID);
-		objectsProgram.SetUniformParameter(normalMapID, "textureSampler");
+		objectsProgram.SetUniformParameter(normalMapID, "normalSampler");
 	}
+	objectsProgram.SetUniformParameter(int(hasColorAnimation), "hasColorAnimation");
+	if (hasColorAnimation) {
+		//uniform int colorAnimationRepresentation;
+		//uniform float colorAnimationDelta;
+	}
+	objectsProgram.SetUniformParameter(int(hasVertexAnimation), "hasVertexAnimation");
+	if (hasVertexAnimation) {
+		//uniform float vertexAnimationDelta;
+	}
+
 	objectsProgram.SetUniformParameter(m_oTransform, "modelMatrix");
 	objectsProgram.SetUniformParameter(m_nTransform, "normalMatrix");
 	objectsProgram.SetUniformParameter(mv, "modelViewMatrix");
