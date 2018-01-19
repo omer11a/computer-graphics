@@ -23,6 +23,7 @@ class MeshModel
 	void loadFile(string fileName);
 	mat3 convertToNormalTransform(const mat4 & transform) const;
 	void computeBoundingBox();
+	void computeFrenetBasis();
 
 protected:
 	vector<vec3> vertexPositions;
@@ -31,8 +32,8 @@ protected:
 	vector<vec2> textureCoordinates;
 	vector<vec2> textureCenters;
 	vector<vec3> faceNormals;
-	vector<vec3> tangentNormals;
-	vector<vec3> bitangentNormals;
+	vector<vec3> tangents;
+	vector<vec3> bitangents;
 	vector<Material> materials;
 	GLuint textureID, normalMapID;
 	bool hasTexture;

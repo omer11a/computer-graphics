@@ -210,6 +210,34 @@ void MeshModel::computeBoundingBox() {
 	}
 }
 
+void MeshModel::computeFrenetBasis() {
+	for (int i = 0; i < vertexPositions.size(); i += 3) {
+		vec3 & v1 = vertexPositions[i];
+		vec3 & v2 = vertexPositions[i + 1];
+		vec3 & v3 = vertexPositions[i + 2];
+
+		vec2 & uv1 = textureCoordinates[i];
+		vec2 & uv2 = textureCoordinates[i + 1];
+		vec2 & uv3 = textureCoordinates[i + 2];
+
+		vec3 deltaV12 = v2 - v1;
+		vec3 deltaV13 = v3 - v1;
+		vec2 deltaUv12 = uv2 - uv1;
+		vec2 deltaUv13 = uv3 - uv1;
+
+		float r = 1.0f / (deltaUv12.x * deltaUv13.y - deltaUv12.y * deltaUv13.x);
+		vec3 t = (deltaV12 * deltaUv13.y - deltaV13 * deltaUv12.y) * r;
+		vec3 b = (deltaV13 * deltaUv12.x - deltaV12 * deltaUv13.x) * r;
+
+		tangents.push_back(t);
+		tangents.push_back(t);
+		tangents.push_back(t);
+		bitangents.push_back(b);
+		bitangents.push_back(b);
+		bitangents.push_back(b);
+	}
+}
+
 MeshModel::MeshModel() :
 	vertexPositions(), vertexNormals(), textureCoordinates(), textureCenters(),
 	faceNormals(), tangentNormals(), bitangentNormals(), materials(),
