@@ -11,6 +11,7 @@ uniform bool isFlat;
 uniform bool isGouraud;
 uniform bool isPhong;
 uniform bool hasTexture;
+uniform bool hasNormalMapping;
 uniform bool hasFog;
 uniform mat4 modelMatrix;
 uniform mat3 normalMatrix;
@@ -32,6 +33,7 @@ layout (location = 6) in vec3 diffuseReflectance;
 layout (location = 7) in float shininess;
 layout (location = 8) in vec2 uv;
 layout (location = 9) in vec2 centerUv;
+layout (location = 10) in vec3 tangent;
 
 layout (location = 0) out vec3 outVertexPosition;
 layout (location = 1) out vec3 outVertexNormal;
@@ -40,8 +42,9 @@ layout (location = 3) out vec3 outSpecularReflectance;
 layout (location = 4) out vec3 outDiffuseReflectance;
 layout (location = 5) out float outShininess;
 layout (location = 6) out vec2 outUv;
-layout (location = 7) out vec3 outColor;
-layout (location = 8) out vec3 outViewVertexPosition;
+layout (location = 7) out vec3 outTangent;
+layout (location = 8) out vec3 outColor;
+layout (location = 9) out vec3 outViewVertexPosition;
 
 vec3 applyLight(
 	Light light,
@@ -80,7 +83,7 @@ void main() {
 	outDiffuseReflectance = diffuseReflectance;
 	outShininess = shininess;
 	outUv = uv;
-	
+
 	vec3 color = vec3(0);
 	if ((isFlat) || (isGouraud)) {
 		vec3 worldVertexPosition = vec3(0);
@@ -122,6 +125,10 @@ void main() {
 	}
 
 	outColor = clamp(color, 0, 1);
+
+	if (hasNormalMapping) {
+		outTangent = normalMatrix * tangent;
+	}
 	
 	outViewVertexPosition = vec3(0);
 	if (hasFog) {

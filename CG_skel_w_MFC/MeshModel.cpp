@@ -213,7 +213,14 @@ void MeshModel::computeBoundingBox() {
 	}
 }
 
-void MeshModel::computeFrenetBasis() {
+void MeshModel::computeTangents() {
+	//if (faceNormals.empty()) {
+	//	computeFaceNormals();
+	//}
+
+	tangents.clear();
+	//bitangents.clear();
+
 	for (int i = 0; i < vertexPositions.size(); i += 3) {
 		vec3 & v1 = vertexPositions[i];
 		vec3 & v2 = vertexPositions[i + 1];
@@ -230,14 +237,20 @@ void MeshModel::computeFrenetBasis() {
 
 		float r = 1.0f / (deltaUv12.x * deltaUv13.y - deltaUv12.y * deltaUv13.x);
 		vec3 t = (deltaV12 * deltaUv13.y - deltaV13 * deltaUv12.y) * r;
-		vec3 b = (deltaV13 * deltaUv12.x - deltaV12 * deltaUv13.x) * r;
+		//vec3 b = (deltaV13 * deltaUv12.x - deltaV12 * deltaUv13.x) * r;
+
+		//vec3 n = faceNormals[i];
+		//t = normalize(t - n * dot(n, t));
+		//if (dot(cross(n, t), b) < 0) {
+		//	t = -1.0f * t;
+		//}
 
 		tangents.push_back(t);
 		tangents.push_back(t);
 		tangents.push_back(t);
-		bitangents.push_back(b);
-		bitangents.push_back(b);
-		bitangents.push_back(b);
+		//bitangents.push_back(b);
+		//bitangents.push_back(b);
+		//bitangents.push_back(b);
 	}
 }
 

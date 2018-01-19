@@ -11,12 +11,14 @@ uniform bool isFlat;
 uniform bool isGouraud;
 uniform bool isPhong;
 uniform bool hasTexture;
+uniform bool hasNormalMapping;
 uniform bool hasFog;
 uniform vec3 cameraPosition;
 uniform vec3 ambientLightColor;
 uniform int numberOfLights;
 uniform Light lights[MAX_NUMBER_OF_LIGHTS];
 uniform sampler2D textureSampler;
+uniform sampler2D normalSampler;
 uniform vec3 fogColor;
 uniform float extinctionCoefficient;
 uniform float inScatteringCoefficient;
@@ -28,8 +30,9 @@ layout (location = 3) in vec3 specularReflectance;
 layout (location = 4) in vec3 diffuseReflectance;
 layout (location = 5) in float shininess;
 layout (location = 6) in vec2 uv;
-layout (location = 7) in vec3 color;
-layout (location = 8) in vec3 viewVertexPosition;
+layout (location = 7) in vec3 tangent;
+layout (location = 8) in vec3 color;
+layout (location = 9) in vec3 viewVertexPosition;
 
 layout (location = 0) out vec4 outColor;
 
@@ -74,6 +77,15 @@ void main() {
 			ambientColor = texture(textureSampler, uv).rgb;
 			specularColor = ambientColor;
 			diffuseColor = ambientColor;
+		}
+
+		if (hasNormalMapping) {
+			vec3 orthogonalTangent = normalize(tangent - dot(tangent, normal) * normal);
+			vec3 bitangent = cross(normal, orthogonalTangent);
+			vec3 mapNormal = texture(normalSampler, uv).xyz;
+			mapNormal = 2.0 * mapNormal - vec3(1.0, 1.0, 1.0);
+			mat3 tbn = mat3(orthogonalTangent, bitangent, normal);
+			normal = normalize(tbn * mapNormal);
 		}
 		
 		finalColor = ambientLightColor * ambientColor;
