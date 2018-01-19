@@ -36,7 +36,7 @@ protected:
 	vector<vec3> bitangents;
 	vector<Material> materials;
 	GLuint textureID, normalMapID;
-	bool hasTexture;
+	bool hasTexture, hasNormalMap;
 
 	template<class T>
 	T & getVecByIndex(vector<T> & vecs, int i)
@@ -70,8 +70,10 @@ public:
 	void setUniformMaterial(Material material);
 	void setRandomMaterial();
 	void setTextures(const vec3& ambient, const vec3& specular, const string fileName, const float shininess);
-	void setNormalMap(const string fileName);
+	void enableNormalMap(const string fileName);
+	void disableNormalMap();
 	void draw(BaseRenderer * renderer) const;
+	void drawNormals(BaseRenderer * renderer) const;
 };
 
 class PrimMeshModel : public MeshModel

@@ -139,7 +139,10 @@ void MeshModel::computeFaceNormals() {
 	for (unsigned int i = 0; i < vertexPositions.size(); i += 3) {
 		vec3 v1 = vertexPositions.at(i + 1) - vertexPositions.at(i);
 		vec3 v2 = vertexPositions.at(i + 2) - vertexPositions.at(i);
-		faceNormals.push_back(normalize(cross(v1, v2)));
+		vec3 fn = normalize(cross(v1, v2));
+		faceNormals.push_back(fn);
+		faceNormals.push_back(fn);
+		faceNormals.push_back(fn);
 	}
 }
 
@@ -240,16 +243,18 @@ void MeshModel::computeFrenetBasis() {
 
 MeshModel::MeshModel() :
 	vertexPositions(), vertexNormals(), textureCoordinates(), textureCenters(),
-	faceNormals(), tangentNormals(), bitangentNormals(), materials(),
+	faceNormals(), materials(),
 	worldTransform(1), modelTransform(1), normalModelTransform(1), normalWorldTransform(1),
-	allowVertexNormals(false), allowFaceNormals(false), allowBoundingBox(false), textureID(0), hasTexture(false), normalMapID(0)
+	allowVertexNormals(false), allowFaceNormals(false), allowBoundingBox(false), 
+	textureID(0), hasTexture(false), normalMapID(0), hasNormalMap(false)
 { }
 
 MeshModel::MeshModel(string fileName) :
 	vertexPositions(), vertexNormals(), textureCoordinates(), textureCenters(), 
-	faceNormals(), tangentNormals(), bitangentNormals(), materials(),
+	faceNormals(), materials(),
 	worldTransform(1), modelTransform(1), normalModelTransform(1), normalWorldTransform(1),
-	allowVertexNormals(false), allowFaceNormals(false), allowBoundingBox(false), textureID(0), hasTexture(false), normalMapID(0)
+	allowVertexNormals(false), allowFaceNormals(false), allowBoundingBox(false),
+	textureID(0), hasTexture(false), normalMapID(0), hasNormalMap(false)
 {
 	loadFile(fileName);
 	setUniformMaterial({ vec3(1), vec3(1), vec3(1), 1 });
@@ -359,7 +364,7 @@ void MeshModel::setTextures(const vec3& ambient, const vec3& specular, const str
 	}
 }
 
-void MeshModel::setNormalMap(const string fileName)
+void MeshModel::enableNormalMap(const string fileName)
 {
 	unsigned int width, height;
 	unsigned char * pixel_array;
@@ -367,6 +372,7 @@ void MeshModel::setNormalMap(const string fileName)
 		return;
 	}
 
+	hasNormalMap = true;
 	//glGenTextures(1, &normalMapID);
 	//try {
 	//	glBindTexture(GL_TEXTURE_2D, normalMapID);
@@ -376,10 +382,18 @@ void MeshModel::setNormalMap(const string fileName)
 	//	glGenerateMipmap(GL_TEXTURE_2D);
 	//}
 	//catch (...) {
-	//	clearTexture();
+	//	disableNormalMap();
 	//	delete[] pixel_array;
 	//	return;
 	//}
+}
+
+void MeshModel::disableNormalMap()
+{
+	if (hasNormalMap) {
+		glDeleteTextures(1, &normalMapID);
+	}
+	hasNormalMap = false;
 }
 
 void MeshModel::draw(BaseRenderer * renderer) const {
@@ -388,12 +402,27 @@ void MeshModel::draw(BaseRenderer * renderer) const {
 	}
 
 	renderer->SetObjectMatrices(worldTransform * modelTransform, normalWorldTransform * normalModelTransform);
-	renderer->DrawTriangles(&vertexPositions, &materials, &centerPositions, hasTexture, textureID, &textureCoordinates, &textureCenters,
-		&vertexNormals, &faceNormals, allowVertexNormals, allowFaceNormals);
+	renderer->DrawTriangles(&vertexPositions, &materials, &centerPositions, hasTexture, textureID, hasNormalMap, normalMapID,
+		&textureCoordinates, &textureCenters, &vertexNormals, &faceNormals);
 
 	if (allowBoundingBox) {
 		renderer->DrawBox(minValues, maxValues);
 	}
+}
+
+void MeshModel::drawNormals(BaseRenderer * renderer) const {
+	if (renderer == NULL) {
+		throw invalid_argument("Renderer is null");
+	}
+
+	if (!allowVertexNormals && !allowFaceNormals) {
+		return;
+	}
+
+	renderer->SetObjectMatrices(worldTransform * modelTransform, normalWorldTransform * normalModelTransform);
+	renderer->DrawModelNormals(&vertexPositions, &centerPositions, 
+		allowVertexNormals ? &vertexNormals : NULL,
+		allowFaceNormals ? &faceNormals : NULL);
 }
 
 PrimMeshModel::PrimMeshModel() : MeshModel()

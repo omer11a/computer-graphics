@@ -347,3 +347,38 @@ protected:
 	afx_msg void OnPaint();
 	DECLARE_MESSAGE_MAP()
 };
+
+// ----------------------
+//    Class CAnimationDialog
+// ----------------------
+class CAnimationDialog : public CInputDialog {
+public:
+	enum AnimationType {
+		HUE, SAT, LUM
+	};
+	CAnimationDialog(CString title = "Add Animation");
+	virtual ~CAnimationDialog();
+
+	AnimationType GetAnimationType() const;
+	GLfloat GetDuration() const;
+	GLfloat GetSpeed() const;
+protected:
+
+	AnimationType animation_type;
+	GLfloat duration;
+	GLfloat speed;
+	
+	CButton hue_radio;
+	CButton sat_radio;
+	CButton lum_radio;
+	CEdit durationEdit;
+	CEdit speedEdit;
+
+	afx_msg void radio_pressed();
+	virtual void DoDataExchange(CDataExchange* pDX);
+
+	afx_msg int OnCreate(LPCREATESTRUCT lpcs);
+	afx_msg void OnPaint();
+	DECLARE_MESSAGE_MAP()
+
+};
