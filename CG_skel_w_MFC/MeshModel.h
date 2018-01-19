@@ -55,7 +55,14 @@ protected:
 	void computeFaceNormals();
 	void computeCenterPositions();
 	void clearTexture();
-	bool readPng(const string fileName, int element_size, unsigned int * width, unsigned int * height, unsigned char ** pixel_array);
+	bool readPng(
+		const string fileName,
+		int element_size,
+		unsigned int * width,
+		unsigned int * height,
+		unsigned char ** pixel_array,
+		bool containsNormals = false
+	);
 	MeshModel();
 
 public:

@@ -172,10 +172,17 @@ void MeshModel::clearTexture()
 	hasTexture = false;
 }
 
-bool MeshModel::readPng(const string fileName, int element_size, unsigned int * width, unsigned int * height, unsigned char ** pixel_array)
-{
+bool MeshModel::readPng(
+	const string fileName,
+	int element_size,
+	unsigned int * width,
+	unsigned int * height,
+	unsigned char ** pixel_array,
+	bool containsNormals
+) {
 	vector<unsigned char> pixels;
-	unsigned error = lodepng::decode(pixels, *width, *height, fileName);
+	LodePNGColorType colorType = containsNormals ? LCT_RGB : LCT_RGBA;
+	unsigned error = lodepng::decode(pixels, *width, *height, fileName, colorType);
 
 	// If there's an error, display it.
 	if (error != 0) {
@@ -390,7 +397,7 @@ void MeshModel::enableNormalMap(const string fileName)
 		return;
 	}
 
-	if (!readPng(fileName, 3, &width, &height, &pixel_array)) {
+	if (!readPng(fileName, 3, &width, &height, &pixel_array, true)) {
 		return;
 	}
 
