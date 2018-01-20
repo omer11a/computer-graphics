@@ -93,6 +93,7 @@ public:
 	void setActiveLight(int i);
 	void prevCamera();
 	void nextCamera();
+	void stepAnimations(float timeDelta);
 	void removeActiveModel();
 	void removeActiveCamera();
 	void removeActiveLight();

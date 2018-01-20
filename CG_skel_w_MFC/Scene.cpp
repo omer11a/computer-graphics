@@ -378,6 +378,13 @@ void Scene::nextCamera()
 	}
 }
 
+void Scene::stepAnimations(float timeDelta)
+{
+	for (MeshModel * m : models) {
+		m->stepAnimation(timeDelta);
+	}
+}
+
 void Scene::removeActiveModel() {
 	if (activeModel < 0) {
 		throw invalid_argument("No active model");

@@ -354,7 +354,7 @@ protected:
 class CAnimationDialog : public CInputDialog {
 public:
 	enum AnimationType {
-		HUE, SAT, LUM
+		HUE=0, SAT=1, LUM=2
 	};
 	CAnimationDialog(CString title = "Add Animation");
 	virtual ~CAnimationDialog();

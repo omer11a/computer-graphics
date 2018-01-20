@@ -33,6 +33,9 @@ void BaseRenderer::DrawTriangles(
 	const vector<vec2>* textureCoordinates,
 	const vector<vec2>* textureCenters,
 	const vector<vec3>* tangents,
+	const bool hasColorAnimation,
+	const int colorAnimationRepresentation,
+	const float colorAnimationDelta,
 	const vector<vec3>* vertexNormals,
 	const vector<vec3>* faceNormals) { }
 

@@ -50,11 +50,13 @@ void Renderer::DrawTriangles(
 	const vector<vec2>* textureCoordinates,
 	const vector<vec2>* textureCenters,
 	const vector<vec3>* tangents,
+	const bool hasColorAnimation,
+	const int colorAnimationRepresentation,
+	const float colorAnimationDelta,
 	const vector<vec3>* vertexNormals,
 	const vector<vec3>* faceNormals)
 {
-	bool hasColorAnimation = false; //TODO:convert to parmeters
-	bool hasVertexAnimation = false;
+	bool hasVertexAnimation = false; //TODO:convert to parmeters
 	// Use object shader
 	objectsProgram.Activate();
 
@@ -73,8 +75,9 @@ void Renderer::DrawTriangles(
 	}
 	objectsProgram.SetUniformParameter(int(hasColorAnimation), "hasColorAnimation");
 	if (hasColorAnimation) {
-		//uniform int colorAnimationRepresentation;
-		//uniform float colorAnimationDelta;
+		cout << "c animation: type: " << colorAnimationRepresentation << " delta: " << colorAnimationDelta << endl;
+		objectsProgram.SetUniformParameter(colorAnimationRepresentation, "colorAnimationRepresentation");
+		objectsProgram.SetUniformParameter(colorAnimationDelta, "colorAnimationDelta");
 	}
 	objectsProgram.SetUniformParameter(int(hasVertexAnimation), "hasVertexAnimation");
 	if (hasVertexAnimation) {

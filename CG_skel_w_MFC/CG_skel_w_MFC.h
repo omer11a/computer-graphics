@@ -1,6 +1,7 @@
 #pragma once
 #include "resource.h"
 
+void animation();
 void display(void);
 void reshape(int width, int height);
 void keyboard(unsigned char key, int x, int y);

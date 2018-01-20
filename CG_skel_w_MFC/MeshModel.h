@@ -36,7 +36,9 @@ protected:
 	//vector<vec3> bitangents;
 	vector<Material> materials;
 	GLuint textureID, normalMapID;
-	bool hasTexture, hasNormalMap;
+	bool hasTexture, hasNormalMap, hasColorAnimation, hasVertexAnimation;
+	int colorAnimationRepresentation, colorAnimationDirection;
+	float colorAnimationSpeed, colorAnimationDuration, colorAnimationProgress;
 
 	template<class T>
 	T & getVecByIndex(vector<T> & vecs, int i)
@@ -79,6 +81,9 @@ public:
 	void setTextures(const vec3& ambient, const vec3& specular, const string fileName, const float shininess);
 	void enableNormalMap(const string fileName);
 	void disableNormalMap();
+	void startColorAnimation(int animationType, float speed, float duration);
+	void stepAnimation(float timeDelta);
+	void stopColorAnimation();
 	void draw(BaseRenderer * renderer) const;
 	void drawNormals(BaseRenderer * renderer) const;
 };

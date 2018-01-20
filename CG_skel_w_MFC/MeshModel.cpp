@@ -269,7 +269,9 @@ MeshModel::MeshModel() :
 	faceNormals(), materials(),
 	worldTransform(1), modelTransform(1), normalModelTransform(1), normalWorldTransform(1),
 	allowVertexNormals(false), allowFaceNormals(false), allowBoundingBox(false), 
-	textureID(0), hasTexture(false), normalMapID(0), hasNormalMap(false)
+	textureID(0), hasTexture(false), normalMapID(0), hasNormalMap(false),
+	hasColorAnimation(false), colorAnimationRepresentation(0), colorAnimationSpeed(0), colorAnimationDuration(0), colorAnimationProgress(0),
+	colorAnimationDirection(0)
 { }
 
 MeshModel::MeshModel(string fileName) :
@@ -277,7 +279,9 @@ MeshModel::MeshModel(string fileName) :
 	faceNormals(), materials(),
 	worldTransform(1), modelTransform(1), normalModelTransform(1), normalWorldTransform(1),
 	allowVertexNormals(false), allowFaceNormals(false), allowBoundingBox(false),
-	textureID(0), hasTexture(false), normalMapID(0), hasNormalMap(false)
+	textureID(0), hasTexture(false), normalMapID(0), hasNormalMap(false),
+	hasColorAnimation(false), colorAnimationRepresentation(0), colorAnimationSpeed(0), colorAnimationDuration(0), colorAnimationProgress(0),
+	colorAnimationDirection(0)
 {
 	loadFile(fileName);
 	setUniformMaterial({ vec3(1), vec3(1), vec3(1), 1 });
@@ -312,14 +316,26 @@ vec4 MeshModel::getLocation()
 }
 
 void MeshModel::switchVertexNormalsVisibility() {
+	if ((hasColorAnimation)) {
+		cout << "can't show normals while animation in progress" << endl;
+		return;
+	}
 	allowVertexNormals = !allowVertexNormals;
 }
 
 void MeshModel::switchFaceNormalsVisibility() {
+	if ((hasColorAnimation)) {
+		cout << "can't show normals while animation in progress" << endl;
+		return;
+	}
 	allowFaceNormals = !allowFaceNormals;
 }
 
 void MeshModel::switchBoundingBoxVisibility() {
+	if ((hasColorAnimation)) {
+		cout << "can't show bounding box while animation in progress" << endl;
+		return;
+	}
 	allowBoundingBox = !allowBoundingBox;
 	if (allowBoundingBox) {
 		computeBoundingBox();
@@ -428,14 +444,48 @@ void MeshModel::disableNormalMap()
 	hasNormalMap = false;
 }
 
+void MeshModel::startColorAnimation(int animationType, float speed, float duration)
+{
+	if (allowFaceNormals || allowVertexNormals || allowBoundingBox) {
+		cout << "can't add animation while normals or bouning box is visible" << endl;
+		return;
+	}
+	colorAnimationRepresentation = animationType;
+	colorAnimationSpeed = speed;
+	colorAnimationDuration = duration;
+	colorAnimationProgress = 0;
+	colorAnimationDirection = 1;
+	hasColorAnimation = true;
+}
+
+void MeshModel::stepAnimation(float timeDelta)
+{
+	if (hasColorAnimation) {
+		// bumerang
+		if ((colorAnimationProgress > colorAnimationDuration) || (colorAnimationProgress < 0)) {
+			colorAnimationDirection *= -1;
+		}
+		colorAnimationProgress += colorAnimationDirection;// *0.001;
+	}
+
+	//if (hasVertexAnimation) {
+	//}
+}
+
+void MeshModel::stopColorAnimation()
+{
+	hasColorAnimation = false;
+}
+
 void MeshModel::draw(BaseRenderer * renderer) const {
 	if (renderer == NULL) {
 		throw invalid_argument("Renderer is null");
 	}
-
 	renderer->SetObjectMatrices(worldTransform * modelTransform, normalWorldTransform * normalModelTransform);
 	renderer->DrawTriangles(&vertexPositions, &materials, &centerPositions, hasTexture, textureID, hasNormalMap, normalMapID,
-		&textureCoordinates, &textureCenters, &tangents, &vertexNormals, &faceNormals);
+		&textureCoordinates, &textureCenters, &tangents, 
+		hasColorAnimation, colorAnimationRepresentation, colorAnimationProgress * colorAnimationSpeed,
+		&vertexNormals, &faceNormals);
 
 	if (allowBoundingBox) {
 		renderer->DrawBox(minValues, maxValues);

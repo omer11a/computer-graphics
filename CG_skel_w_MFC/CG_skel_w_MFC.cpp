@@ -56,6 +56,7 @@ PrimMeshModels:
 #include "Shader.h"
 #include "Renderer.h"
 #include "Scene.h"
+#include <ctime>
 #include <string>
 
 #define BUFFER_OFFSET( offset )   ((GLvoid*) (offset))
@@ -66,8 +67,11 @@ PrimMeshModels:
 #define ADD_TEXTURE 3
 #define ADD_NORMAL_MAP 4
 #define DEL_NORMAL_MAP 5
-#define ADD_ANIMATION 6
-#define DEL_ANIMATION 7
+#define ADD_COLOR_ANIMATION 6
+#define DEL_COLOR_ANIMATION 7
+#define ADD_VERTEX_ANIMATION 8
+#define DEL_VERTEX_ANIMATION 9
+
 
 // light extra menu
 #define AMBIENT 3
@@ -117,9 +121,22 @@ configuration_t config;
 int last_x,last_y;
 bool lb_down,rb_down,mb_down;
 unsigned char transformation_mode;
+time_t last_time;
 
 //----------------------------------------------------------------------------
 // Callbacks
+
+void animation()
+{
+	time_t t;
+	time(&t);
+	double delta = difftime(t, last_time);
+	if (delta > 0.5) {
+		last_time = t;
+		scene->stepAnimations(delta);
+		glutPostRedisplay();
+	}
+}
 
 void display(void)
 {
@@ -505,18 +522,25 @@ void modelMenu(int id)
 			should_redraw = true;
 		}
 		break;
-	case ADD_ANIMATION:
-		if (scene->getNumberOfModels() > 0) 
-		{
+	case ADD_COLOR_ANIMATION:
+		if (scene->getNumberOfModels() > 0) {
 			CAnimationDialog adlg;
 			if (adlg.DoModal() == IDOK) {
-				cout << "adding animation" << endl;
+				scene->getActiveModel()->startColorAnimation(
+					int(adlg.GetAnimationType()),
+					adlg.GetSpeed(),
+					adlg.GetDuration()
+				);
+				cout << "enabled color animation" << endl;
 				should_redraw = true;
 			}
 		}
 		break;
-	case DEL_ANIMATION:
-		cout << "disabling animation" << endl;
+	case DEL_COLOR_ANIMATION:
+		if (scene->getNumberOfModels() > 0) {
+			scene->getActiveModel()->stopColorAnimation();
+			cout << "disabled color animation" << endl;
+		}
 		break;
 	}
 	redraw(should_redraw);
@@ -592,8 +616,8 @@ void initMenu()
 	glutAddMenuEntry("Add Texture", ADD_TEXTURE);
 	glutAddMenuEntry("Enable Normal Mapping", ADD_NORMAL_MAP);
 	glutAddMenuEntry("Disable Normal Mapping", DEL_NORMAL_MAP);
-	glutAddMenuEntry("Enable Animation", ADD_ANIMATION);
-	glutAddMenuEntry("Disable Animation", DEL_ANIMATION);
+	glutAddMenuEntry("Enable Animation", ADD_COLOR_ANIMATION);
+	glutAddMenuEntry("Disable Animation", DEL_COLOR_ANIMATION);
 
 	// light sub menu
 	int menuLight = glutCreateMenu(lightMenu);
@@ -1076,6 +1100,7 @@ int my_main( int argc, char **argv )
 	renderer = new Renderer(512, 512);
 	scene = new Scene(renderer, vec3(0, 5, 15));
 	config = { 0, vec3(1), vec3(), vec3(), 1, false};
+	time(&last_time);
 	//----------------------------------------------------------------------------
 	// Initialize Callbacks
 
@@ -1084,6 +1109,7 @@ int my_main( int argc, char **argv )
 	glutMouseFunc( mouse );
 	glutMotionFunc ( motion );
 	glutReshapeFunc( reshape );
+	glutIdleFunc( animation );
 	initMenu();
 	
 
