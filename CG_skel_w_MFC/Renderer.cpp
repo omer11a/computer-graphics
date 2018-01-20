@@ -98,13 +98,13 @@ void Renderer::DrawTriangles(
 	if (hasTexture) {
 		glActiveTexture(GL_TEXTURE0);
 		glBindTexture(GL_TEXTURE_2D, textureID);
-		objectsProgram.SetUniformParameter(textureID, "textureSampler");
+		objectsProgram.SetUniformParameter(0, "textureSampler");
 	}
 	objectsProgram.SetUniformParameter(int(hasNormalMap), "hasNormalMapping");
 	if (hasNormalMap) {
 		glActiveTexture(GL_TEXTURE1);
 		glBindTexture(GL_TEXTURE_2D, normalMapID);
-		objectsProgram.SetUniformParameter(normalMapID, "normalSampler");
+		objectsProgram.SetUniformParameter(1, "normalSampler");
 	}
 	objectsProgram.SetUniformParameter(int(hasColorAnimation), "hasColorAnimation");
 	if (hasColorAnimation) {
