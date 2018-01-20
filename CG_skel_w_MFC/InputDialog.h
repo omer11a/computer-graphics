@@ -395,9 +395,6 @@ public:
 
 	vec3 GetColor1() const;
 	vec3 GetColor2() const;
-	vec3 GetDiffuseColor() const;
-	float GetShininess() const;
-	bool ShouldRandom() const;
 protected:
 
 	CString color1_title;
