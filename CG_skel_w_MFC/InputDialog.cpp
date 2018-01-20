@@ -759,7 +759,7 @@ void Cv2c1Dialog::choose_color() {
 }
 
 Cv2c1Dialog::Cv2c1Dialog(CString title, CString v1_title, CString v2_title, CString c_title, const float v1_default, const float v2_default)
-	: CInputDialog(title), v1_t(v1_title), v2_t(v2_title), v1(v1_default), v2(v2_default)
+	: CInputDialog(title), v1_t(v1_title), v2_t(v2_title), c_t(c_title), v1(v1_default), v2(v2_default)
 { }
 
 Cv2c1Dialog::~Cv2c1Dialog()

@@ -537,6 +537,7 @@ void MeshModel::enableToonShading(const int cqc, const float st, const vec3& col
 		cout << "can't add toon shading without vertex normals" << endl;
 		return;
 	}
+	computeBoundingBox();
 	colorQuantizationCoefficient = cqc;
 	silhouetteThickness = st;
 	silhouetteColor = color;
@@ -568,11 +569,12 @@ void MeshModel::draw(BaseRenderer * renderer) const {
 	if (hasToonShading) {
 		renderer->DrawToonShadow(&vertexPositions, &smoothVertexNormals, silhouetteThickness, silhouetteColor);
 	}
+	vec2 modelResolution(maxValues.x - minValues.x, maxValues.y - minValues.y);
 	renderer->DrawTriangles(&vertexPositions, &materials, &centerPositions, hasTexture, textureID, hasNormalMap, normalMapID,
 		&textureCoordinates, &textureCenters, &tangents, 
 		hasColorAnimation, colorAnimationRepresentation, colorAnimationProgress * colorAnimationSpeed,
 		hasVertexAnimation, vertexAnimationProgress * vertexAnimationSpeed, hasToonShading, colorQuantizationCoefficient,
-		hasWoodTexture, woodTextureColor1, woodTextureColor2,
+		hasWoodTexture, woodTextureColor1, woodTextureColor2, modelResolution,
 		(hasVertexAnimation) ? &smoothVertexNormals : &vertexNormals, &faceNormals);
 
 	if (allowBoundingBox) {

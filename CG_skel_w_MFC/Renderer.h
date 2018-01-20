@@ -17,8 +17,8 @@ public:
 		Flat, Gouraud, Phong
 	};
 private:
-	int m_screen_width, m_screen_height, anti_factor;
-	bool is_wire_mode;
+	int m_screen_width, m_screen_height;
+	bool is_wire_mode, anti_factor;
 
 	mat4 m_cTransform, m_projection, m_oTransform, mvp, mv, vp;
 	mat3 m_cnTransform, m_nTransform;
@@ -64,6 +64,7 @@ public:
 		const bool hasWoodTexture,
 		const vec3& woodTextureColor1,
 		const vec3& woodTextureColor2,
+		const vec2& modelResolution,
 		const vector<vec3>* vertexNormals = NULL,
 		const vector<vec3>* faceNormals = NULL) override;
 	void DrawModelNormals(
@@ -73,7 +74,7 @@ public:
 		const vector<vec3>* faceNormals);
 
 	void SwitchWire(); 
-	void SetAntiAliasing(int new_factor);
+	void SetAntiAliasing();
 	void SetBaseShader(ShaderType s);
 	void SetFog(const vec3& color, const float extinction, const float scattering);
 	void DisableFog();

@@ -16,6 +16,7 @@ public:
 	void SetUniformParameter(const mat4& m, const char * const var_name);
 	void SetUniformParameter(const vec4& v, const char * const var_name);
 	void SetUniformParameter(const vec3& v, const char * const var_name);
+	void SetUniformParameter(const vec2& v, const char * const var_name);
 	void SetUniformParameter(const int i, const char * const var_name);
 	void SetUniformParameter(const GLfloat f, const char * const var_name);
 	void SetUniformParameter(const GLuint ui, const char * const var_name);

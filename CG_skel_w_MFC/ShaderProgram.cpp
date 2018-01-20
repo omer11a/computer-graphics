@@ -36,6 +36,12 @@ void ShaderProgram::SetUniformParameter(const vec3& v, const char * const var_na
 	glUniform3fv(id, 1, &v[0]);
 }
 
+void ShaderProgram::SetUniformParameter(const vec2& v, const char * const var_name)
+{
+	GLuint id = glGetUniformLocation(program_id, var_name);
+	glUniform2fv(id, 1, &v[0]);
+}
+
 void ShaderProgram::SetUniformParameter(const int i, const char * const var_name)
 {
 	GLuint id = glGetUniformLocation(program_id, var_name);
