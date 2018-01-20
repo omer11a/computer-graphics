@@ -438,7 +438,7 @@ void MeshModel::enableNormalMap(const string fileName)
 		return;
 	}
 
-	if (!readPng(fileName, 3, &width, &height, &pixel_array, true)) {
+	if (!readPng(fileName, 4, &width, &height, &pixel_array, false)) {
 		return;
 	}
 
@@ -447,7 +447,7 @@ void MeshModel::enableNormalMap(const string fileName)
 	try {
 		glActiveTexture(GL_TEXTURE1);
 		glBindTexture(GL_TEXTURE_2D, normalMapID);
-		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, pixel_array);
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, pixel_array);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
 		glGenerateMipmap(GL_TEXTURE_2D);
