@@ -166,5 +166,11 @@
     <None Include="fshader_texture.glsl">
       <Filter>Shaders</Filter>
     </None>
+    <None Include="vshader_silhouette.glsl">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="fshader_silhouette.glsl">
+      <Filter>Shaders</Filter>
+    </None>
   </ItemGroup>
 </Project>
