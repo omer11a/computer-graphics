@@ -121,16 +121,15 @@ configuration_t config;
 int last_x,last_y;
 bool lb_down,rb_down,mb_down;
 unsigned char transformation_mode;
-time_t last_time;
-
+clock_t last_time;
 //----------------------------------------------------------------------------
 // Callbacks
 
 void animation()
 {
-	time_t t;
-	time(&t);
-	double delta = difftime(t, last_time);
+	clock_t t = clock();
+	float delta = ((t - last_time) * 1.0f) / CLOCKS_PER_SEC;
+
 	if (delta > 0.5) {
 		last_time = t;
 		scene->stepAnimations(delta);
@@ -411,7 +410,7 @@ void lightMenu(int id)
 void shaderMenu(int id)
 {
 	bool should_redraw = true;
-	CFogDialog fdlg;
+	Cv2c1Dialog fdlg("Add Fog", "Extinction Coefficient:", "Scattering Coefficient:");
 	switch (id) {
 	case FLAT:
 		renderer->SetBaseShader(Renderer::ShaderType::Flat);
@@ -427,8 +426,8 @@ void shaderMenu(int id)
 		break;
 	case FOG:
 		if (fdlg.DoModal() == IDOK) {
-			float extinction = fdlg.GetExtinction();
-			float scattering = fdlg.GetScattering();
+			float extinction = fdlg.GetValue1();
+			float scattering = fdlg.GetValue2();
 			if ((extinction >= 0) && (extinction <= 1) && (scattering >= 0) && (scattering <= 1)) {
 			renderer->SetFog(fdlg.GetColor(), extinction, scattering);
 			cout << "set fog" << endl;
@@ -524,7 +523,7 @@ void modelMenu(int id)
 		break;
 	case ADD_COLOR_ANIMATION:
 		if (scene->getNumberOfModels() > 0) {
-			CAnimationDialog adlg;
+			CAnimationDialog adlg("Add Color Animation");
 			if (adlg.DoModal() == IDOK) {
 				scene->getActiveModel()->startColorAnimation(
 					int(adlg.GetAnimationType()),
@@ -540,6 +539,27 @@ void modelMenu(int id)
 		if (scene->getNumberOfModels() > 0) {
 			scene->getActiveModel()->stopColorAnimation();
 			cout << "disabled color animation" << endl;
+			should_redraw = true;
+		}
+		break;
+	case ADD_VERTEX_ANIMATION:
+		if (scene->getNumberOfModels() > 0) {
+			CAnimationDialog adlg("Add Vertex Animation", false);
+			if (adlg.DoModal() == IDOK) {
+				scene->getActiveModel()->startVertexAnimation(
+					adlg.GetSpeed(),
+					adlg.GetDuration()
+				);
+				cout << "enabled vertex animation" << endl;
+				should_redraw = true;
+			}
+		}
+		break;
+	case DEL_VERTEX_ANIMATION:
+		if (scene->getNumberOfModels() > 0) {
+			scene->getActiveModel()->stopVertexAnimation();
+			cout << "disabled vertex animation" << endl;
+			should_redraw = true;
 		}
 		break;
 	}
@@ -616,8 +636,10 @@ void initMenu()
 	glutAddMenuEntry("Add Texture", ADD_TEXTURE);
 	glutAddMenuEntry("Enable Normal Mapping", ADD_NORMAL_MAP);
 	glutAddMenuEntry("Disable Normal Mapping", DEL_NORMAL_MAP);
-	glutAddMenuEntry("Enable Animation", ADD_COLOR_ANIMATION);
-	glutAddMenuEntry("Disable Animation", DEL_COLOR_ANIMATION);
+	glutAddMenuEntry("Enable Color Animation", ADD_COLOR_ANIMATION);
+	glutAddMenuEntry("Disable Color Animation", DEL_COLOR_ANIMATION);
+	glutAddMenuEntry("Enable Vertex Animation", ADD_VERTEX_ANIMATION);
+	glutAddMenuEntry("Disable Vertex Animation", DEL_VERTEX_ANIMATION);
 
 	// light sub menu
 	int menuLight = glutCreateMenu(lightMenu);
@@ -1100,7 +1122,7 @@ int my_main( int argc, char **argv )
 	renderer = new Renderer(512, 512);
 	scene = new Scene(renderer, vec3(0, 5, 15));
 	config = { 0, vec3(1), vec3(), vec3(), 1, false};
-	time(&last_time);
+	last_time = clock();
 	//----------------------------------------------------------------------------
 	// Initialize Callbacks
 

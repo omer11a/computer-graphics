@@ -749,52 +749,52 @@ void CEditModelDialog::OnPaint()
 }
 
 // ----------------------
-//    Class CFogDialog
+//    Class Cv2c1Dialog
 // ----------------------
-void CFogDialog::choose_color() {
+void Cv2c1Dialog::choose_color() {
 	CColorDialog dlg;
 	if (dlg.DoModal() == IDOK) {
 		color = dlg.GetColor();
 	}
 }
 
-CFogDialog::CFogDialog(CString title)
-	: CInputDialog(title), v1(0.004), v2(0.008)
+Cv2c1Dialog::Cv2c1Dialog(CString title, CString v1_title, CString v2_title, CString c_title)
+	: CInputDialog(title), v1_t(v1_title), v2_t(v2_title), v1(0.004), v2(0.008)
 { }
 
-CFogDialog::~CFogDialog()
+Cv2c1Dialog::~Cv2c1Dialog()
 { }
 
-vec3 CFogDialog::GetColor() const
+vec3 Cv2c1Dialog::GetColor() const
 {
 	return ColorToVec(color);
 }
 
-float CFogDialog::GetExtinction() const
+float Cv2c1Dialog::GetValue1() const
 {
 	return v1;
 }
 
-float CFogDialog::GetScattering() const
+float Cv2c1Dialog::GetValue2() const
 {
 	return v2;
 }
 
-void CFogDialog::DoDataExchange(CDataExchange* pDX)
+void Cv2c1Dialog::DoDataExchange(CDataExchange* pDX)
 {
 	CInputDialog::DoDataExchange(pDX);
 	DDX_Text(pDX, IDC_X_EDIT, v1);
 	DDX_Text(pDX, IDC_Y_EDIT, v2);
 }
 
-// CFogDialog message handlers
-BEGIN_MESSAGE_MAP(CFogDialog, CInputDialog)
+// Cv2c1Dialog message handlers
+BEGIN_MESSAGE_MAP(Cv2c1Dialog, CInputDialog)
 	ON_WM_CREATE()
 	ON_WM_PAINT()
 	ON_BN_CLICKED(IDC_COLOR_EDIT, choose_color)
 END_MESSAGE_MAP()
 
-int CFogDialog::OnCreate(LPCREATESTRUCT lpcs)
+int Cv2c1Dialog::OnCreate(LPCREATESTRUCT lpcs)
 {
 	int height = 80;
 	int lsx = 250, lex = 330;
@@ -813,22 +813,22 @@ int CFogDialog::OnCreate(LPCREATESTRUCT lpcs)
 	return 0;
 }
 
-void CFogDialog::OnPaint()
+void Cv2c1Dialog::OnPaint()
 {
 	CPaintDC dc(this);
 	dc.SetBkMode(TRANSPARENT);
 	int height = 82;
 
 	CRect rect(50, height, 250, height + 18);
-	dc.DrawText("Extinction Coefficient:", -1, &rect, DT_SINGLELINE);
+	dc.DrawText(v1_t, -1, &rect, DT_SINGLELINE);
 
 	rect.bottom += 60;
 	rect.top += 60;
-	dc.DrawText("Scattering Coefficient:", -1, &rect, DT_SINGLELINE);
+	dc.DrawText(v2_t, -1, &rect, DT_SINGLELINE);
 
 	rect.bottom += 60;
 	rect.top += 60;
-	dc.DrawText("Color:", -1, &rect, DT_SINGLELINE);
+	dc.DrawText(c_t, -1, &rect, DT_SINGLELINE);
 
 	v1Edit.SetFocus();
 }
@@ -961,8 +961,8 @@ void CAnimationDialog::radio_pressed() {
 	}
 }
 
-CAnimationDialog::CAnimationDialog(CString title)
-	: CInputDialog(title), animation_type(HUE), duration(0), speed(0)
+CAnimationDialog::CAnimationDialog(CString title, const bool isColorAnimation)
+	: CInputDialog(title), is_color_animation(isColorAnimation), animation_type(HUE), duration(0), speed(0)
 { }
 
 CAnimationDialog::~CAnimationDialog()
@@ -1005,14 +1005,15 @@ int CAnimationDialog::OnCreate(LPCREATESTRUCT lpcs)
 	int height = 140;
 	int lsx = 220, lex = 300;
 
-	hue_radio.Create("Hue", BS_AUTORADIOBUTTON | WS_CHILD | WS_VISIBLE | WS_TABSTOP,
-		CRect(200, 60, 260, 75), this, IDC_RADIO1_EDIT);
-	hue_radio.SetCheck(true);
-	sat_radio.Create("Sat", BS_AUTORADIOBUTTON | WS_CHILD | WS_VISIBLE | WS_TABSTOP,
-		CRect(265, 60, 315, 75), this, IDC_RADIO2_EDIT);
-	lum_radio.Create("Lum", BS_AUTORADIOBUTTON | WS_CHILD | WS_VISIBLE | WS_TABSTOP,
-		CRect(320, 60, 380, 75), this, IDC_RADIO3_EDIT);
-
+	if (is_color_animation) {
+		hue_radio.Create("Hue", BS_AUTORADIOBUTTON | WS_CHILD | WS_VISIBLE | WS_TABSTOP,
+			CRect(200, 60, 260, 75), this, IDC_RADIO1_EDIT);
+		hue_radio.SetCheck(true);
+		sat_radio.Create("Sat", BS_AUTORADIOBUTTON | WS_CHILD | WS_VISIBLE | WS_TABSTOP,
+			CRect(265, 60, 315, 75), this, IDC_RADIO2_EDIT);
+		lum_radio.Create("Lum", BS_AUTORADIOBUTTON | WS_CHILD | WS_VISIBLE | WS_TABSTOP,
+			CRect(320, 60, 380, 75), this, IDC_RADIO3_EDIT);
+	}
 	durationEdit.Create(ES_MULTILINE | WS_CHILD | WS_VISIBLE | WS_TABSTOP | WS_BORDER,
 		CRect(lsx, height, lex, height + 20), this, IDC_VALUE_EDIT);
 	height += 40;
@@ -1031,7 +1032,9 @@ void CAnimationDialog::OnPaint()
 	int height = 62;
 
 	CRect rect(90, height, 250, height + 18);
-	dc.DrawText("Animation Type:", -1, &rect, DT_SINGLELINE);
+	if (is_color_animation) {
+		dc.DrawText("Animation Type:", -1, &rect, DT_SINGLELINE);
+	}
 
 	rect.bottom += 50;
 	rect.top += 50;
