@@ -446,10 +446,6 @@ void MeshModel::disableNormalMap()
 
 void MeshModel::startColorAnimation(int animationType, float speed, float duration)
 {
-	if (allowFaceNormals || allowVertexNormals || allowBoundingBox) {
-		cout << "can't add animation while normals or bouning box is visible" << endl;
-		return;
-	}
 	colorAnimationRepresentation = animationType;
 	colorAnimationSpeed = speed;
 	colorAnimationDuration = duration;
@@ -468,13 +464,36 @@ void MeshModel::stepAnimation(float timeDelta)
 		colorAnimationProgress += colorAnimationDirection;// *0.001;
 	}
 
-	//if (hasVertexAnimation) {
-	//}
+	if (hasVertexAnimation) {
+		// bumerang
+		if ((vertexAnimationProgress > vertexAnimationDuration) || (vertexAnimationProgress < 0)) {
+			vertexAnimationDirection *= -1;
+		}
+		vertexAnimationProgress += vertexAnimationDirection;// *0.001;
+	}
 }
 
 void MeshModel::stopColorAnimation()
 {
 	hasColorAnimation = false;
+}
+
+void MeshModel::startVertexAnimation(float speed, float duration)
+{
+	if (allowFaceNormals || allowVertexNormals || allowBoundingBox) {
+		cout << "can't add animation while normals or bouning box is visible" << endl;
+		return;
+	}
+	vertexAnimationSpeed = speed;
+	vertexAnimationDuration = duration;
+	vertexAnimationProgress = 0;
+	vertexAnimationDirection = 1;
+	hasVertexAnimation = true;
+}
+
+void MeshModel::stopVertexAnimation()
+{
+	hasVertexAnimation = false;
 }
 
 void MeshModel::draw(BaseRenderer * renderer) const {
@@ -485,6 +504,7 @@ void MeshModel::draw(BaseRenderer * renderer) const {
 	renderer->DrawTriangles(&vertexPositions, &materials, &centerPositions, hasTexture, textureID, hasNormalMap, normalMapID,
 		&textureCoordinates, &textureCenters, &tangents, 
 		hasColorAnimation, colorAnimationRepresentation, colorAnimationProgress * colorAnimationSpeed,
+		hasVertexAnimation, vertexAnimationProgress * vertexAnimationSpeed,
 		&vertexNormals, &faceNormals);
 
 	if (allowBoundingBox) {

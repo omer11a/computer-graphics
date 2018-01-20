@@ -284,19 +284,20 @@ protected:
 };
 
 // ----------------------
-//    Class CFogDialog
+//    Class Cv2c1Dialog
 // ----------------------
-class CFogDialog : public CInputDialog {
+class Cv2c1Dialog : public CInputDialog {
 public:
-	CFogDialog(CString title = "Add Fog");
-	virtual ~CFogDialog();
+	Cv2c1Dialog(CString title = "Add Fog", CString v1_title = "Value 1:", CString v2_title = "Value 2:", CString c_title = "Color:");
+	virtual ~Cv2c1Dialog();
 
-	float GetExtinction() const;
-	float GetScattering() const;
+	float GetValue1() const;
+	float GetValue2() const;
 	vec3 GetColor() const;
 
 protected:
 
+	CString v1_t, v2_t, c_t;
 	float v1;
 	float v2;
 	COLORREF color;
@@ -356,7 +357,7 @@ public:
 	enum AnimationType {
 		HUE=0, SAT=1, LUM=2
 	};
-	CAnimationDialog(CString title = "Add Animation");
+	CAnimationDialog(CString title = "Add Animation", const bool isColorAnimation = true);
 	virtual ~CAnimationDialog();
 
 	AnimationType GetAnimationType() const;
@@ -364,6 +365,7 @@ public:
 	GLfloat GetSpeed() const;
 protected:
 
+	bool is_color_animation;
 	AnimationType animation_type;
 	GLfloat duration;
 	GLfloat speed;

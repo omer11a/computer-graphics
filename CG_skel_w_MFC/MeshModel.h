@@ -37,8 +37,9 @@ protected:
 	vector<Material> materials;
 	GLuint textureID, normalMapID;
 	bool hasTexture, hasNormalMap, hasColorAnimation, hasVertexAnimation;
-	int colorAnimationRepresentation, colorAnimationDirection;
+	int colorAnimationRepresentation, colorAnimationDirection, vertexAnimationDirection;
 	float colorAnimationSpeed, colorAnimationDuration, colorAnimationProgress;
+	float vertexAnimationSpeed, vertexAnimationDuration, vertexAnimationProgress;
 
 	template<class T>
 	T & getVecByIndex(vector<T> & vecs, int i)
@@ -84,6 +85,8 @@ public:
 	void startColorAnimation(int animationType, float speed, float duration);
 	void stepAnimation(float timeDelta);
 	void stopColorAnimation();
+	void startVertexAnimation(float speed, float duration);
+	void stopVertexAnimation();
 	void draw(BaseRenderer * renderer) const;
 	void drawNormals(BaseRenderer * renderer) const;
 };

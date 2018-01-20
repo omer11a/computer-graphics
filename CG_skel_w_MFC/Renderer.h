@@ -52,6 +52,8 @@ public:
 		const bool hasColorAnimation,
 		const int colorAnimationRepresentation,
 		const float colorAnimationDelta,
+		const bool hasVertexAnimation,
+		const float vertexAnimationDelta,
 		const vector<vec3>* vertexNormals = NULL,
 		const vector<vec3>* faceNormals = NULL) override;
 	void DrawModelNormals(

@@ -53,10 +53,11 @@ void Renderer::DrawTriangles(
 	const bool hasColorAnimation,
 	const int colorAnimationRepresentation,
 	const float colorAnimationDelta,
+	const bool hasVertexAnimation,
+	const float vertexAnimationDelta,
 	const vector<vec3>* vertexNormals,
 	const vector<vec3>* faceNormals)
 {
-	bool hasVertexAnimation = false; //TODO:convert to parmeters
 	// Use object shader
 	objectsProgram.Activate();
 
@@ -81,7 +82,7 @@ void Renderer::DrawTriangles(
 	}
 	objectsProgram.SetUniformParameter(int(hasVertexAnimation), "hasVertexAnimation");
 	if (hasVertexAnimation) {
-		//uniform float vertexAnimationDelta;
+		objectsProgram.SetUniformParameter(vertexAnimationDelta, "vertexAnimationDelta");
 	}
 
 	objectsProgram.SetUniformParameter(m_oTransform, "modelMatrix");
