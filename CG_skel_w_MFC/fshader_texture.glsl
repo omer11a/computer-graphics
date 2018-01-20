@@ -14,7 +14,6 @@ uniform bool hasTexture;
 uniform bool hasNormalMapping;
 uniform bool hasFog;
 uniform bool hasColorAnimation;
-uniform bool hasVertexAnimation;
 uniform bool hasToonShading;
 uniform vec3 cameraPosition;
 uniform vec3 ambientLightColor;
@@ -27,7 +26,6 @@ uniform float extinctionCoefficient;
 uniform float inScatteringCoefficient;
 uniform int colorAnimationRepresentation;
 uniform float colorAnimationDelta;
-uniform float vertexAnimationDelta;
 uniform int colorQuantizationCoefficient;
 
 layout (location = 0) in vec3 vertexPosition;

@@ -17,8 +17,8 @@ uniform bool hasColorAnimation;
 uniform bool hasVertexAnimation;
 uniform mat4 modelMatrix;
 uniform mat3 normalMatrix;
-uniform mat4 modelViewMatrix;
-uniform mat4 modelViewProjectionMatrix;
+uniform mat4 viewMatrix;
+uniform mat4 viewProjectionMatrix;
 uniform vec3 cameraPosition;
 uniform vec3 ambientLightColor;
 uniform int numberOfLights;
@@ -115,8 +115,15 @@ vec3 applyLight(
 }
 
 void main() {
-	outVertexPosition = (modelMatrix * vec4(vertexPosition, 1)).xyz;
 	outVertexNormal = normalMatrix * vertexNormal;
+	if (hasVertexAnimation) {
+	    vec3 transformedVertex = (modelMatrix * vec4(vertexPosition, 1)).xyz;
+		vec3 transformedNormal = vertexAnimationDelta * normalize(outVertexNormal);
+		outVertexPosition = transformedVertex + transformedNormal;
+	} else {
+		outVertexPosition = (modelMatrix * vec4(vertexPosition, 1)).xyz;
+	}
+
 	outAmbientReflectance = ambientReflectance;
 	outSpecularReflectance = specularReflectance;
 	outDiffuseReflectance = diffuseReflectance;
@@ -177,8 +184,8 @@ void main() {
 	
 	outViewVertexPosition = vec3(0);
 	if (hasFog) {
-		outViewVertexPosition = (modelViewMatrix * vec4(vertexPosition, 1)).xyz;
+		outViewVertexPosition = (viewMatrix * vec4(outVertexPosition, 1)).xyz;
 	}
 	
-	gl_Position = modelViewProjectionMatrix * vec4(vertexPosition, 1);
+	gl_Position = viewProjectionMatrix * vec4(outVertexPosition, 1);
 }
