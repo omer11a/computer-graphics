@@ -288,7 +288,7 @@ protected:
 // ----------------------
 class Cv2c1Dialog : public CInputDialog {
 public:
-	Cv2c1Dialog(CString title = "Add Fog", CString v1_title = "Value 1:", CString v2_title = "Value 2:", CString c_title = "Color:");
+	Cv2c1Dialog(CString title = "Add Fog", CString v1_title = "Value 1:", CString v2_title = "Value 2:", CString c_title = "Color:",const float v1_default = 0.004, const float v2_default= 0.008);
 	virtual ~Cv2c1Dialog();
 
 	float GetValue1() const;

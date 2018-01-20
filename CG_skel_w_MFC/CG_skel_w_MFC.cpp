@@ -569,7 +569,7 @@ void modelMenu(int id)
 		break;
 	case ADD_TOON_SHADING:
 		if (scene->getNumberOfModels() > 0) {
-			Cv2c1Dialog tdlg("Addd Toon Shading", "Color Quantization Coefficient", "Silhouette Thickness", "color");
+			Cv2c1Dialog tdlg("Addd Toon Shading", "Color Quantization Coefficient", "Silhouette Thickness", "color", 0.1, 4);
 			if (tdlg.DoModal() == IDOK) {
 				int cqc = tdlg.GetValue1(); // > 0
 				float st = tdlg.GetValue2(); // >= 0

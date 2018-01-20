@@ -2,6 +2,9 @@
 #include "StdAfx.h"
 #include "MeshModel.h"
 #include "lodepng.h"
+#define cimg_use_magick
+//#define cimg_use_png
+#include "CImg.h"
 #include <iostream>
 #include <fstream>
 #include <sstream>
