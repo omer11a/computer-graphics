@@ -131,8 +131,11 @@ void animation()
 {
 	clock_t t = clock();
 	float delta = ((t - last_time) * 1.0f) / CLOCKS_PER_SEC;
-
-	if (delta > 0.5) {
+	if (delta > 2) {// to avoid jumps after pausing for dialogs
+		delta = 0.1;
+	}
+	if (delta > 0.05) {
+		//cout << "hi" << endl;
 		last_time = t;
 		scene->stepAnimations(delta);
 		glutPostRedisplay();

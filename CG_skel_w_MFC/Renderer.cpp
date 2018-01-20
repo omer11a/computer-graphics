@@ -253,7 +253,7 @@ void Renderer::DrawSquare(const vec3& p1, const vec3& p2, const vec3& p3, const 
 
 void Renderer::DrawBox(const vec3& minValues, const vec3& maxValues)
 {
-	vec3 color(0.9);
+	vec3 color(0.9f);
 	mat4 mvp = m_projection * m_cTransform * m_oTransform;
 	vector<vec3> vertices;
 	vertices.push_back(convert4dTo3d(mvp * vec4(minValues.x, minValues.y, minValues.z, 1))); // 1
