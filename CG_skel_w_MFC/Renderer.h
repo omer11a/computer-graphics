@@ -64,6 +64,7 @@ public:
 		const bool hasWoodTexture,
 		const vec3& woodTextureColor1,
 		const vec3& woodTextureColor2,
+		const vec2& modelResolution,
 		const vector<vec3>* vertexNormals = NULL,
 		const vector<vec3>* faceNormals = NULL) override;
 	void DrawModelNormals(

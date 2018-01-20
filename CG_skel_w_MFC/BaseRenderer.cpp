@@ -49,6 +49,7 @@ void BaseRenderer::DrawTriangles(
 	const bool hasWoodTexture,
 	const vec3& woodTextureColor1,
 	const vec3& woodTextureColor2,
+	const vec2& modelResolution,
 	const vector<vec3>* vertexNormals,
 	const vector<vec3>* faceNormals) { }
 
