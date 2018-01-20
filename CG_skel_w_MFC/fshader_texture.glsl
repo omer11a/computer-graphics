@@ -28,8 +28,8 @@ uniform float inScatteringCoefficient;
 uniform int colorAnimationRepresentation;
 uniform float colorAnimationDelta;
 uniform int colorQuantizationCoefficient;
-uniform vec3 woodColor1;
-uniform vec3 woodColor2;
+uniform vec3 woodTextureColor1;
+uniform vec3 woodTextureColor2;
 
 layout (location = 0) in vec3 vertexPosition;
 layout (location = 1) in vec3 vertexNormal;
@@ -141,8 +141,8 @@ void main() {
 			vec2 position = st.yx * vec2(20, 5);
 			float angle = noise(position) * 0.7;
 			position = mat2(cos(angle), - sin(angle), sin(angle), cos(angle)) * position;
-			float pattern = smoothstep(0.0, 1.0, abs((sin(position.x * 3.1415) + 1)) * 0.5);
-			ambientColor = pattern * woodColor1 + (1 - pattern) * woodColor2;
+			float pattern = smoothstep(0.0, 1.0, abs(sin(position.x * 15.0) + 1.0) * 0.5);
+			ambientColor = pattern * woodTextureColor1 + (1 - pattern) * woodTextureColor2;
 			specularColor = ambientColor;
 			diffuseColor = ambientColor;
 		}
