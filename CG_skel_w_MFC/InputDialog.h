@@ -384,3 +384,36 @@ protected:
 	DECLARE_MESSAGE_MAP()
 
 };
+
+// ----------------------
+//    Class Cc2Dialog
+// ----------------------
+class Cc2Dialog : public CInputDialog {
+public:
+	Cc2Dialog(const CString title = "Edit Model Colors", const CString c1_title = "Color 1:", const CString c2_title = "Color 2:");
+	virtual ~Cc2Dialog();
+
+	vec3 GetColor1() const;
+	vec3 GetColor2() const;
+	vec3 GetDiffuseColor() const;
+	float GetShininess() const;
+	bool ShouldRandom() const;
+protected:
+
+	CString color1_title;
+	CString color2_title;
+	COLORREF c1;
+	COLORREF c2;
+	
+	CButton c1Edit;
+	CButton c2Edit;
+	
+	afx_msg void set_c1();
+	afx_msg void set_c2();
+	virtual void DoDataExchange(CDataExchange* pDX);
+
+	afx_msg int OnCreate(LPCREATESTRUCT lpcs);
+	afx_msg void OnPaint();
+	DECLARE_MESSAGE_MAP()
+
+};

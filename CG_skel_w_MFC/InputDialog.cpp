@@ -1050,3 +1050,83 @@ void CAnimationDialog::OnPaint()
 
 	durationEdit.SetFocus();
 }
+
+// ----------------------
+//    Class Cc2Dialog
+// ----------------------
+void Cc2Dialog::set_c1() {
+	CColorDialog dlg;
+	if (dlg.DoModal() == IDOK) {
+		c1 = dlg.GetColor();
+	}
+}
+
+void Cc2Dialog::set_c2() {
+	CColorDialog dlg;
+	if (dlg.DoModal() == IDOK) {
+		c2 = dlg.GetColor();
+	}
+}
+
+Cc2Dialog::Cc2Dialog(const CString title, const CString c1_title, const CString c2_title)
+	: CInputDialog(title), color1_title(c1_title), c1(0xFFFFFF), c2(0)
+{ }
+
+Cc2Dialog::~Cc2Dialog()
+{ }
+
+vec3 Cc2Dialog::GetColor1() const
+{
+	return ColorToVec(c1);
+}
+
+vec3 Cc2Dialog::GetColor2() const
+{
+	return ColorToVec(c2);
+}
+
+void Cc2Dialog::DoDataExchange(CDataExchange* pDX)
+{
+	CInputDialog::DoDataExchange(pDX);
+	
+}
+
+// CEditModelDialog message handlers
+BEGIN_MESSAGE_MAP(Cc2Dialog, CInputDialog)
+	ON_WM_CREATE()
+	ON_WM_PAINT()
+	ON_BN_CLICKED(IDC_COLOR_EDIT, set_c1)
+	ON_BN_CLICKED(IDC_COLOR_EDIT + 1, set_c2)
+END_MESSAGE_MAP()
+
+int Cc2Dialog::OnCreate(LPCREATESTRUCT lpcs)
+{
+	int height = 70;
+	int sx = 220, ex = 300;
+
+	c1Edit.Create("Choose...", BS_PUSHBUTTON | WS_CHILD | WS_VISIBLE | WS_TABSTOP | WS_BORDER,
+		CRect(sx, height, ex, height + 20), this, IDC_COLOR_EDIT);
+	height += 40;
+
+	c2Edit.Create("Choose...", BS_PUSHBUTTON | WS_CHILD | WS_VISIBLE | WS_TABSTOP | WS_BORDER,
+		CRect(sx, height, ex, height + 20), this, IDC_COLOR_EDIT + 1);
+	height += 40;
+
+	return 0;
+}
+
+void Cc2Dialog::OnPaint()
+{
+	CPaintDC dc(this);
+	dc.SetBkMode(TRANSPARENT);
+	int height = 72;
+
+	CRect rect(50, height, 200, height + 18);
+	dc.DrawText(color1_title, -1, &rect, DT_SINGLELINE);
+
+	rect.bottom += 40;
+	rect.top += 40;
+	dc.DrawText(color2_title, -1, &rect, DT_SINGLELINE);
+
+	c1Edit.SetFocus();
+}

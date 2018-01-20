@@ -2,9 +2,9 @@
 #include "StdAfx.h"
 #include "MeshModel.h"
 #include "lodepng.h"
-#define cimg_use_magick
+//#define cimg_use_magick
 //#define cimg_use_png
-#include "CImg.h"
+//#include "CImg.h"
 #include <iostream>
 #include <fstream>
 #include <sstream>
@@ -293,7 +293,8 @@ MeshModel::MeshModel() :
 	textureID(0), hasTexture(false), normalMapID(0), hasNormalMap(false),
 	hasColorAnimation(false), colorAnimationRepresentation(0), colorAnimationSpeed(0), colorAnimationDuration(0), colorAnimationProgress(0),
 	hasVertexAnimation(false), vertexAnimationSpeed(0), vertexAnimationDuration(0), vertexAnimationProgress(0),
-	colorAnimationDirection(0), vertexAnimationDirection(0), hasToonShading(false), colorQuantizationCoefficient(0), silhouetteThickness(0), silhouetteColor(0)
+	colorAnimationDirection(0), vertexAnimationDirection(0), hasToonShading(false), colorQuantizationCoefficient(0), silhouetteThickness(0), silhouetteColor(0),
+	hasWoodTexture(false), woodTextureColor1(0), woodTextureColor2(0)
 { }
 
 MeshModel::MeshModel(string fileName) :
@@ -304,7 +305,8 @@ MeshModel::MeshModel(string fileName) :
 	textureID(0), hasTexture(false), normalMapID(0), hasNormalMap(false),
 	hasColorAnimation(false), colorAnimationRepresentation(0), colorAnimationSpeed(0), colorAnimationDuration(0), colorAnimationProgress(0),
 	hasVertexAnimation(false), vertexAnimationSpeed(0), vertexAnimationDuration(0), vertexAnimationProgress(0),
-	colorAnimationDirection(0), vertexAnimationDirection(0), hasToonShading(false), colorQuantizationCoefficient(0), silhouetteThickness(0), silhouetteColor(0)
+	colorAnimationDirection(0), vertexAnimationDirection(0), hasToonShading(false), colorQuantizationCoefficient(0), silhouetteThickness(0), silhouetteColor(0),
+	hasWoodTexture(false), woodTextureColor1(0), woodTextureColor2(0)
 {
 	loadFile(fileName);
 	setUniformMaterial({ vec3(1), vec3(1), vec3(1), 1 });
@@ -546,6 +548,18 @@ void MeshModel::disableToonShading()
 	hasToonShading = false;
 }
 
+void MeshModel::enableWoodTexture(const vec3 & color1, const vec3 & color2)
+{
+	woodTextureColor1 = color1;
+	woodTextureColor2 = color2;
+	hasWoodTexture = true;
+}
+
+void MeshModel::disableWoodTexture()
+{
+	hasWoodTexture = false;
+}
+
 void MeshModel::draw(BaseRenderer * renderer) const {
 	if (renderer == NULL) {
 		throw invalid_argument("Renderer is null");
@@ -558,6 +572,7 @@ void MeshModel::draw(BaseRenderer * renderer) const {
 		&textureCoordinates, &textureCenters, &tangents, 
 		hasColorAnimation, colorAnimationRepresentation, colorAnimationProgress * colorAnimationSpeed,
 		hasVertexAnimation, vertexAnimationProgress * vertexAnimationSpeed, hasToonShading, colorQuantizationCoefficient,
+		hasWoodTexture, woodTextureColor1, woodTextureColor2,
 		(hasVertexAnimation) ? &smoothVertexNormals : &vertexNormals, &faceNormals);
 
 	if (allowBoundingBox) {

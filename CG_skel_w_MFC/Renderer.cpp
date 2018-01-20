@@ -83,6 +83,9 @@ void Renderer::DrawTriangles(
 	const float vertexAnimationDelta,
 	const bool hasToonShading,
 	const int colorQuantizationCoefficient,
+	const bool hasWoodTexture,
+	const vec3& woodTextureColor1,
+	const vec3& woodTextureColor2,
 	const vector<vec3>* vertexNormals,
 	const vector<vec3>* faceNormals)
 {
@@ -115,6 +118,11 @@ void Renderer::DrawTriangles(
 	objectsProgram.SetUniformParameter(int(hasToonShading), "hasToonShading");
 	if (hasToonShading) {
 		objectsProgram.SetUniformParameter(colorQuantizationCoefficient, "colorQuantizationCoefficient");
+	}
+	objectsProgram.SetUniformParameter(int(hasWoodTexture), "hasWoodTexture");
+	if (hasWoodTexture) {
+		objectsProgram.SetUniformParameter(woodTextureColor1, "woodTextureColor1");
+		objectsProgram.SetUniformParameter(woodTextureColor2, "woodTextureColor2");
 	}
 
 	objectsProgram.SetUniformParameter(m_oTransform, "modelMatrix");
