@@ -119,9 +119,9 @@ void main() {
 		}
 
 		if (hasColorAnimation) {
-			applyColorAnimation(ambientColor, colorAnimationRepresentation, colorAnimationDelta);
-			applyColorAnimation(specularColor, colorAnimationRepresentation, colorAnimationDelta);
-			applyColorAnimation(diffuseColor, colorAnimationRepresentation, colorAnimationDelta);
+			ambientColor = applyColorAnimation(ambientColor, colorAnimationRepresentation, colorAnimationDelta);
+			specularColor = applyColorAnimation(specularColor, colorAnimationRepresentation, colorAnimationDelta);
+			diffuseColor = applyColorAnimation(diffuseColor, colorAnimationRepresentation, colorAnimationDelta);
 		}
 
 		if (hasNormalMapping) {
