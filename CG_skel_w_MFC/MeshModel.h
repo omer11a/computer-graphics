@@ -24,11 +24,13 @@ class MeshModel
 	mat3 convertToNormalTransform(const mat4 & transform) const;
 	void computeBoundingBox();
 	void computeTangents();
+	void computeSmoothVertexNormals();
 
 protected:
 	vector<vec3> vertexPositions;
 	vector<vec3> centerPositions;
 	vector<vec3> vertexNormals;
+	vector<vec3> smoothVertexNormals;
 	vector<vec2> textureCoordinates;
 	vector<vec2> textureCenters;
 	vector<vec3> faceNormals;

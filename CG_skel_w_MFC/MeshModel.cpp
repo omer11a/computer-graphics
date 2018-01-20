@@ -6,6 +6,7 @@
 #include <fstream>
 #include <sstream>
 #include <random>
+#include <map>
 
 using namespace std;
 
@@ -68,6 +69,7 @@ void MeshModel::loadFile(string fileName)
 	vector<vec3> vertices;
 	vector<vec3> normals;
 	vector<vec2> coordinates;
+	map<int, vec3> smoothNormals;
 
 	// while not end of file
 	while (!ifile.eof())
@@ -108,7 +110,6 @@ void MeshModel::loadFile(string fileName)
 	//vertex_positions={v1,v2,v3,v1,v3,v4}
 
 	// iterate through all stored faces and create triangles
-	int k = 0;
 	for (vector<FaceIdcs>::iterator it = faces.begin(); it != faces.end(); ++it)
 	{
 		for (int i = 0; i < 3; i++)
@@ -116,11 +117,27 @@ void MeshModel::loadFile(string fileName)
 			vertexPositions.push_back(getVecByIndex(vertices, it->v[i]));
 			
 			if (normals.size() != 0) {
-				vertexNormals.push_back(getVecByIndex(normals, it->vn[i]));
+				vec3 normal = getVecByIndex(normals, it->vn[i]);
+				auto mapIt = smoothNormals.find(it->v[i]);
+				if (mapIt != smoothNormals.end()) {
+					normal += mapIt->second;
+				}
+
+				vertexNormals.push_back(normal);
+				smoothNormals.insert(make_pair(it->v[i], normal));
 			}
 
 			if (coordinates.size() != 0) {
 				textureCoordinates.push_back(getVecByIndex(coordinates, it->vt[i]));
+			}
+		}
+	}
+
+	if (smoothNormals.size() != 0) {
+		for (vector<FaceIdcs>::iterator it = faces.begin(); it != faces.end(); ++it) {
+			for (int i = 0; i < 3; i++) {
+				auto mapIt = smoothNormals.find(it->v[i]);
+				smoothVertexNormals.push_back(normalize(mapIt->second));
 			}
 		}
 	}
@@ -265,7 +282,7 @@ void MeshModel::computeTangents() {
 }
 
 MeshModel::MeshModel() :
-	vertexPositions(), vertexNormals(), textureCoordinates(), textureCenters(),
+	vertexPositions(), vertexNormals(), smoothVertexNormals(), textureCoordinates(), textureCenters(),
 	faceNormals(), materials(),
 	worldTransform(1), modelTransform(1), normalModelTransform(1), normalWorldTransform(1),
 	allowVertexNormals(false), allowFaceNormals(false), allowBoundingBox(false), 
@@ -275,7 +292,7 @@ MeshModel::MeshModel() :
 { }
 
 MeshModel::MeshModel(string fileName) :
-	vertexPositions(), vertexNormals(), textureCoordinates(), textureCenters(), 
+	vertexPositions(), vertexNormals(), smoothVertexNormals(), textureCoordinates(), textureCenters(),
 	faceNormals(), materials(),
 	worldTransform(1), modelTransform(1), normalModelTransform(1), normalWorldTransform(1),
 	allowVertexNormals(false), allowFaceNormals(false), allowBoundingBox(false),
