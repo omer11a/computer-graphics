@@ -178,11 +178,7 @@ void Renderer::DrawTriangles(
 	}
 	
 	// Draw the triangle !
-	if (is_wire_mode) {
-		glDrawArrays(GL_TRIANGLES, 0, vertices->size());
-	} else {
-		glDrawArrays(GL_TRIANGLES, 0, vertices->size());
-	}
+	glDrawArrays(GL_TRIANGLES, 0, vertices->size());
 
 	// cleanup
 	objectsProgram.ClearAttributes();
