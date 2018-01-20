@@ -118,7 +118,7 @@ void main() {
 	outVertexNormal = normalMatrix * vertexNormal;
 	if (hasVertexAnimation) {
 	    vec3 transformedVertex = (modelMatrix * vec4(vertexPosition, 1)).xyz;
-		vec3 transformedNormal = vertexAnimationDelta * normalize(outVertexNormal);
+		vec3 transformedNormal = length(vertexPosition) * vertexAnimationDelta * normalize(outVertexNormal);
 		outVertexPosition = transformedVertex + transformedNormal;
 	} else {
 		outVertexPosition = (modelMatrix * vec4(vertexPosition, 1)).xyz;

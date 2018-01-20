@@ -118,13 +118,14 @@ void MeshModel::loadFile(string fileName)
 			
 			if (normals.size() != 0) {
 				vec3 normal = getVecByIndex(normals, it->vn[i]);
+				vertexNormals.push_back(normal);
+
 				auto mapIt = smoothNormals.find(it->v[i]);
 				if (mapIt != smoothNormals.end()) {
 					normal += mapIt->second;
 				}
-
-				vertexNormals.push_back(normal);
-				smoothNormals.insert(make_pair(it->v[i], normal));
+				
+				smoothNormals[it->v[i]] = normal;
 			}
 
 			if (coordinates.size() != 0) {
