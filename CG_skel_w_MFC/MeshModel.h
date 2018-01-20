@@ -37,13 +37,14 @@ protected:
 	//vector<vec3> bitangents;
 	vector<Material> materials;
 	GLuint textureID, normalMapID;
-	bool hasTexture, hasNormalMap, hasColorAnimation, hasVertexAnimation, hasToonShading;
+	bool hasTexture, hasNormalMap, hasColorAnimation, hasVertexAnimation, hasToonShading, hasWoodTexture;
 	int colorAnimationRepresentation, colorAnimationDirection, vertexAnimationDirection;
 	float colorAnimationSpeed, colorAnimationDuration, colorAnimationProgress;
 	float vertexAnimationSpeed, vertexAnimationDuration, vertexAnimationProgress;
 	int colorQuantizationCoefficient;
 	float silhouetteThickness;
-	vec3 silhouetteColor;
+	vec3 silhouetteColor, woodTextureColor1, woodTextureColor2;
+
 
 	template<class T>
 	T & getVecByIndex(vector<T> & vecs, int i)
@@ -93,6 +94,8 @@ public:
 	void stopVertexAnimation();
 	void enableToonShading(const int cqc, const float st, const vec3& color);
 	void disableToonShading();
+	void enableWoodTexture(const vec3& color1, const vec3& color2);
+	void disableWoodTexture();
 	void draw(BaseRenderer * renderer) const;
 	void drawNormals(BaseRenderer * renderer) const;
 };
