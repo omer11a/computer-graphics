@@ -31,8 +31,8 @@ Renderer::~Renderer(void)
 
 void Renderer::UpdateBuffers(int width, int height)
 {
-	m_width = anti_factor * width;
-	m_height = anti_factor * height;
+	m_width = (anti_factor ? 2 : 1) * width;
+	m_height = (anti_factor ? 2 : 1) * height;
 	m_screen_width = width;
 	m_screen_height = height;
 	min_size = min(m_width, m_height) / 2;
