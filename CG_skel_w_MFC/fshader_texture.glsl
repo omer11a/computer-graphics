@@ -41,6 +41,7 @@ layout (location = 6) in vec2 uv;
 layout (location = 7) in vec3 tangent;
 layout (location = 8) in vec3 color;
 layout (location = 9) in vec3 viewVertexPosition;
+layout (location = 10) in vec3 modelVertexPosition;
 
 layout (location = 0) out vec4 outColor;
 
@@ -137,7 +138,7 @@ void main() {
 		}
 
 		if (hasWoodTexture) {
-			vec2 st = vertexPosition.xy / 1000.0;
+			vec2 st = modelVertexPosition.xy / 3.0;
 			vec2 position = st.yx * vec2(20, 5);
 			float angle = noise(position) * 0.7;
 			position = mat2(cos(angle), - sin(angle), sin(angle), cos(angle)) * position;

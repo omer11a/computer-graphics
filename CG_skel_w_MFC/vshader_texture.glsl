@@ -50,6 +50,7 @@ layout (location = 6) out vec2 outUv;
 layout (location = 7) out vec3 outTangent;
 layout (location = 8) out vec3 outColor;
 layout (location = 9) out vec3 outViewVertexPosition;
+layout (location = 10) out vec3 outModelVertexPosition;
 
 vec3 rgb2hsv(vec3 c) {
     vec4 k = vec4(0.0, -1.0 / 3.0, 2.0 / 3.0, -1.0);
@@ -129,6 +130,7 @@ void main() {
 	outDiffuseReflectance = diffuseReflectance;
 	outShininess = shininess;
 	outUv = uv;
+	outModelVertexPosition = vertexPosition;
 
 	vec3 color = vec3(0);
 	if ((isFlat) || (isGouraud)) {
