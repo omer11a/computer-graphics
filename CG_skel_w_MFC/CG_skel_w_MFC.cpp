@@ -571,7 +571,7 @@ void modelMenu(int id)
 		break;
 	case ADD_TOON_SHADING:
 		if (scene->getNumberOfModels() > 0) {
-			Cv2c1Dialog tdlg("Addd Toon Shading", "Color Quantization Coefficient", "Silhouette Thickness", "color", 0.1, 4);
+			Cv2c1Dialog tdlg("Addd Toon Shading", "Color Quantization Coefficient", "Silhouette Thickness", "color", 5, 0.1);
 			if (tdlg.DoModal() == IDOK) {
 				int cqc = tdlg.GetValue1(); // > 0
 				float st = tdlg.GetValue2(); // >= 0
@@ -645,14 +645,16 @@ void settingMenu(int id)
 		set_zoom_value();
 		break;
 	case SETTING_AA:
-		if (dlg.DoModal() == IDOK) {
-			int factor = dlg.GetValue();
-			if (factor >= 1) {
-				renderer->SetAntiAliasing(factor);
-				cout << "set anti aliasing with factor " << factor << endl;
-				redraw();
-			}
-		}
+		renderer->SetAntiAliasing();
+		redraw();
+		//if (dlg.DoModal() == IDOK) {
+		//	int factor = dlg.GetValue();
+		//	if (factor >= 1) {
+		//		renderer->SetAntiAliasing();
+		//		cout << "set anti aliasing with factor " << factor << endl;
+		//		redraw();
+		//	}
+		//}
 		break;
 	}
 }

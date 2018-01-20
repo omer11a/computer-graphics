@@ -14,14 +14,14 @@ Renderer::Renderer() : BaseRenderer(512, 512),
 m_cTransform(1), m_projection(1), m_oTransform(1), m_nTransform(1), m_cnTransform(1), is_wire_mode(false), mv(1), mvp(1), vp(1)
 {
 	InitOpenGLRendering();
-	anti_factor = 1;
+	anti_factor = false;
 	UpdateBuffers(512, 512);
 }
 Renderer::Renderer(int width, int height) : BaseRenderer(width, height),
 m_cTransform(1), m_projection(1), m_oTransform(1), m_nTransform(1), m_cnTransform(1), is_wire_mode(false), mv(1), mvp(1), vp(1)
 {
 	InitOpenGLRendering();
-	anti_factor = 1;
+	anti_factor = false;
 	UpdateBuffers(width, height);
 }
 
@@ -321,7 +321,7 @@ void Renderer::DrawCamera()
 	basicProgram.SetUniformParameter(color, "color");
 
 	vector<vec3> plus;
-	GLfloat offset = 5.0f * anti_factor / min_size;
+	GLfloat offset = 5.0f * (anti_factor ? 2 : 1) / min_size;
 	plus.push_back(camera_location + vec3(0, -offset, 0)); // |
 	plus.push_back(camera_location + vec3(0, offset, 0));
 	plus.push_back(camera_location + vec3(-offset, 0, 0)); // -
@@ -343,7 +343,7 @@ void Renderer::DrawLight(const vec3& color, const vec3& position)
 	basicProgram.SetUniformParameter(color, "color");
 
 	vector<vec3> star;
-	GLfloat offset = 5.0f * anti_factor / min_size;
+	GLfloat offset = 5.0f * (anti_factor ? 2 : 1) / min_size;
 	star.push_back(light_location + vec3(-offset, -offset, 0)); // \ 
 	star.push_back(light_location + vec3(offset, offset, 0));
 	star.push_back(light_location + vec3(offset, -offset, 0)); // /
@@ -437,17 +437,15 @@ void Renderer::SwitchWire()
 	is_wire_mode = !is_wire_mode;
 }
 
-void Renderer::SetAntiAliasing(int new_factor)
+void Renderer::SetAntiAliasing()
 {
-	if (new_factor < 1) return;
-
-	//if (new_factor == 1) {
-	//	glDisable(GL_MULTISAMPLE_BIT);
-	//} else {
-	//	glEnable(GL_MULTISAMPLE_BIT);
-	//}
-	anti_factor = new_factor;
-	UpdateBuffers(m_screen_width, m_screen_height);
+	anti_factor = !anti_factor;
+	if (anti_factor) {
+		glEnable(GL_MULTISAMPLE_BIT);
+	} else {
+		glDisable(GL_MULTISAMPLE_BIT);
+	}
+	//UpdateBuffers(m_screen_width, m_screen_height);
 }
 
 void Renderer::SetBaseShader(Renderer::ShaderType s) {
