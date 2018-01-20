@@ -285,10 +285,11 @@ MeshModel::MeshModel() :
 	vertexPositions(), vertexNormals(), smoothVertexNormals(), textureCoordinates(), textureCenters(),
 	faceNormals(), materials(),
 	worldTransform(1), modelTransform(1), normalModelTransform(1), normalWorldTransform(1),
-	allowVertexNormals(false), allowFaceNormals(false), allowBoundingBox(false), 
+	allowVertexNormals(false), allowFaceNormals(false), allowBoundingBox(false),
 	textureID(0), hasTexture(false), normalMapID(0), hasNormalMap(false),
 	hasColorAnimation(false), colorAnimationRepresentation(0), colorAnimationSpeed(0), colorAnimationDuration(0), colorAnimationProgress(0),
-	colorAnimationDirection(0)
+	hasVertexAnimation(false), vertexAnimationSpeed(0), vertexAnimationDuration(0), vertexAnimationProgress(0),
+	colorAnimationDirection(0), vertexAnimationDirection(0), hasToonShading(false), colorQuantizationCoefficient(0)
 { }
 
 MeshModel::MeshModel(string fileName) :
@@ -298,7 +299,8 @@ MeshModel::MeshModel(string fileName) :
 	allowVertexNormals(false), allowFaceNormals(false), allowBoundingBox(false),
 	textureID(0), hasTexture(false), normalMapID(0), hasNormalMap(false),
 	hasColorAnimation(false), colorAnimationRepresentation(0), colorAnimationSpeed(0), colorAnimationDuration(0), colorAnimationProgress(0),
-	colorAnimationDirection(0)
+	hasVertexAnimation(false), vertexAnimationSpeed(0), vertexAnimationDuration(0), vertexAnimationProgress(0),
+	colorAnimationDirection(0), vertexAnimationDirection(0), hasToonShading(false), colorQuantizationCoefficient(0)
 {
 	loadFile(fileName);
 	setUniformMaterial({ vec3(1), vec3(1), vec3(1), 1 });
@@ -497,6 +499,10 @@ void MeshModel::stopColorAnimation()
 
 void MeshModel::startVertexAnimation(float speed, float duration)
 {
+	if (vertexNormals.size() == 0) {
+		cout << "can't add animation without vertex normals" << endl;
+		return;
+	}
 	if (allowFaceNormals || allowVertexNormals || allowBoundingBox) {
 		cout << "can't add animation while normals or bouning box is visible" << endl;
 		return;
@@ -518,11 +524,14 @@ void MeshModel::draw(BaseRenderer * renderer) const {
 		throw invalid_argument("Renderer is null");
 	}
 	renderer->SetObjectMatrices(worldTransform * modelTransform, normalWorldTransform * normalModelTransform);
+	if (hasToonShading) {
+		//renderer->DrawToonShadow(&vertexPositions, &vertexNormals);
+	}
 	renderer->DrawTriangles(&vertexPositions, &materials, &centerPositions, hasTexture, textureID, hasNormalMap, normalMapID,
 		&textureCoordinates, &textureCenters, &tangents, 
 		hasColorAnimation, colorAnimationRepresentation, colorAnimationProgress * colorAnimationSpeed,
-		hasVertexAnimation, vertexAnimationProgress * vertexAnimationSpeed,
-		&vertexNormals, &faceNormals);
+		hasVertexAnimation, vertexAnimationProgress * vertexAnimationSpeed, hasToonShading, colorQuantizationCoefficient,
+		(hasVertexAnimation) ? &smoothVertexNormals : &vertexNormals, &faceNormals);
 
 	if (allowBoundingBox) {
 		renderer->DrawBox(minValues, maxValues);

@@ -15,6 +15,9 @@ public:
 	explicit BaseRenderer();
 	explicit BaseRenderer(int width, int height);
 	
+	virtual void DrawToonShadow(
+		const vector<vec3>* vertices,
+		const vector<vec3>* vertexNormals);
 	virtual void DrawTriangles(
 		const vector<vec3>* vertices,
 		const vector<Material>* materials,
@@ -31,6 +34,8 @@ public:
 		const float colorAnimationDelta,
 		const bool hasVertexAnimation,
 		const float vertexAnimationDelta,
+		const bool hasToonShading,
+		const int colorQuantizationCoefficient,
 		const vector<vec3>* vertexNormals = NULL,
 		const vector<vec3>* faceNormals = NULL);
 	virtual void DrawModelNormals(

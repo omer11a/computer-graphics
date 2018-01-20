@@ -11,14 +11,14 @@
 #include <functional>
 
 Renderer::Renderer() : BaseRenderer(512, 512), 
-m_cTransform(1), m_projection(1), m_oTransform(1), m_nTransform(1), m_cnTransform(1), is_wire_mode(false)
+m_cTransform(1), m_projection(1), m_oTransform(1), m_nTransform(1), m_cnTransform(1), is_wire_mode(false), mv(1), mvp(1), vp(1)
 {
 	InitOpenGLRendering();
 	anti_factor = 1;
 	UpdateBuffers(512, 512);
 }
 Renderer::Renderer(int width, int height) : BaseRenderer(width, height),
-m_cTransform(1), m_projection(1), m_oTransform(1), m_nTransform(1), m_cnTransform(1), is_wire_mode(false)
+m_cTransform(1), m_projection(1), m_oTransform(1), m_nTransform(1), m_cnTransform(1), is_wire_mode(false), mv(1), mvp(1), vp(1)
 {
 	InitOpenGLRendering();
 	anti_factor = 1;
@@ -39,6 +39,10 @@ void Renderer::UpdateBuffers(int width, int height)
 	CreateOpenGLBuffer(); //Do not remove this line.
 }
 
+void Renderer::DrawToonShadow(const vector<vec3>* vertices, const vector<vec3>* vertexNormals)
+{
+}
+
 void Renderer::DrawTriangles(
 	const vector<vec3>* vertices,
 	const vector<Material>* materials,
@@ -55,6 +59,8 @@ void Renderer::DrawTriangles(
 	const float colorAnimationDelta,
 	const bool hasVertexAnimation,
 	const float vertexAnimationDelta,
+	const bool hasToonShading,
+	const int colorQuantizationCoefficient,
 	const vector<vec3>* vertexNormals,
 	const vector<vec3>* faceNormals)
 {
@@ -84,16 +90,23 @@ void Renderer::DrawTriangles(
 	if (hasVertexAnimation) {
 		objectsProgram.SetUniformParameter(vertexAnimationDelta, "vertexAnimationDelta");
 	}
+	objectsProgram.SetUniformParameter(int(hasToonShading), "hasToonShading");
+	if (hasToonShading) {
+		objectsProgram.SetUniformParameter(colorQuantizationCoefficient, "colorQuantizationCoefficient");
+	}
 
 	objectsProgram.SetUniformParameter(m_oTransform, "modelMatrix");
 	objectsProgram.SetUniformParameter(m_nTransform, "normalMatrix");
-	objectsProgram.SetUniformParameter(mv, "modelViewMatrix");
-	objectsProgram.SetUniformParameter(mvp, "modelViewProjectionMatrix");
+	objectsProgram.SetUniformParameter(m_cTransform, "viewMatrix");
+	objectsProgram.SetUniformParameter(vp, "viewProjectionMatrix");
 
 	// if there are no normals, use the flat shader
 	ShaderType temp = shader;
 	if ((vertexNormals == NULL) || (vertexNormals->size() == 0)) {
 		SetBaseShader(ShaderType::Flat);
+	} else if ((hasVertexAnimation) && (shader == ShaderType::Flat)) {
+		// flat shader can't be used during vertex animation
+		SetBaseShader(ShaderType::Gouraud);
 	}
 
 	// split material parameters
@@ -139,7 +152,7 @@ void Renderer::DrawTriangles(
 		glDeleteBuffers(1, &buffers[i]);
 	}
 
-	if ((vertexNormals == NULL) || (vertexNormals->size() == 0)) {
+	if (temp != shader) {
 		SetBaseShader(temp);
 	}
 }
@@ -309,6 +322,7 @@ void Renderer::SetCameraTransform(const mat4& cInverseTransform, const mat4 & cT
 	
 	vec3 camera_position = convert4dTo3d(cTransform * vec4(0, 0, 0, 1));
 	mv = m_cTransform * m_oTransform;
+	vp = m_projection * m_cTransform;
 	mvp = m_projection * mv;
 	objectsProgram.Activate();
 	objectsProgram.SetUniformParameter(camera_position, "cameraPosition");
@@ -317,6 +331,7 @@ void Renderer::SetCameraTransform(const mat4& cInverseTransform, const mat4 & cT
 void Renderer::SetProjection(const mat4 & projection)
 {
 	m_projection = projection;
+	vp = m_projection * m_cTransform;
 	mvp = m_projection * m_cTransform * m_oTransform;
 }
 
@@ -415,6 +430,7 @@ void Renderer::InitOpenGLRendering()
 	basicProgram = ShaderProgram("vshader_basic.glsl", "fshader_basic.glsl", 1);
 	objectsProgram = ShaderProgram("vshader_texture.glsl", "fshader_texture.glsl", 10);
 	normalsProgram = ShaderProgram("vshader_normal.glsl", "fshader_normal.glsl", 3);
+	toonProgram = ShaderProgram("vshader_silhouette.glsl", "fshader_silhouette.glsl", 2);
 	objectsProgram.Activate();
 	SetBaseShader(ShaderType::Flat);
 	DisableFog();

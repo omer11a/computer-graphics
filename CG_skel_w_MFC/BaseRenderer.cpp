@@ -22,6 +22,8 @@ void BaseRenderer::ClearColorBuffer() { }
 
 void BaseRenderer::SetDemoBuffer() { }
 
+void BaseRenderer::DrawToonShadow(const vector<vec3>* vertices, const vector<vec3>* vertexNormals) { }
+
 void BaseRenderer::DrawTriangles(
 	const vector<vec3>* vertices,
 	const vector<Material>* materials,
@@ -38,6 +40,8 @@ void BaseRenderer::DrawTriangles(
 	const float colorAnimationDelta,
 	const bool hasVertexAnimation,
 	const float vertexAnimationDelta,
+	const bool hasToonShading,
+	const int colorQuantizationCoefficient,
 	const vector<vec3>* vertexNormals,
 	const vector<vec3>* faceNormals) { }
 

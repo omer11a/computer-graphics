@@ -20,7 +20,7 @@ private:
 	int m_screen_width, m_screen_height, anti_factor;
 	bool is_wire_mode;
 
-	mat4 m_cTransform, m_projection, m_oTransform, mvp, mv;
+	mat4 m_cTransform, m_projection, m_oTransform, mvp, mv, vp;
 	mat3 m_cnTransform, m_nTransform;
 
 	ShaderType shader;
@@ -29,7 +29,7 @@ private:
 	// openGL stuff. Don't touch.
 	GLuint gScreenTex;
 	GLuint gScreenVtc;	// VertexArrayID in tutorials
-	ShaderProgram basicProgram, objectsProgram, normalsProgram;
+	ShaderProgram basicProgram, objectsProgram, normalsProgram, toonProgram;
 	void CreateOpenGLBuffer();
 	void InitOpenGLRendering();
 	//////////////////////////////
@@ -38,6 +38,9 @@ public:
 	Renderer(int width, int height);
 	~Renderer(void);
 
+	void DrawToonShadow(
+		const vector<vec3>* vertices,
+		const vector<vec3>* vertexNormals) override;
 	void DrawTriangles(
 		const vector<vec3>* vertices,
 		const vector<Material>* materials,
@@ -54,6 +57,8 @@ public:
 		const float colorAnimationDelta,
 		const bool hasVertexAnimation,
 		const float vertexAnimationDelta,
+		const bool hasToonShading,
+		const int colorQuantizationCoefficient,
 		const vector<vec3>* vertexNormals = NULL,
 		const vector<vec3>* faceNormals = NULL) override;
 	void DrawModelNormals(

@@ -24,7 +24,6 @@ class MeshModel
 	mat3 convertToNormalTransform(const mat4 & transform) const;
 	void computeBoundingBox();
 	void computeTangents();
-	void computeSmoothVertexNormals();
 
 protected:
 	vector<vec3> vertexPositions;
@@ -38,10 +37,11 @@ protected:
 	//vector<vec3> bitangents;
 	vector<Material> materials;
 	GLuint textureID, normalMapID;
-	bool hasTexture, hasNormalMap, hasColorAnimation, hasVertexAnimation;
+	bool hasTexture, hasNormalMap, hasColorAnimation, hasVertexAnimation, hasToonShading;
 	int colorAnimationRepresentation, colorAnimationDirection, vertexAnimationDirection;
 	float colorAnimationSpeed, colorAnimationDuration, colorAnimationProgress;
 	float vertexAnimationSpeed, vertexAnimationDuration, vertexAnimationProgress;
+	int colorQuantizationCoefficient;
 
 	template<class T>
 	T & getVecByIndex(vector<T> & vecs, int i)
