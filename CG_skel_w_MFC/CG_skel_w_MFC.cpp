@@ -73,6 +73,8 @@ PrimMeshModels:
 #define DEL_VERTEX_ANIMATION 9
 #define ADD_TOON_SHADING 10
 #define DEL_TOON_SHADING 11
+#define ADD_WOOD_TEXTURE 12
+#define DEL_WOOD_TEXTURE 13
 
 
 // light extra menu
@@ -590,6 +592,23 @@ void modelMenu(int id)
 			should_redraw = true;
 		}
 		break;
+	case ADD_WOOD_TEXTURE:
+		if (scene->getNumberOfModels() > 0) {
+			Cc2Dialog c2dlg("Add Wood Texture");
+			if (c2dlg.DoModal() == IDOK) {
+				scene->getActiveModel()->enableWoodTexture(c2dlg.GetColor1(), c2dlg.GetColor2());
+				cout << "enabled wood texture" << endl;
+				should_redraw = true;
+			}
+		}
+		break;
+	case DEL_WOOD_TEXTURE:
+		if (scene->getNumberOfModels() > 0) {
+			scene->getActiveModel()->disableWoodTexture();
+			cout << "disabled wood texture" << endl;
+			should_redraw = true;
+		}
+		break;
 	}
 	redraw(should_redraw);
 }
@@ -670,6 +689,8 @@ void initMenu()
 	glutAddMenuEntry("Disable Vertex Animation", DEL_VERTEX_ANIMATION);
 	glutAddMenuEntry("Enable Toon Shading", ADD_TOON_SHADING);
 	glutAddMenuEntry("Disable Toon Shading", DEL_TOON_SHADING);
+	glutAddMenuEntry("Enable Wood Texture", ADD_WOOD_TEXTURE);
+	glutAddMenuEntry("Disable Wood Texture", DEL_WOOD_TEXTURE);
 
 	// light sub menu
 	int menuLight = glutCreateMenu(lightMenu);
