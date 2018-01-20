@@ -42,6 +42,8 @@ protected:
 	float colorAnimationSpeed, colorAnimationDuration, colorAnimationProgress;
 	float vertexAnimationSpeed, vertexAnimationDuration, vertexAnimationProgress;
 	int colorQuantizationCoefficient;
+	float silhouetteThickness;
+	vec3 silhouetteColor;
 
 	template<class T>
 	T & getVecByIndex(vector<T> & vecs, int i)
@@ -84,11 +86,13 @@ public:
 	void setTextures(const vec3& ambient, const vec3& specular, const string fileName, const float shininess);
 	void enableNormalMap(const string fileName);
 	void disableNormalMap();
-	void startColorAnimation(int animationType, float speed, float duration);
-	void stepAnimation(float timeDelta);
+	void startColorAnimation(const int animationType, const float speed, const float duration);
+	void stepAnimation(const float timeDelta);
 	void stopColorAnimation();
-	void startVertexAnimation(float speed, float duration);
+	void startVertexAnimation(const float speed, const float duration);
 	void stopVertexAnimation();
+	void enableToonShading(const int cqc, const float st, const vec3& color);
+	void disableToonShading();
 	void draw(BaseRenderer * renderer) const;
 	void drawNormals(BaseRenderer * renderer) const;
 };

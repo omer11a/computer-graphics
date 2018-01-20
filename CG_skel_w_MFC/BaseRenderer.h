@@ -17,7 +17,9 @@ public:
 	
 	virtual void DrawToonShadow(
 		const vector<vec3>* vertices,
-		const vector<vec3>* vertexNormals);
+		const vector<vec3>* vertexNormals,
+		const float silhouetteThickness,
+		const vec3& silhouetteColor);
 	virtual void DrawTriangles(
 		const vector<vec3>* vertices,
 		const vector<Material>* materials,

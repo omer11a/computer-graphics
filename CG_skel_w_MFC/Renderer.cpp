@@ -39,8 +39,30 @@ void Renderer::UpdateBuffers(int width, int height)
 	CreateOpenGLBuffer(); //Do not remove this line.
 }
 
-void Renderer::DrawToonShadow(const vector<vec3>* vertices, const vector<vec3>* vertexNormals)
+void Renderer::DrawToonShadow(
+	const vector<vec3>* vertices, 
+	const vector<vec3>* vertexNormals,
+	const float silhouetteThickness,
+	const vec3& silhouetteColor)
 {
+	toonProgram.Activate();
+	glCullFace(GL_FRONT);
+
+	toonProgram.SetUniformParameter(m_oTransform, "modelMatrix");
+	toonProgram.SetUniformParameter(m_nTransform, "normalMatrix");
+	toonProgram.SetUniformParameter(vp, "viewProjectionMatrix");
+	toonProgram.SetUniformParameter(silhouetteThickness, "silhouetteThickness");
+	toonProgram.SetUniformParameter(silhouetteColor, "color");
+
+	GLuint v_buffer = toonProgram.SetInParameter(*vertices, 0, 3);				//in vec3 vertexPosition;
+	GLuint n_buffer = toonProgram.SetInParameter(*vertexNormals, 1, 3);			//in vec3 vertexNormal;
+	
+	glDrawArrays(GL_TRIANGLES, 0, vertices->size());
+	// cleanup
+	toonProgram.ClearAttributes();
+	glDeleteBuffers(1, &v_buffer);
+	glDeleteBuffers(1, &n_buffer);
+	glCullFace(GL_BACK);
 }
 
 void Renderer::DrawTriangles(
@@ -223,33 +245,61 @@ void Renderer::DrawModelNormals(
 
 void Renderer::DrawSquare(const vec3& p1, const vec3& p2, const vec3& p3, const vec3& p4, const vec3& color)
 {
-	//DrawLine(p1, vec3(0), p2, vec3(0), color);
-	//DrawLine(p2, vec3(0), p3, vec3(0), color);
-	//DrawLine(p3, vec3(0), p4, vec3(0), color);
-	//DrawLine(p4, vec3(0), p1, vec3(0), color);
+	//DrawLine(p1, p2);
+	//DrawLine(p2, p3);
+	//DrawLine(p3, p4);
+	//DrawLine(p4, p1);
 }
 
 void Renderer::DrawBox(const vec3& minValues, const vec3& maxValues)
 {
 	vec3 color(0.9);
+	mat4 mvp = m_projection * m_cTransform * m_oTransform;
+	vector<vec3> vertices;
+	vertices.push_back(convert4dTo3d(mvp * vec4(minValues.x, minValues.y, minValues.z, 1))); // 1
+	vertices.push_back(convert4dTo3d(mvp * vec4(maxValues.x, minValues.y, minValues.z, 1))); // 2
+	vertices.push_back(convert4dTo3d(mvp * vec4(maxValues.x, maxValues.y, minValues.z, 1))); // 3
+	vertices.push_back(convert4dTo3d(mvp * vec4(minValues.x, maxValues.y, minValues.z, 1))); // 4
+	vertices.push_back(convert4dTo3d(mvp * vec4(minValues.x, minValues.y, maxValues.z, 1))); // 1
+	vertices.push_back(convert4dTo3d(mvp * vec4(maxValues.x, minValues.y, maxValues.z, 1))); // 2
+	vertices.push_back(convert4dTo3d(mvp * vec4(maxValues.x, maxValues.y, maxValues.z, 1))); // 3
+	vertices.push_back(convert4dTo3d(mvp * vec4(minValues.x, maxValues.y, maxValues.z, 1))); // 4
+	vector<vec3> lines;
 	// front
-	DrawSquare(vec3(minValues.x, minValues.y, minValues.z), vec3(maxValues.x, minValues.y, minValues.z),
-		vec3(maxValues.x, maxValues.y, minValues.z), vec3(minValues.x, maxValues.y, minValues.z), color);
+	lines.push_back(vertices[0]);
+	lines.push_back(vertices[1]);
+	lines.push_back(vertices[1]);
+	lines.push_back(vertices[2]);
+	lines.push_back(vertices[2]);
+	lines.push_back(vertices[3]);
+	lines.push_back(vertices[3]);
+	lines.push_back(vertices[0]);
 	// back
-	DrawSquare(vec3(minValues.x, minValues.y, maxValues.z), vec3(maxValues.x, minValues.y, maxValues.z),
-		vec3(maxValues.x, maxValues.y, maxValues.z), vec3(minValues.x, maxValues.y, maxValues.z), color);
-	// top
-	DrawSquare(vec3(minValues.x, maxValues.y, minValues.z), vec3(maxValues.x, maxValues.y, minValues.z),
-		vec3(maxValues.x, maxValues.y, maxValues.z), vec3(minValues.x, maxValues.y, maxValues.z), color);
-	// bottom
-	DrawSquare(vec3(minValues.x, minValues.y, minValues.z), vec3(maxValues.x, minValues.y, minValues.z),
-		vec3(maxValues.x, minValues.y, maxValues.z), vec3(minValues.x, minValues.y, maxValues.z), color);
-	// left
-	DrawSquare(vec3(minValues.x, minValues.y, minValues.z), vec3(minValues.x, minValues.y, maxValues.z),
-		vec3(minValues.x, maxValues.y, maxValues.z), vec3(minValues.x, maxValues.y, minValues.z), color);
-	// right
-	DrawSquare(vec3(maxValues.x, minValues.y, minValues.z), vec3(maxValues.x, minValues.y, maxValues.z),
-		vec3(maxValues.x, maxValues.y, maxValues.z), vec3(maxValues.x, maxValues.y, minValues.z), color);
+	lines.push_back(vertices[4]);
+	lines.push_back(vertices[5]);
+	lines.push_back(vertices[5]);
+	lines.push_back(vertices[6]);
+	lines.push_back(vertices[6]);
+	lines.push_back(vertices[7]);
+	lines.push_back(vertices[7]);
+	lines.push_back(vertices[4]);
+	// sides
+	lines.push_back(vertices[0]);
+	lines.push_back(vertices[4]);
+	lines.push_back(vertices[1]);
+	lines.push_back(vertices[5]);
+	lines.push_back(vertices[2]);
+	lines.push_back(vertices[6]);
+	lines.push_back(vertices[3]);
+	lines.push_back(vertices[7]);
+
+	// Use our shader
+	basicProgram.Activate();
+	basicProgram.SetUniformParameter(color, "color");
+	GLuint buffer = basicProgram.SetInParameter(lines, 0, 3);			//in vec3 vertexPosition;
+	glDrawArrays(GL_LINES, 0, lines.size());
+	basicProgram.ClearAttributes();
+	glDeleteBuffers(1, &buffer);
 }
 
 void Renderer::DrawCamera()

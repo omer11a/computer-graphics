@@ -22,7 +22,11 @@ void BaseRenderer::ClearColorBuffer() { }
 
 void BaseRenderer::SetDemoBuffer() { }
 
-void BaseRenderer::DrawToonShadow(const vector<vec3>* vertices, const vector<vec3>* vertexNormals) { }
+void BaseRenderer::DrawToonShadow(
+	const vector<vec3>* vertices, 
+	const vector<vec3>* vertexNormals,
+	const float silhouetteThickness,
+	const vec3& silhouetteColor) { }
 
 void BaseRenderer::DrawTriangles(
 	const vector<vec3>* vertices,

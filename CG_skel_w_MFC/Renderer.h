@@ -40,7 +40,9 @@ public:
 
 	void DrawToonShadow(
 		const vector<vec3>* vertices,
-		const vector<vec3>* vertexNormals) override;
+		const vector<vec3>* vertexNormals,
+		const float silhouetteThickness,
+		const vec3& silhouetteColor) override;
 	void DrawTriangles(
 		const vector<vec3>* vertices,
 		const vector<Material>* materials,

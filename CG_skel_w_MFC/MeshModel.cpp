@@ -289,7 +289,7 @@ MeshModel::MeshModel() :
 	textureID(0), hasTexture(false), normalMapID(0), hasNormalMap(false),
 	hasColorAnimation(false), colorAnimationRepresentation(0), colorAnimationSpeed(0), colorAnimationDuration(0), colorAnimationProgress(0),
 	hasVertexAnimation(false), vertexAnimationSpeed(0), vertexAnimationDuration(0), vertexAnimationProgress(0),
-	colorAnimationDirection(0), vertexAnimationDirection(0), hasToonShading(false), colorQuantizationCoefficient(0)
+	colorAnimationDirection(0), vertexAnimationDirection(0), hasToonShading(false), colorQuantizationCoefficient(0), silhouetteThickness(0), silhouetteColor(0)
 { }
 
 MeshModel::MeshModel(string fileName) :
@@ -300,7 +300,7 @@ MeshModel::MeshModel(string fileName) :
 	textureID(0), hasTexture(false), normalMapID(0), hasNormalMap(false),
 	hasColorAnimation(false), colorAnimationRepresentation(0), colorAnimationSpeed(0), colorAnimationDuration(0), colorAnimationProgress(0),
 	hasVertexAnimation(false), vertexAnimationSpeed(0), vertexAnimationDuration(0), vertexAnimationProgress(0),
-	colorAnimationDirection(0), vertexAnimationDirection(0), hasToonShading(false), colorQuantizationCoefficient(0)
+	colorAnimationDirection(0), vertexAnimationDirection(0), hasToonShading(false), colorQuantizationCoefficient(0), silhouetteThickness(0), silhouetteColor(0)
 {
 	loadFile(fileName);
 	setUniformMaterial({ vec3(1), vec3(1), vec3(1), 1 });
@@ -463,7 +463,7 @@ void MeshModel::disableNormalMap()
 	hasNormalMap = false;
 }
 
-void MeshModel::startColorAnimation(int animationType, float speed, float duration)
+void MeshModel::startColorAnimation(const int animationType, const float speed, const float duration)
 {
 	colorAnimationRepresentation = animationType;
 	colorAnimationSpeed = speed;
@@ -473,7 +473,7 @@ void MeshModel::startColorAnimation(int animationType, float speed, float durati
 	hasColorAnimation = true;
 }
 
-void MeshModel::stepAnimation(float timeDelta)
+void MeshModel::stepAnimation(const float timeDelta)
 {
 	if (hasColorAnimation) {
 		// bumerang
@@ -497,7 +497,7 @@ void MeshModel::stopColorAnimation()
 	hasColorAnimation = false;
 }
 
-void MeshModel::startVertexAnimation(float speed, float duration)
+void MeshModel::startVertexAnimation(const float speed, const float duration)
 {
 	if (vertexNormals.size() == 0) {
 		cout << "can't add animation without vertex normals" << endl;
@@ -519,13 +519,30 @@ void MeshModel::stopVertexAnimation()
 	hasVertexAnimation = false;
 }
 
+void MeshModel::enableToonShading(const int cqc, const float st, const vec3& color)
+{
+	if (vertexNormals.size() == 0) {
+		cout << "can't add toon shading without vertex normals" << endl;
+		return;
+	}
+	colorQuantizationCoefficient = cqc;
+	silhouetteThickness = st;
+	silhouetteColor = color;
+	hasToonShading = true;
+}
+
+void MeshModel::disableToonShading()
+{
+	hasToonShading = false;
+}
+
 void MeshModel::draw(BaseRenderer * renderer) const {
 	if (renderer == NULL) {
 		throw invalid_argument("Renderer is null");
 	}
 	renderer->SetObjectMatrices(worldTransform * modelTransform, normalWorldTransform * normalModelTransform);
 	if (hasToonShading) {
-		//renderer->DrawToonShadow(&vertexPositions, &vertexNormals);
+		renderer->DrawToonShadow(&vertexPositions, &vertexNormals, silhouetteThickness, silhouetteColor);
 	}
 	renderer->DrawTriangles(&vertexPositions, &materials, &centerPositions, hasTexture, textureID, hasNormalMap, normalMapID,
 		&textureCoordinates, &textureCenters, &tangents, 

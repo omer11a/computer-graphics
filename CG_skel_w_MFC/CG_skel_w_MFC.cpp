@@ -71,6 +71,8 @@ PrimMeshModels:
 #define DEL_COLOR_ANIMATION 7
 #define ADD_VERTEX_ANIMATION 8
 #define DEL_VERTEX_ANIMATION 9
+#define ADD_TOON_SHADING 10
+#define DEL_TOON_SHADING 11
 
 
 // light extra menu
@@ -562,6 +564,29 @@ void modelMenu(int id)
 			should_redraw = true;
 		}
 		break;
+	case ADD_TOON_SHADING:
+		if (scene->getNumberOfModels() > 0) {
+			Cv2c1Dialog tdlg("Addd Toon Shading", "Color Quantization Coefficient", "Silhouette Thickness", "color");
+			if (tdlg.DoModal() == IDOK) {
+				int cqc = tdlg.GetValue1(); // > 0
+				float st = tdlg.GetValue2(); // >= 0
+				if ((cqc <= 0) || (st < 0)) {
+					cout << "toon shading: invalid parameters" << endl;
+				} else {
+					scene->getActiveModel()->enableToonShading(cqc, st, tdlg.GetColor());
+					cout << "enabled toon shading" << endl;
+					should_redraw = true;
+				}
+			}
+		}
+		break;
+	case DEL_TOON_SHADING:
+		if (scene->getNumberOfModels() > 0) {
+			scene->getActiveModel()->disableToonShading();
+			cout << "disabled toon shading" << endl;
+			should_redraw = true;
+		}
+		break;
 	}
 	redraw(should_redraw);
 }
@@ -640,6 +665,8 @@ void initMenu()
 	glutAddMenuEntry("Disable Color Animation", DEL_COLOR_ANIMATION);
 	glutAddMenuEntry("Enable Vertex Animation", ADD_VERTEX_ANIMATION);
 	glutAddMenuEntry("Disable Vertex Animation", DEL_VERTEX_ANIMATION);
+	glutAddMenuEntry("Enable Toon Shading", ADD_TOON_SHADING);
+	glutAddMenuEntry("Disable Toon Shading", DEL_TOON_SHADING);
 
 	// light sub menu
 	int menuLight = glutCreateMenu(lightMenu);
