@@ -552,7 +552,7 @@ void MeshModel::draw(BaseRenderer * renderer) const {
 	}
 	renderer->SetObjectMatrices(worldTransform * modelTransform, normalWorldTransform * normalModelTransform);
 	if (hasToonShading) {
-		renderer->DrawToonShadow(&vertexPositions, &vertexNormals, silhouetteThickness, silhouetteColor);
+		renderer->DrawToonShadow(&vertexPositions, &smoothVertexNormals, silhouetteThickness, silhouetteColor);
 	}
 	renderer->DrawTriangles(&vertexPositions, &materials, &centerPositions, hasTexture, textureID, hasNormalMap, normalMapID,
 		&textureCoordinates, &textureCenters, &tangents, 
