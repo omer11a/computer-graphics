@@ -478,18 +478,24 @@ void MeshModel::stepAnimation(const float timeDelta)
 {
 	if (hasColorAnimation) {
 		// bumerang
-		if ((colorAnimationProgress > colorAnimationDuration) || (colorAnimationProgress < 0)) {
+		if (((colorAnimationProgress >= colorAnimationDuration) && (colorAnimationDirection > 0)) ||
+			((colorAnimationProgress <= 0) && (colorAnimationDirection < 0))) {
 			colorAnimationDirection *= -1;
 		}
-		colorAnimationProgress += colorAnimationDirection;// *0.001;
+		colorAnimationProgress += colorAnimationDirection * timeDelta;// *0.001;
+		//colorAnimationProgress = max(0, colorAnimationProgress);
+		colorAnimationProgress = (colorAnimationProgress >= 0) ? colorAnimationProgress : 0;
 	}
 
 	if (hasVertexAnimation) {
 		// bumerang
-		if ((vertexAnimationProgress > vertexAnimationDuration) || (vertexAnimationProgress < 0)) {
+		if (((vertexAnimationProgress >= vertexAnimationDuration) && (vertexAnimationDirection > 0)) ||
+			((vertexAnimationProgress <= 0) && (vertexAnimationDirection < 0))) {
 			vertexAnimationDirection *= -1;
 		}
-		vertexAnimationProgress += vertexAnimationDirection;// *0.001;
+		vertexAnimationProgress += vertexAnimationDirection * timeDelta;// *0.001;
+		//vertexAnimationProgress = std::max(0, vertexAnimationProgress);
+		vertexAnimationProgress = (vertexAnimationProgress >= 0) ? vertexAnimationProgress : 0;
 	}
 }
 
