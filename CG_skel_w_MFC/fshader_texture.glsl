@@ -15,6 +15,7 @@ uniform bool hasNormalMapping;
 uniform bool hasFog;
 uniform bool hasColorAnimation;
 uniform bool hasVertexAnimation;
+uniform bool hasToonShading;
 uniform vec3 cameraPosition;
 uniform vec3 ambientLightColor;
 uniform int numberOfLights;
@@ -27,6 +28,7 @@ uniform float inScatteringCoefficient;
 uniform int colorAnimationRepresentation;
 uniform float colorAnimationDelta;
 uniform float vertexAnimationDelta;
+uniform int colorQuantizationCoefficient;
 
 layout (location = 0) in vec3 vertexPosition;
 layout (location = 1) in vec3 vertexNormal;
@@ -155,6 +157,11 @@ void main() {
 		float insc = exp(-dist * bi);
 		finalColor = finalColor * ext + fogColor * (1 - insc);
 	}
+
+	finalColor = clamp(finalColor, 0, 1);
+	if (hasToonShading) {
+		finalColor = round(finalColor * colorQuantizationCoefficient) / colorQuantizationCoefficient;
+	}
     
-    outColor = vec4(clamp(finalColor, 0, 1), 1);
+    outColor = vec4(finalColor, 1);
 }

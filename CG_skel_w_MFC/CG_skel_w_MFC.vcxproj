@@ -147,6 +147,7 @@
     <None Include="fshader_fog.glsl" />
     <None Include="fshader_normal.glsl" />
     <None Include="fshader_shading.glsl" />
+    <None Include="fshader_silhouette.glsl" />
     <None Include="fshader_texture.glsl" />
     <None Include="fshader_transform.glsl" />
     <None Include="vshader.glsl" />
@@ -154,6 +155,7 @@
     <None Include="vshader_basic.glsl" />
     <None Include="vshader_fog.glsl" />
     <None Include="vshader_shading.glsl" />
+    <None Include="vshader_silhouette.glsl" />
     <None Include="vshader_texture.glsl" />
     <None Include="vshader_transform.glsl" />
     <None Include="‏‏vshader_normal.glsl" />
