@@ -255,14 +255,6 @@ void Renderer::DrawModelNormals(
 	}
 }
 
-void Renderer::DrawSquare(const vec3& p1, const vec3& p2, const vec3& p3, const vec3& p4, const vec3& color)
-{
-	//DrawLine(p1, p2);
-	//DrawLine(p2, p3);
-	//DrawLine(p3, p4);
-	//DrawLine(p4, p1);
-}
-
 void Renderer::DrawBox(const vec3& minValues, const vec3& maxValues)
 {
 	vec3 color(0.9f);
@@ -478,6 +470,11 @@ void Renderer::DisableFog()
 {
 	objectsProgram.Activate();
 	objectsProgram.SetUniformParameter(int(false), "hasFog");
+}
+
+void Renderer::SetBackgroundColor(vec3 & c)
+{
+	glClearColor(c.x, c.y, c.z, 0.0f);
 }
 
 /////////////////////////////////////////////////////
