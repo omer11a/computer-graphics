@@ -27,6 +27,7 @@ uniform int numberOfLights;
 uniform Light lights[MAX_NUMBER_OF_LIGHTS];
 uniform sampler2D textureSampler;
 uniform samplerCube cubeSampler;
+uniform float refractionRatio;
 uniform int colorAnimationRepresentation;
 uniform float colorAnimationDelta;
 uniform float vertexAnimationDelta;
@@ -162,7 +163,7 @@ void main() {
 
 		vec3 modelToCamera = normalize(cameraPosition - worldVertexPosition);
 		if ((hasEnvironmentMapping) && (hasSkyBox)) {
-			vec3 reflected = reflect(-modelToCamera, normal);
+			vec3 reflected = refract(-modelToCamera, normal, refractionRatio);
 			specularColor = texture(cubeSampler, reflected).rgb;
 		}
 

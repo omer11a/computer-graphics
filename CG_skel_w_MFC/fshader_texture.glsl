@@ -25,6 +25,7 @@ uniform Light lights[MAX_NUMBER_OF_LIGHTS];
 uniform sampler2D textureSampler;
 uniform sampler2D normalSampler;
 uniform samplerCube cubeSampler;
+uniform float refractionRatio;
 uniform vec3 fogColor;
 uniform float extinctionCoefficient;
 uniform float inScatteringCoefficient;
@@ -162,7 +163,7 @@ void main() {
 		}
 
 		if ((hasEnvironmentMapping) && (hasSkyBox)) {
-			vec3 reflected = reflect(-modelToCamera, normal);
+			vec3 reflected = refract(-modelToCamera, normal, refractionRatio);
 			specularColor = texture(cubeSampler, reflected).rgb;
 		}
 
