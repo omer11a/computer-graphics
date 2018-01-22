@@ -12,6 +12,8 @@ uniform bool isGouraud;
 uniform bool isPhong;
 uniform bool hasTexture;
 uniform bool hasNormalMapping;
+uniform bool hasSkyBox;
+uniform bool hasEnvironmentMapping;
 uniform bool hasFog;
 uniform bool hasColorAnimation;
 uniform bool hasVertexAnimation;
@@ -24,6 +26,7 @@ uniform vec3 ambientLightColor;
 uniform int numberOfLights;
 uniform Light lights[MAX_NUMBER_OF_LIGHTS];
 uniform sampler2D textureSampler;
+uniform samplerCube cubeSampler;
 uniform int colorAnimationRepresentation;
 uniform float colorAnimationDelta;
 uniform float vertexAnimationDelta;
@@ -157,13 +160,18 @@ void main() {
 			}
 		}
 
+		vec3 modelToCamera = normalize(cameraPosition - worldVertexPosition);
+		if ((hasEnvironmentMapping) && (hasSkyBox)) {
+			vec3 reflected = reflect(-modelToCamera, normal);
+			specularColor = texture(cubeSampler, reflected).rgb;
+		}
+
 		if (hasColorAnimation) {
 			ambientColor = applyColorAnimation(ambientColor, colorAnimationRepresentation, colorAnimationDelta);
 			specularColor = applyColorAnimation(specularColor, colorAnimationRepresentation, colorAnimationDelta);
 			diffuseColor = applyColorAnimation(diffuseColor, colorAnimationRepresentation, colorAnimationDelta);
 		}
 		
-		vec3 modelToCamera = normalize(cameraPosition - worldVertexPosition);
 		color = ambientLightColor * ambientColor;
 		for (int i = 0; i < numberOfLights; ++i) {
 			color += applyLight(

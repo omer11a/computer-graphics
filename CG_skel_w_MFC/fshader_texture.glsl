@@ -12,6 +12,8 @@ uniform bool isGouraud;
 uniform bool isPhong;
 uniform bool hasTexture;
 uniform bool hasNormalMapping;
+uniform bool hasSkyBox;
+uniform bool hasEnvironmentMapping;
 uniform bool hasFog;
 uniform bool hasColorAnimation;
 uniform bool hasToonShading;
@@ -22,6 +24,7 @@ uniform int numberOfLights;
 uniform Light lights[MAX_NUMBER_OF_LIGHTS];
 uniform sampler2D textureSampler;
 uniform sampler2D normalSampler;
+uniform samplerCube cubeSampler;
 uniform vec3 fogColor;
 uniform float extinctionCoefficient;
 uniform float inScatteringCoefficient;
@@ -149,12 +152,6 @@ void main() {
 			diffuseColor = ambientColor;
 		}
 
-		if (hasColorAnimation) {
-			ambientColor = applyColorAnimation(ambientColor, colorAnimationRepresentation, colorAnimationDelta);
-			specularColor = applyColorAnimation(specularColor, colorAnimationRepresentation, colorAnimationDelta);
-			diffuseColor = applyColorAnimation(diffuseColor, colorAnimationRepresentation, colorAnimationDelta);
-		}
-
 		if (hasNormalMapping) {
 			vec3 orthogonalTangent = normalize(tangent - dot(tangent, normal) * normal);
 			vec3 bitangent = cross(normal, orthogonalTangent);
@@ -162,6 +159,17 @@ void main() {
 			mapNormal = 2.0 * mapNormal - vec3(1.0, 1.0, 1.0);
 			mat3 tbn = mat3(orthogonalTangent, bitangent, normal);
 			normal = normalize(tbn * mapNormal);
+		}
+
+		if ((hasEnvironmentMapping) && (hasSkyBox)) {
+			vec3 reflected = reflect(-modelToCamera, normal);
+			specularColor = texture(cubeSampler, reflected).rgb;
+		}
+
+		if (hasColorAnimation) {
+			ambientColor = applyColorAnimation(ambientColor, colorAnimationRepresentation, colorAnimationDelta);
+			specularColor = applyColorAnimation(specularColor, colorAnimationRepresentation, colorAnimationDelta);
+			diffuseColor = applyColorAnimation(diffuseColor, colorAnimationRepresentation, colorAnimationDelta);
 		}
 		
 		finalColor = ambientLightColor * ambientColor;
