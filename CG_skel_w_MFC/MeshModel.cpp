@@ -554,6 +554,7 @@ void MeshModel::enableWoodTexture(const vec3 & color1, const vec3 & color2)
 	woodTextureColor1 = color1;
 	woodTextureColor2 = color2;
 	hasWoodTexture = true;
+	computeBoundingBox();
 }
 
 void MeshModel::disableWoodTexture()

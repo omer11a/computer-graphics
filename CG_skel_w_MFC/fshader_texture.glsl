@@ -30,6 +30,7 @@ uniform float colorAnimationDelta;
 uniform int colorQuantizationCoefficient;
 uniform vec3 woodTextureColor1;
 uniform vec3 woodTextureColor2;
+uniform vec2 modelResolution;
 
 layout (location = 0) in vec3 vertexPosition;
 layout (location = 1) in vec3 vertexNormal;
@@ -138,8 +139,8 @@ void main() {
 		}
 
 		if (hasWoodTexture) {
-			vec2 st = modelVertexPosition.xy / 3.0;
-			vec2 position = st.yx * vec2(20, 5);
+			vec2 st = vec2(modelVertexPosition.x / modelResolution.x, modelVertexPosition.y / modelResolution.y);
+			vec2 position = st.yx * vec2(12, 5);
 			float angle = noise(position) * 0.7;
 			position = mat2(cos(angle), - sin(angle), sin(angle), cos(angle)) * position;
 			float pattern = smoothstep(0.0, 1.0, abs(sin(position.x * 15.0) + 1.0) * 0.5);
