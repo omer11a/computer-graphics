@@ -317,6 +317,7 @@ MeshModel::MeshModel(string fileName) :
 MeshModel::~MeshModel()
 {
 	clearTexture();
+	disableNormalMap();
 }
 
 void MeshModel::transformInModel(const mat4 & transform) {
