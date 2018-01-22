@@ -621,7 +621,7 @@ PrimMeshModel::PrimMeshModel() : MeshModel()
 	normals.push_back(vec3(0, -1, 0));
 	normals.push_back(vec3(1, 0, 0));
 	normals.push_back(vec3(-1, 0, 0));
-	
+
 	// back face
 	faces.push_back(istringstream("1//2  7//2  5//2"));
 	faces.push_back(istringstream("1//2  3//2  7//2"));
@@ -640,7 +640,7 @@ PrimMeshModel::PrimMeshModel() : MeshModel()
 	// front face
 	faces.push_back(istringstream("2//1  6//1  8//1"));
 	faces.push_back(istringstream("2//1  8//1  4//1"));
-	
+
 	for (vector<FaceIdcs>::iterator it = faces.begin(); it != faces.end(); ++it) {
 		for (int i = 0; i < 3; i++) {
 			vertexPositions.push_back(getVecByIndex(vertices, it->v[i]));
@@ -651,4 +651,44 @@ PrimMeshModel::PrimMeshModel() : MeshModel()
 	setUniformMaterial({ vec3(1), vec3(1), vec3(1), 1 });
 	computeFaceNormals();
 	computeCenterPositions();
+
+	float one_sq3 = 1 / sqrt(3);
+	float sq2_sq3 = sqrt(2) / sqrt(3);
+	float one_sq6 = 1 / sqrt(6);
+	smoothVertexNormals.push_back(vec3(-one_sq3, -one_sq3, -one_sq3));
+	smoothVertexNormals.push_back(vec3(one_sq6, one_sq6, -sq2_sq3));
+	smoothVertexNormals.push_back(vec3(sq2_sq3, -one_sq6, -one_sq6));
+	smoothVertexNormals.push_back(vec3(-one_sq3, -one_sq3, -one_sq3));
+	smoothVertexNormals.push_back(vec3(-one_sq6, sq2_sq3, -one_sq6));
+	smoothVertexNormals.push_back(vec3(one_sq6, one_sq6, -sq2_sq3));
+	smoothVertexNormals.push_back(vec3(-one_sq3, -one_sq3, -one_sq3));
+	smoothVertexNormals.push_back(vec3(-sq2_sq3, one_sq6, one_sq6));
+	smoothVertexNormals.push_back(vec3(-one_sq6, sq2_sq3, -one_sq6));
+	smoothVertexNormals.push_back(vec3(-one_sq3, -one_sq3, -one_sq3));
+	smoothVertexNormals.push_back(vec3(-one_sq6, -one_sq6, sq2_sq3));
+	smoothVertexNormals.push_back(vec3(-sq2_sq3, one_sq6, one_sq6));
+	smoothVertexNormals.push_back(vec3(-one_sq6, sq2_sq3, -one_sq6));
+	smoothVertexNormals.push_back(vec3(one_sq3, one_sq3, one_sq3));
+	smoothVertexNormals.push_back(vec3(one_sq6, one_sq6, -sq2_sq3));
+	smoothVertexNormals.push_back(vec3(-one_sq6, sq2_sq3, -one_sq6));
+	smoothVertexNormals.push_back(vec3(-sq2_sq3, one_sq6, one_sq6));
+	smoothVertexNormals.push_back(vec3(one_sq3, one_sq3, one_sq3));
+	smoothVertexNormals.push_back(vec3(sq2_sq3, -one_sq6, -one_sq6));
+	smoothVertexNormals.push_back(vec3(one_sq6, one_sq6, -sq2_sq3));
+	smoothVertexNormals.push_back(vec3(one_sq3, one_sq3, one_sq3));
+	smoothVertexNormals.push_back(vec3(sq2_sq3, -one_sq6, -one_sq6));
+	smoothVertexNormals.push_back(vec3(one_sq3, one_sq3, one_sq3));
+	smoothVertexNormals.push_back(vec3(one_sq6, -sq2_sq3, one_sq6));
+	smoothVertexNormals.push_back(vec3(-one_sq3, -one_sq3, -one_sq3));
+	smoothVertexNormals.push_back(vec3(sq2_sq3, -one_sq6, -one_sq6));
+	smoothVertexNormals.push_back(vec3(one_sq6, -sq2_sq3, one_sq6));
+	smoothVertexNormals.push_back(vec3(-one_sq3, -one_sq3, -one_sq3));
+	smoothVertexNormals.push_back(vec3(one_sq6, -sq2_sq3, one_sq6));
+	smoothVertexNormals.push_back(vec3(-one_sq6, -one_sq6, sq2_sq3));
+	smoothVertexNormals.push_back(vec3(-one_sq6, -one_sq6, sq2_sq3));
+	smoothVertexNormals.push_back(vec3(one_sq6, -sq2_sq3, one_sq6));
+	smoothVertexNormals.push_back(vec3(one_sq3, one_sq3, one_sq3));
+	smoothVertexNormals.push_back(vec3(-one_sq6, -one_sq6, sq2_sq3));
+	smoothVertexNormals.push_back(vec3(one_sq3, one_sq3, one_sq3));
+	smoothVertexNormals.push_back(vec3(-sq2_sq3, one_sq6, one_sq6));
 }

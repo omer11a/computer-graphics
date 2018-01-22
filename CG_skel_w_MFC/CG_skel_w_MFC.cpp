@@ -87,7 +87,6 @@ PrimMeshModels:
 #define FOG 4
 #define FOG_DISABLE 5
 
-
 #define ADD_CAMERA 1
 
 // main menu
@@ -101,6 +100,7 @@ PrimMeshModels:
 #define SETTING_MOVEMENT	3
 #define SETTING_ZOOM		4
 #define SETTING_AA			5
+#define SETTING_BG_COLOR	6
 
 #define MODEL_OBJECT	'm'
 #define MODEL_WORLD		'w'
@@ -650,11 +650,20 @@ void settingMenu(int id)
 		//if (dlg.DoModal() == IDOK) {
 		//	int factor = dlg.GetValue();
 		//	if (factor >= 1) {
-		//		renderer->SetAntiAliasing();
+		//		renderer->SetAntiAliasing(factor);
 		//		cout << "set anti aliasing with factor " << factor << endl;
 		//		redraw();
 		//	}
 		//}
+		break;
+	case SETTING_BG_COLOR:
+	{
+		CColorDialog cdlg;
+		if (cdlg.DoModal() == IDOK) {
+			renderer->SetBackgroundColor(ColorToVec(cdlg.GetColor()));
+			redraw();
+		}
+	}
 		break;
 	}
 }
@@ -722,6 +731,7 @@ void initMenu()
 	glutAddMenuEntry("Movement...", SETTING_MOVEMENT);
 	glutAddMenuEntry("Zoom...", SETTING_ZOOM);
 	glutAddMenuEntry("Anti-Aliasing...", SETTING_AA);
+	glutAddMenuEntry("Background Color...", SETTING_BG_COLOR);
 
 	glutCreateMenu(mainMenu);
 	glutAddSubMenu("Add/Set", menuFile);

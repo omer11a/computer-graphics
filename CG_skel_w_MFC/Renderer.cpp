@@ -45,6 +45,9 @@ void Renderer::DrawToonShadow(
 	const float silhouetteThickness,
 	const vec3& silhouetteColor)
 {
+	if (is_wire_mode) {
+		return;
+	}
 	toonProgram.Activate();
 	glCullFace(GL_FRONT);
 
@@ -108,7 +111,6 @@ void Renderer::DrawTriangles(
 	}
 	objectsProgram.SetUniformParameter(int(hasColorAnimation), "hasColorAnimation");
 	if (hasColorAnimation) {
-		cout << "c animation: type: " << colorAnimationRepresentation << " delta: " << colorAnimationDelta << endl;
 		objectsProgram.SetUniformParameter(colorAnimationRepresentation, "colorAnimationRepresentation");
 		objectsProgram.SetUniformParameter(colorAnimationDelta, "colorAnimationDelta");
 	}
@@ -116,9 +118,13 @@ void Renderer::DrawTriangles(
 	if (hasVertexAnimation) {
 		objectsProgram.SetUniformParameter(vertexAnimationDelta, "vertexAnimationDelta");
 	}
-	objectsProgram.SetUniformParameter(int(hasToonShading), "hasToonShading");
-	if (hasToonShading) {
-		objectsProgram.SetUniformParameter(colorQuantizationCoefficient, "colorQuantizationCoefficient");
+	if (!is_wire_mode) {
+		objectsProgram.SetUniformParameter(int(hasToonShading), "hasToonShading");
+		if (hasToonShading) {
+			objectsProgram.SetUniformParameter(colorQuantizationCoefficient, "colorQuantizationCoefficient");
+		}
+	} else {
+		objectsProgram.SetUniformParameter(int(false), "hasToonShading");
 	}
 	objectsProgram.SetUniformParameter(int(hasWoodTexture), "hasWoodTexture");
 	if (hasWoodTexture) {
@@ -172,11 +178,7 @@ void Renderer::DrawTriangles(
 	}
 	
 	// Draw the triangle !
-	if (is_wire_mode) {
-		glDrawArrays(GL_LINES, 0, vertices->size());
-	} else {
-		glDrawArrays(GL_TRIANGLES, 0, vertices->size());
-	}
+	glDrawArrays(GL_TRIANGLES, 0, vertices->size());
 
 	// cleanup
 	objectsProgram.ClearAttributes();
@@ -251,14 +253,6 @@ void Renderer::DrawModelNormals(
 	for (int i = 0; i < buffers.size(); ++i) {
 		glDeleteBuffers(1, &buffers[i]);
 	}
-}
-
-void Renderer::DrawSquare(const vec3& p1, const vec3& p2, const vec3& p3, const vec3& p4, const vec3& color)
-{
-	//DrawLine(p1, p2);
-	//DrawLine(p2, p3);
-	//DrawLine(p3, p4);
-	//DrawLine(p4, p1);
 }
 
 void Renderer::DrawBox(const vec3& minValues, const vec3& maxValues)
@@ -437,6 +431,11 @@ void Renderer::SetDemoBuffer()
 void Renderer::SwitchWire()
 {
 	is_wire_mode = !is_wire_mode;
+	if (is_wire_mode) {
+		glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+	} else {
+		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+	}
 }
 
 void Renderer::SetAntiAliasing()
@@ -471,6 +470,11 @@ void Renderer::DisableFog()
 {
 	objectsProgram.Activate();
 	objectsProgram.SetUniformParameter(int(false), "hasFog");
+}
+
+void Renderer::SetBackgroundColor(vec3 & c)
+{
+	glClearColor(c.x, c.y, c.z, 0.0f);
 }
 
 /////////////////////////////////////////////////////
