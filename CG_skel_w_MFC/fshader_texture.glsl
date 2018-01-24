@@ -14,6 +14,7 @@ uniform bool hasTexture;
 uniform bool hasNormalMapping;
 uniform bool hasSkyBox;
 uniform bool hasEnvironmentMapping;
+uniform bool shouldRefract;
 uniform bool hasFog;
 uniform bool hasColorAnimation;
 uniform bool hasToonShading;
@@ -163,8 +164,15 @@ void main() {
 		}
 
 		if ((hasEnvironmentMapping) && (hasSkyBox)) {
-			vec3 reflected = refract(-modelToCamera, normal, refractionRatio);
+			vec3 reflected = vec3(0);
+			if (shouldRefract) {
+				reflected = refract(-modelToCamera, normal, refractionRatio);
+			} else {
+				reflected = reflect(-modelTocamera, normal);
+			}
+
 			specularColor = texture(cubeSampler, reflected).rgb;
+			diffuseColor = specularColor;
 		}
 
 		if (hasColorAnimation) {

@@ -10,12 +10,10 @@ bool readPng(
 	unsigned int * width,
 	unsigned int * height,
 	unsigned char ** pixel_array,
-	bool containsNormals)
-{
+	bool shouldInvertY
+) {
 	std::vector<unsigned char> pixels;
-	LodePNGColorType colorType = containsNormals ? LCT_RGB : LCT_RGBA;
-	int element_size = containsNormals ? 3 : 4;
-	unsigned error = lodepng::decode(pixels, *width, *height, fileName, colorType);
+	unsigned error = lodepng::decode(pixels, *width, *height, fileName, LCT_RGBA);
 
 	// If there's an error, display it.
 	if (error != 0) {
@@ -24,14 +22,19 @@ bool readPng(
 	}
 	*pixel_array = new unsigned char[pixels.size()];
 
-	int wInc = (*width) * element_size;//width in char
+	int wInc = (*width) * 4;//width in char
 	for (int i = 0; i < (*height) / 2; i++) {
 		int top = i*wInc;
 		int bot = (*height - i - 1) * wInc;
 		for (int j = 0; j < wInc; j++) {
 			// Swap the chars around.
-			(*pixel_array)[top + j] = pixels[bot + j];
-			(*pixel_array)[bot + j] = pixels[top + j];
+			if (shouldInvertY) {
+				(*pixel_array)[top + j] = pixels[bot + j];
+				(*pixel_array)[bot + j] = pixels[top + j];
+			} else {
+				(*pixel_array)[top + j] = pixels[top + j];
+				(*pixel_array)[bot + j] = pixels[bot + j];
+			}
 		}
 	}
 

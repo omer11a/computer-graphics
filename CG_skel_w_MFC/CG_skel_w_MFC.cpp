@@ -691,10 +691,16 @@ void settingMenu(int id)
 	case SETTING_ADD_SKYBOX:
 		if (ctdlg.DoModal() == IDOK) {
 			scene->loadSkyBox(
+				//"C:\\Users\\omer\\Documents\\university\\7\\computer graphics\\hw\\test\\1.png",
+				//"C:\\Users\\omer\\Documents\\university\\7\\computer graphics\\hw\\test\\2.png",
+				//"C:\\Users\\omer\\Documents\\university\\7\\computer graphics\\hw\\test\\3.png",
+				//"C:\\Users\\omer\\Documents\\university\\7\\computer graphics\\hw\\test\\4.png",
+				//"C:\\Users\\omer\\Documents\\university\\7\\computer graphics\\hw\\test\\5.png",
+				//"C:\\Users\\omer\\Documents\\university\\7\\computer graphics\\hw\\test\\6.png");
 				"C:\\Users\\omer\\Documents\\university\\7\\computer graphics\\hw\\skybox\\xneg.png",
 				"C:\\Users\\omer\\Documents\\university\\7\\computer graphics\\hw\\skybox\\xpos.png",
-				"C:\\Users\\omer\\Documents\\university\\7\\computer graphics\\hw\\skybox\\ypos.png",
 				"C:\\Users\\omer\\Documents\\university\\7\\computer graphics\\hw\\skybox\\yneg.png",
+				"C:\\Users\\omer\\Documents\\university\\7\\computer graphics\\hw\\skybox\\ypos.png",
 				"C:\\Users\\omer\\Documents\\university\\7\\computer graphics\\hw\\skybox\\zneg.png",
 				"C:\\Users\\omer\\Documents\\university\\7\\computer graphics\\hw\\skybox\\zpos.png");
 				//ctdlg.GetTopPath(), ctdlg.GetBottomPath(),

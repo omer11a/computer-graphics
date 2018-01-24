@@ -177,7 +177,7 @@ bool Scene::loadEnviromentSideTexture(GLenum side, CString filePath)
 	unsigned int width, height;
 	unsigned char * pixel_array;
 
-	if (!readPng((LPCTSTR)filePath, &width, &height, &pixel_array)) {
+	if (!readPng((LPCTSTR)filePath, &width, &height, &pixel_array, false)) {
 		return false;
 	}
 	glBindTexture(GL_TEXTURE_CUBE_MAP, skyCubeTexture);

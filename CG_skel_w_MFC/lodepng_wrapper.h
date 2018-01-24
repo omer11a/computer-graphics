@@ -7,5 +7,5 @@ bool readPng(
 	unsigned int * width,
 	unsigned int * height,
 	unsigned char ** pixel_array,
-	bool containsNormals = false
+	bool shouldInvertY = true
 );
