@@ -46,10 +46,13 @@ void Renderer::DrawEnviroment(const vector<vec3>* vertices, const GLuint texture
 	glDisable(GL_DEPTH_TEST);
 	//glDepthFunc(GL_LESS);
 
-	enviromentProgram.Activate();
 	mat4 env_v = m_cTransform;
-	env_v = env_v;
+	env_v[3][0] = 0;
+	env_v[3][1] = 0;
+	env_v[3][2] = 0;
 	mat4 env_vp = m_projection * m_cTransform;
+
+	enviromentProgram.Activate();
 	enviromentProgram.SetUniformParameter(env_vp, "viewProjectionMatrix");
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_CUBE_MAP, texture);

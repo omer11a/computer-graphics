@@ -100,7 +100,7 @@ PrimMeshModels:
 #define SETTING_ZOOM		4
 #define SETTING_AA			5
 #define SETTING_BG_COLOR	6
-#define SETTING_ENVIROMENT	7
+#define SETTING_SKYBOX	7
 
 #define MODEL_OBJECT	'm'
 #define MODEL_WORLD		'w'
@@ -664,12 +664,18 @@ void settingMenu(int id)
 			redraw();
 		}
 		break;
-	case SETTING_ENVIROMENT:
+	case SETTING_SKYBOX:
 		if (ctdlg.DoModal() == IDOK) {
 			scene->loadEnviromentTexture(
-				ctdlg.GetTopPath(), ctdlg.GetBottomPath(),
-				ctdlg.GetLeftPath(), ctdlg.GetRightPath(),
-				ctdlg.GetFrontPath(), ctdlg.GetBackPath());
+				"d:\\School\\Semester E\\Graphics\\obj_examples\\posy.png",
+				"d:\\School\\Semester E\\Graphics\\obj_examples\\negy.png",
+				"d:\\School\\Semester E\\Graphics\\obj_examples\\posx.png",
+				"d:\\School\\Semester E\\Graphics\\obj_examples\\negx.png",
+				"d:\\School\\Semester E\\Graphics\\obj_examples\\negz.png",
+				"d:\\School\\Semester E\\Graphics\\obj_examples\\posz.png");
+				//ctdlg.GetTopPath(), ctdlg.GetBottomPath(),
+				//ctdlg.GetLeftPath(), ctdlg.GetRightPath(),
+				//ctdlg.GetFrontPath(), ctdlg.GetBackPath());
 			redraw();
 		}
 		break;
@@ -740,7 +746,7 @@ void initMenu()
 	glutAddMenuEntry("Zoom...", SETTING_ZOOM);
 	glutAddMenuEntry("Anti-Aliasing...", SETTING_AA);
 	glutAddMenuEntry("Background Color...", SETTING_BG_COLOR);
-	glutAddMenuEntry("Enviroment Texture...", SETTING_ENVIROMENT);
+	glutAddMenuEntry("Enviroment Texture...", SETTING_SKYBOX);
 
 	glutCreateMenu(mainMenu);
 	glutAddSubMenu("Add/Set", menuFile);
