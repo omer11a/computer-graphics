@@ -760,7 +760,6 @@ void initMenu()
 	glutAddMenuEntry("Enable Environment Mapping", ADD_ENV_MAP);
 	glutAddMenuEntry("Disable Environment Mapping", DEL_ENV_MAP);
 
-
 	// light sub menu
 	int menuLight = glutCreateMenu(lightMenu);
 	glutAddMenuEntry("New", NEW_ITEM);
@@ -779,7 +778,7 @@ void initMenu()
 	int menuFile = glutCreateMenu(fileMenu);
 	glutAddSubMenu("Model", menuModel);
 	glutAddMenuEntry("Camera", ADD_CAMERA);
-	//glutAddMenuEntry("Canonical", ADD_CANONICAL);
+	glutAddMenuEntry("Canonical", ADD_CANONICAL);
 	glutAddSubMenu("Shader", menuShader);
 	glutAddSubMenu("Light", menuLight);
 

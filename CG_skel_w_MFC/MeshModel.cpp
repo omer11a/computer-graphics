@@ -392,13 +392,10 @@ void MeshModel::setTextures(const string fileName, const float shininess)
 	}
 	delete[] pixel_array;
 
-	Material m = {
-		vec3(0),
-		vec3(0),
-		vec3(0),
-		shininess
-	};
-	setUniformMaterial(m);
+	this->shininess.clear();
+	for (int i = 0; i < vertexPositions.size(); ++i) {
+		this->shininess.push_back(shininess);
+	}
 }
 
 void MeshModel::enableNormalMap(const string fileName)
@@ -1529,6 +1526,47 @@ CylinderMeshModel::CylinderMeshModel() : MeshModel()
 			textureCoordinates.push_back(getVecByIndex(coordinates, it->vt[i]));
 		}
 		
+	}
+
+	setUniformMaterial({ vec3(1), vec3(1), vec3(1), 1 });
+	computeFaceNormals();
+	computeCenterPositions();
+}
+
+PlaneMeshModel::PlaneMeshModel()
+{
+	vector<FaceIdcs> faces;
+	vector<vec3> vertices;
+	vector<vec3> normals;
+	vector<vec2> coordinates;
+
+	// 8 vertices
+	vertices.push_back(vec3(-2.0, -2.0, 2.0));
+	vertices.push_back(vec3(-2.0, 2.0, 2.0));
+	vertices.push_back(vec3(2.0, -2.0, 2.0));
+	vertices.push_back(vec3(2.0, 2.0, 2.0));
+	// 8 texture coordinates
+	coordinates.push_back(vec2(0.0, 0.0));
+	coordinates.push_back(vec2(0.0, 1.0));
+	coordinates.push_back(vec2(1.0, 0.0));
+	coordinates.push_back(vec2(1.0, 1.0));
+	// 6 normals
+	normals.push_back(vec3(0.0, 0.0, 1.0));
+	normals.push_back(vec3(0.0, 0.0, -1.0));
+	normals.push_back(vec3(0.0, 1.0, 0.0));
+	normals.push_back(vec3(0.0, -1.0, 0.0));
+	normals.push_back(vec3(1.0, 0.0, 0.0));
+	normals.push_back(vec3(-1.0, 0.0, 0.0));
+	// 2 faces
+	faces.push_back(istringstream("1/1/1 3/3/1 4/4/1"));
+	faces.push_back(istringstream("1/1/1 4/4/1 2/2/1"));
+
+	for (vector<FaceIdcs>::iterator it = faces.begin(); it != faces.end(); ++it) {
+		for (int i = 0; i < 3; i++) {
+			vertexPositions.push_back(getVecByIndex(vertices, it->v[i]));
+			vertexNormals.push_back(getVecByIndex(normals, it->vn[i]));
+			textureCoordinates.push_back(getVecByIndex(coordinates, it->vt[i]));
+		}
 	}
 
 	setUniformMaterial({ vec3(1), vec3(1), vec3(1), 1 });
