@@ -1088,10 +1088,9 @@ vec3 Cc2Dialog::GetColor2() const
 void Cc2Dialog::DoDataExchange(CDataExchange* pDX)
 {
 	CInputDialog::DoDataExchange(pDX);
-	
 }
 
-// CEditModelDialog message handlers
+// Cc2Dialog message handlers
 BEGIN_MESSAGE_MAP(Cc2Dialog, CInputDialog)
 	ON_WM_CREATE()
 	ON_WM_PAINT()
@@ -1129,4 +1128,129 @@ void Cc2Dialog::OnPaint()
 	dc.DrawText(color2_title, -1, &rect, DT_SINGLELINE);
 
 	c1Edit.SetFocus();
+}
+
+// ----------------------
+//    Class CCubeTexturesDialog
+// ----------------------
+CString CCubeTexturesDialog::get_path() {
+	CFileDialog tfdlg(TRUE, _T(".png"), NULL, NULL, _T("*.png|*.*"));
+	if (tfdlg.DoModal() == IDOK) {
+		return tfdlg.GetPathName();
+	}
+	return "";
+}
+
+void CCubeTexturesDialog::set_top() {
+	top_path = get_path();
+}
+void CCubeTexturesDialog::set_bottom() {
+	bottom_path = get_path();
+}
+void CCubeTexturesDialog::set_left() {
+	left_path = get_path();
+}
+void CCubeTexturesDialog::set_right() {
+	right_path = get_path();
+}
+void CCubeTexturesDialog::set_front() {
+	front_path = get_path();
+}
+void CCubeTexturesDialog::set_back() {
+	back_path = get_path();
+}
+
+CCubeTexturesDialog::CCubeTexturesDialog(const CString title)
+	: CInputDialog(title)
+{ }
+
+CCubeTexturesDialog::~CCubeTexturesDialog()
+{ }
+
+CString CCubeTexturesDialog::GetTopPath() const {
+	return top_path;
+}
+CString CCubeTexturesDialog::GetBottomPath() const {
+	return bottom_path;
+}
+CString CCubeTexturesDialog::GetLeftPath() const {
+	return left_path;
+}
+CString CCubeTexturesDialog::GetRightPath() const {
+	return right_path;
+}
+CString CCubeTexturesDialog::GetFrontPath() const {
+	return front_path;
+}
+CString CCubeTexturesDialog::GetBackPath() const {
+	return back_path;
+}
+
+void CCubeTexturesDialog::DoDataExchange(CDataExchange* pDX)
+{
+	CInputDialog::DoDataExchange(pDX);
+}
+
+// CCubeTexturesDialog message handlers
+BEGIN_MESSAGE_MAP(CCubeTexturesDialog, CInputDialog)
+	ON_WM_CREATE()
+	ON_WM_PAINT()
+	ON_BN_CLICKED(IDC_COLOR_EDIT, set_top)
+	ON_BN_CLICKED(IDC_COLOR_EDIT + 1, set_bottom)
+	ON_BN_CLICKED(IDC_COLOR_EDIT + 2, set_left)
+	ON_BN_CLICKED(IDC_COLOR_EDIT + 3, set_right)
+	ON_BN_CLICKED(IDC_COLOR_EDIT + 4, set_front)
+	ON_BN_CLICKED(IDC_COLOR_EDIT + 5, set_back)
+END_MESSAGE_MAP()
+
+int CCubeTexturesDialog::OnCreate(LPCREATESTRUCT lpcs)
+{
+	int height = 90;
+	int sx = 140, ex = 220;
+
+	topEdit.Create("Browse...", BS_PUSHBUTTON | WS_CHILD | WS_VISIBLE | WS_TABSTOP | WS_BORDER,
+		CRect(sx, height, ex, height + 20), this, IDC_COLOR_EDIT);
+	bottomEdit.Create("Browse...", BS_PUSHBUTTON | WS_CHILD | WS_VISIBLE | WS_TABSTOP | WS_BORDER,
+		CRect(sx + 220, height, ex + 220, height + 20), this, IDC_COLOR_EDIT + 1);
+	height += 40;
+
+	leftEdit.Create("Browse...", BS_PUSHBUTTON | WS_CHILD | WS_VISIBLE | WS_TABSTOP | WS_BORDER,
+		CRect(sx, height, ex, height + 20), this, IDC_COLOR_EDIT + 2);
+	rightEdit.Create("Browse...", BS_PUSHBUTTON | WS_CHILD | WS_VISIBLE | WS_TABSTOP | WS_BORDER,
+		CRect(sx + 220, height, ex + 220, height + 20), this, IDC_COLOR_EDIT + 3);
+	height += 40;
+	
+	frontEdit.Create("Browse...", BS_PUSHBUTTON | WS_CHILD | WS_VISIBLE | WS_TABSTOP | WS_BORDER,
+		CRect(sx, height, ex, height + 20), this, IDC_COLOR_EDIT + 4);
+	backEdit.Create("Browse...", BS_PUSHBUTTON | WS_CHILD | WS_VISIBLE | WS_TABSTOP | WS_BORDER,
+		CRect(sx + 220, height, ex + 220, height + 20), this, IDC_COLOR_EDIT + 5);
+	
+
+	return 0;
+}
+
+void CCubeTexturesDialog::OnPaint()
+{
+	CPaintDC dc(this);
+	dc.SetBkMode(TRANSPARENT);
+	int height = 92;
+
+	CRect left_rect(30, height, 150, height + 18);
+	CRect right_rect(240, height, 400, height + 18);
+	dc.DrawText("Top Texture:", -1, &left_rect, DT_SINGLELINE);
+	dc.DrawText("Bottom Texture:", -1, &right_rect, DT_SINGLELINE);
+
+	left_rect.bottom += 40;
+	left_rect.top += 40;
+	right_rect.bottom += 40;
+	right_rect.top += 40;
+	dc.DrawText("Left Texture:", -1, &left_rect, DT_SINGLELINE);
+	dc.DrawText("Right Texture:", -1, &right_rect, DT_SINGLELINE);
+
+	left_rect.bottom += 40;
+	left_rect.top += 40;
+	right_rect.bottom += 40;
+	right_rect.top += 40;
+	dc.DrawText("Front Texture:", -1, &left_rect, DT_SINGLELINE);
+	dc.DrawText("Back Texture:", -1, &right_rect, DT_SINGLELINE);
 }
