@@ -12,6 +12,8 @@ uniform bool isGouraud;
 uniform bool isPhong;
 uniform bool hasTexture;
 uniform bool hasNormalMapping;
+uniform bool hasSkyBox;
+uniform bool hasEnvironmentMapping;
 uniform bool hasFog;
 uniform bool hasColorAnimation;
 uniform bool hasToonShading;
@@ -22,6 +24,8 @@ uniform int numberOfLights;
 uniform Light lights[MAX_NUMBER_OF_LIGHTS];
 uniform sampler2D textureSampler;
 uniform sampler2D normalSampler;
+uniform samplerCube cubeSampler;
+uniform float refractionRatio;
 uniform vec3 fogColor;
 uniform float extinctionCoefficient;
 uniform float inScatteringCoefficient;
@@ -30,6 +34,7 @@ uniform float colorAnimationDelta;
 uniform int colorQuantizationCoefficient;
 uniform vec3 woodTextureColor1;
 uniform vec3 woodTextureColor2;
+uniform vec2 modelResolution;
 
 layout (location = 0) in vec3 vertexPosition;
 layout (location = 1) in vec3 vertexNormal;
@@ -138,20 +143,14 @@ void main() {
 		}
 
 		if (hasWoodTexture) {
-			vec2 st = modelVertexPosition.xy / 3.0;
-			vec2 position = st.yx * vec2(20, 5);
+			vec2 st = vec2(modelVertexPosition.x / modelResolution.x, modelVertexPosition.y / modelResolution.y);
+			vec2 position = st.yx * vec2(12, 5);
 			float angle = noise(position) * 0.7;
 			position = mat2(cos(angle), - sin(angle), sin(angle), cos(angle)) * position;
 			float pattern = smoothstep(0.0, 1.0, abs(sin(position.x * 15.0) + 1.0) * 0.5);
 			ambientColor = pattern * woodTextureColor1 + (1 - pattern) * woodTextureColor2;
 			specularColor = ambientColor;
 			diffuseColor = ambientColor;
-		}
-
-		if (hasColorAnimation) {
-			ambientColor = applyColorAnimation(ambientColor, colorAnimationRepresentation, colorAnimationDelta);
-			specularColor = applyColorAnimation(specularColor, colorAnimationRepresentation, colorAnimationDelta);
-			diffuseColor = applyColorAnimation(diffuseColor, colorAnimationRepresentation, colorAnimationDelta);
 		}
 
 		if (hasNormalMapping) {
@@ -161,6 +160,17 @@ void main() {
 			mapNormal = 2.0 * mapNormal - vec3(1.0, 1.0, 1.0);
 			mat3 tbn = mat3(orthogonalTangent, bitangent, normal);
 			normal = normalize(tbn * mapNormal);
+		}
+
+		if ((hasEnvironmentMapping) && (hasSkyBox)) {
+			vec3 reflected = refract(-modelToCamera, normal, refractionRatio);
+			specularColor = texture(cubeSampler, reflected).rgb;
+		}
+
+		if (hasColorAnimation) {
+			ambientColor = applyColorAnimation(ambientColor, colorAnimationRepresentation, colorAnimationDelta);
+			specularColor = applyColorAnimation(specularColor, colorAnimationRepresentation, colorAnimationDelta);
+			diffuseColor = applyColorAnimation(diffuseColor, colorAnimationRepresentation, colorAnimationDelta);
 		}
 		
 		finalColor = ambientLightColor * ambientColor;

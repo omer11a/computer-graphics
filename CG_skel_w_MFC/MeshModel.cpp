@@ -284,6 +284,7 @@ MeshModel::MeshModel(string fileName) :
 MeshModel::~MeshModel()
 {
 	clearTexture();
+	disableNormalMap();
 }
 
 void MeshModel::transformInModel(const mat4 & transform) {
@@ -298,7 +299,7 @@ void MeshModel::transformInWorld(const mat4 & transform) {
 
 vec4 MeshModel::getLocation()
 {
-	vec3 cm;
+	vec3 cm = vec3(0, 0, 0);
 	for (unsigned int i = 0; i < vertexPositions.size(); ++i) {
 		vec3 vertex = vertexPositions.at(i);
 		cm += vertex;
@@ -525,6 +526,7 @@ void MeshModel::enableWoodTexture(const vec3 & color1, const vec3 & color2)
 	woodTextureColor1 = color1;
 	woodTextureColor2 = color2;
 	hasWoodTexture = true;
+	computeBoundingBox();
 }
 
 void MeshModel::disableWoodTexture()

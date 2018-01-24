@@ -849,7 +849,7 @@ bool set_lookat()
 		at = at / at.w;
 		cam->lookAt(eye, at, up);
 		cout << "look at: looking at " << at << endl;
-		tc = inverse(cam->getInverseTransform());
+		//tc = inverse(cam->getInverseTransform());
 		//cout << "end at: " << (tc * vec3()) << " with up in " << (tc * vec3(0, 1, 0)) << endl;
 		return true;
 	} else {
