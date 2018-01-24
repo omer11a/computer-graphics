@@ -18,7 +18,7 @@ public:
 	};
 private:
 	int m_screen_width, m_screen_height;
-	bool is_wire_mode, anti_factor;
+	bool is_wire_mode, hasSkyBox, anti_factor;
 
 	mat4 m_cTransform, m_projection, m_oTransform, mvp, mv, vp;
 	mat3 m_cnTransform, m_nTransform;
@@ -29,6 +29,7 @@ private:
 	// openGL stuff. Don't touch.
 	GLuint gScreenTex;
 	GLuint gScreenVtc;	// VertexArrayID in tutorials
+	GLuint cubeSampler;
 	ShaderProgram basicProgram, objectsProgram, normalsProgram, toonProgram, enviromentProgram;
 	void CreateOpenGLBuffer();
 	void InitOpenGLRendering();
@@ -38,9 +39,7 @@ public:
 	Renderer(int width, int height);
 	~Renderer(void);
 
-	void DrawEnviroment(
-		const vector<vec3>* vertices,
-		const GLuint texture) override;
+	void DrawSkyBox(const vector<vec3>* vertices) override;
 	void DrawToonShadow(
 		const vector<vec3>* vertices,
 		const vector<vec3>* vertexNormals,
@@ -71,6 +70,8 @@ public:
 		const vec3& woodTextureColor1,
 		const vec3& woodTextureColor2,
 		const vec2& modelResolution,
+		const bool hasEnvironmentMapping,
+		const float refractionRatio,
 		const vector<vec3>* vertexNormals = NULL,
 		const vector<vec3>* faceNormals = NULL) override;
 	void DrawModelNormals(
@@ -93,6 +94,9 @@ public:
 	void SetCameraTransform(const mat4& cInverseTransform, const mat4& cTransform) override;
 	void SetProjection(const mat4& projection) override;
 	void SetObjectMatrices(const mat4& oTransform, const mat3& nTransform = mat3()) override;
+	void EnableSkyBox(const GLuint sc) override;
+	void DisableSkyBox() override;
+
 	void UpdateBuffers(int width, int height) override;
 	void SwapBuffers() override;
 	void ClearColorBuffer() override;
