@@ -501,9 +501,9 @@ void Scene::clear() {
 }
 
 void Scene::loadSkyBox(
-	const CString topPath, const CString bottomPath,
-	const CString leftPath, const CString rightPath,
-	const CString frontPath, const CString backPath) {
+	const CString negativeX, const CString positiveX,
+	const CString negativeY, const CString positiveY,
+	const CString negativeZ, const CString positiveZ) {
 	if (enviromentCube.size() == 0) {
 		computeSkyCube();
 	}

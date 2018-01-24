@@ -170,7 +170,9 @@ void Renderer::DrawTriangles(
 	objectsProgram.SetUniformParameter(int(hasSkyBox), "hasSkyBox");
 	objectsProgram.SetUniformParameter(int(hasEnvironmentMapping), "hasEnvironmentMapping");
 	if ((hasSkyBox) && (hasEnvironmentMapping)) {
-		objectsProgram.SetUniformParameter(cubeSampler, "cubeSampler");
+		glActiveTexture(GL_TEXTURE2);
+		glBindTexture(GL_TEXTURE_CUBE_MAP, cubeSampler);
+		objectsProgram.SetUniformParameter(2, "cubeSampler");
 		objectsProgram.SetUniformParameter(refractionRatio, "refractionRatio");
 	}
 
