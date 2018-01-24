@@ -22,6 +22,10 @@ void BaseRenderer::ClearColorBuffer() { }
 
 void BaseRenderer::SetDemoBuffer() { }
 
+void BaseRenderer::DrawEnviroment(
+	const vector<vec3>* vertices,
+	const GLuint texture) { }
+
 void BaseRenderer::DrawToonShadow(
 	const vector<vec3>* vertices, 
 	const vector<vec3>* vertexNormals,

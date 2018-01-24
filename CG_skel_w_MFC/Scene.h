@@ -68,10 +68,12 @@ class Scene {
 	vector<Camera *> cameras;
 	AmbientLight ambientLight;
 	vector<DirectionalLightSource *> lights;
+	vector<vec3> enviromentCube;
 	GLuint enviromentTexture;
 	bool hasEnviromentTexture;
 
 	bool loadEnviromentSideTexture(GLenum side, CString filePath);
+	void computeEnviromentCube();
 public:
 	Scene() = delete;
 	explicit Scene(

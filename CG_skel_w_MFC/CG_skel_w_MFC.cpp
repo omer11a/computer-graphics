@@ -667,9 +667,9 @@ void settingMenu(int id)
 	case SETTING_ENVIROMENT:
 		if (ctdlg.DoModal() == IDOK) {
 			scene->loadEnviromentTexture(
-				(LPCTSTR)ctdlg.GetTopPath(), (LPCTSTR)ctdlg.GetBottomPath(),
-				(LPCTSTR)ctdlg.GetLeftPath(), (LPCTSTR)ctdlg.GetRightPath(),
-				(LPCTSTR)ctdlg.GetFrontPath(), (LPCTSTR)ctdlg.GetBackPath());
+				ctdlg.GetTopPath(), ctdlg.GetBottomPath(),
+				ctdlg.GetLeftPath(), ctdlg.GetRightPath(),
+				ctdlg.GetFrontPath(), ctdlg.GetBackPath());
 			redraw();
 		}
 		break;

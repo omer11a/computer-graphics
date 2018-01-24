@@ -29,7 +29,7 @@ private:
 	// openGL stuff. Don't touch.
 	GLuint gScreenTex;
 	GLuint gScreenVtc;	// VertexArrayID in tutorials
-	ShaderProgram basicProgram, objectsProgram, normalsProgram, toonProgram;
+	ShaderProgram basicProgram, objectsProgram, normalsProgram, toonProgram, enviromentProgram;
 	void CreateOpenGLBuffer();
 	void InitOpenGLRendering();
 	//////////////////////////////
@@ -38,6 +38,9 @@ public:
 	Renderer(int width, int height);
 	~Renderer(void);
 
+	void DrawEnviroment(
+		const vector<vec3>* vertices,
+		const GLuint texture) override;
 	void DrawToonShadow(
 		const vector<vec3>* vertices,
 		const vector<vec3>* vertexNormals,

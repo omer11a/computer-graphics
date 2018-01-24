@@ -39,6 +39,33 @@ void Renderer::UpdateBuffers(int width, int height)
 	CreateOpenGLBuffer(); //Do not remove this line.
 }
 
+void Renderer::DrawEnviroment(const vector<vec3>* vertices, const GLuint texture)
+{
+	// disable zBuffer
+	glDepthMask(GL_FALSE);
+	glDisable(GL_DEPTH_TEST);
+	//glDepthFunc(GL_LESS);
+
+	enviromentProgram.Activate();
+	mat4 env_v = m_cTransform;
+	env_v = env_v;
+	mat4 env_vp = m_projection * m_cTransform;
+	enviromentProgram.SetUniformParameter(env_vp, "viewProjectionMatrix");
+	glActiveTexture(GL_TEXTURE0);
+	glBindTexture(GL_TEXTURE_CUBE_MAP, texture);
+	objectsProgram.SetUniformParameter(0, "textureSampler");
+
+	GLuint buffer = enviromentProgram.SetInParameter(*vertices, 0, 3);
+
+	glDrawArrays(GL_TRIANGLES, 0, vertices->size());
+	// cleanup
+	enviromentProgram.ClearAttributes();
+	glDeleteBuffers(1, &buffer);
+	// enable zBuffer
+	glEnable(GL_DEPTH_TEST);
+	glDepthMask(GL_TRUE);
+}
+
 void Renderer::DrawToonShadow(
 	const vector<vec3>* vertices, 
 	const vector<vec3>* vertexNormals,
@@ -486,6 +513,7 @@ void Renderer::InitOpenGLRendering()
 	objectsProgram = ShaderProgram("vshader_texture.glsl", "fshader_texture.glsl", 10);
 	normalsProgram = ShaderProgram("vshader_normal.glsl", "fshader_normal.glsl", 3);
 	toonProgram = ShaderProgram("vshader_silhouette.glsl", "fshader_silhouette.glsl", 2);
+	enviromentProgram = ShaderProgram("vshader_skybox.glsl", "fshader_skybox.glsl", 1);
 	objectsProgram.Activate();
 	SetBaseShader(ShaderType::Flat);
 	DisableFog();

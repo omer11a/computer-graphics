@@ -15,6 +15,9 @@ public:
 	explicit BaseRenderer();
 	explicit BaseRenderer(int width, int height);
 	
+	virtual void DrawEnviroment(
+		const vector<vec3>* vertices,
+		const GLuint texture);
 	virtual void DrawToonShadow(
 		const vector<vec3>* vertices,
 		const vector<vec3>* vertexNormals,

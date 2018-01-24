@@ -104,6 +104,7 @@
     <ClCompile Include="BaseRenderer.cpp" />
     <ClCompile Include="CG_skel_w_MFC.cpp" />
     <ClCompile Include="lodepng.cpp" />
+    <ClCompile Include="lodepng_wrapper.cpp" />
     <ClCompile Include="ShaderProgram.cpp" />
     <ClCompile Include="InitShader.cpp" />
     <ClCompile Include="InputDialog.cpp" />

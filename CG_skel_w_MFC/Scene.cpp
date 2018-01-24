@@ -1,4 +1,5 @@
 #include "stdafx.h"
+#include "lodepng_wrapper.h"
 #include "Scene.h"
 #include "GL\glew.h"
 #include <string>
@@ -176,13 +177,59 @@ bool Scene::loadEnviromentSideTexture(GLenum side, CString filePath)
 	unsigned int width, height;
 	unsigned char * pixel_array;
 
-	if (!readPng(filePath, &width, &height, &pixel_array)) {
+	if (!readPng((LPCTSTR)filePath, &width, &height, &pixel_array)) {
 		return false;
 	}
-	glBindTexture(GL_TEXTURE_CUBE_MAP, texture);
+	glBindTexture(GL_TEXTURE_CUBE_MAP, enviromentTexture);
 	glTexImage2D(side, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, pixel_array);
 	delete[] pixel_array;
 	return true;
+}
+
+void Scene::computeEnviromentCube()
+{
+	// top
+	enviromentCube.push_back(vec3(-10.0f, 10.0f, -10.0f));
+	enviromentCube.push_back(vec3(10.0f, 10.0f, -10.0f));
+	enviromentCube.push_back(vec3(10.0f, 10.0f, 10.0f));
+	enviromentCube.push_back(vec3(10.0f, 10.0f, 10.0f));
+	enviromentCube.push_back(vec3(-10.0f, 10.0f, 10.0f));
+	enviromentCube.push_back(vec3(-10.0f, 10.0f, -10.0f));
+	// bottom
+	enviromentCube.push_back(vec3(-10.0f, -10.0f, -10.0f));
+	enviromentCube.push_back(vec3(-10.0f, -10.0f, 10.0f));
+	enviromentCube.push_back(vec3(10.0f, -10.0f, -10.0f));
+	enviromentCube.push_back(vec3(10.0f, -10.0f, -10.0f));
+	enviromentCube.push_back(vec3(-10.0f, -10.0f, 10.0f));
+	enviromentCube.push_back(vec3(10.0f, -10.0f, 10.0f));
+	// left
+	enviromentCube.push_back(vec3(-10.0f, -10.0f, 10.0f));
+	enviromentCube.push_back(vec3(-10.0f, -10.0f, -10.0f));
+	enviromentCube.push_back(vec3(-10.0f, 10.0f, -10.0f));
+	enviromentCube.push_back(vec3(-10.0f, 10.0f, -10.0f));
+	enviromentCube.push_back(vec3(-10.0f, 10.0f, 10.0f));
+	enviromentCube.push_back(vec3(-10.0f, -10.0f, 10.0f));
+	// right
+	enviromentCube.push_back(vec3(10.0f, -10.0f, -10.0f));
+	enviromentCube.push_back(vec3(10.0f, -10.0f, 10.0f));
+	enviromentCube.push_back(vec3(10.0f, 10.0f, 10.0f));
+	enviromentCube.push_back(vec3(10.0f, 10.0f, 10.0f));
+	enviromentCube.push_back(vec3(10.0f, 10.0f, -10.0f));
+	enviromentCube.push_back(vec3(10.0f, -10.0f, -10.0f));
+	// front
+	enviromentCube.push_back(vec3(-10.0f, -10.0f, 10.0f));
+	enviromentCube.push_back(vec3(-10.0f, 10.0f, 10.0f));
+	enviromentCube.push_back(vec3(10.0f, 10.0f, 10.0f));
+	enviromentCube.push_back(vec3(10.0f, 10.0f, 10.0f));
+	enviromentCube.push_back(vec3(10.0f, -10.0f, 10.0f));
+	enviromentCube.push_back(vec3(-10.0f, -10.0f, 10.0f));
+	// back
+	enviromentCube.push_back(vec3(-10.0f, 10.0f, -10.0f));
+	enviromentCube.push_back(vec3(-10.0f, -10.0f, -10.0f));
+	enviromentCube.push_back(vec3(10.0f, -10.0f, -10.0f));
+	enviromentCube.push_back(vec3(10.0f, -10.0f, -10.0f));
+	enviromentCube.push_back(vec3(10.0f, 10.0f, -10.0f));
+	enviromentCube.push_back(vec3(-10.0f, 10.0f, -10.0f));
 }
 
 Scene::Scene(
@@ -193,7 +240,8 @@ Scene::Scene(
 	activeModel(-1), activeLight(-1), activeCamera(-1),
 	renderer(renderer),
 	ambientLight(ambientLight),
-	hasEnviromentTexture(false)
+	hasEnviromentTexture(false),
+	enviromentCube()
 {
 	if (renderer == NULL) {
 		throw invalid_argument("Renderer is null");
@@ -456,6 +504,9 @@ void Scene::loadEnviromentTexture(
 	const CString topPath, const CString bottomPath,
 	const CString leftPath, const CString rightPath,
 	const CString frontPath, const CString backPath) {
+	if (enviromentCube.size() == 0) {
+		computeEnviromentCube();
+	}
 
 	glActiveTexture(GL_TEXTURE0);
 	glGenTextures(1, &enviromentTexture);
@@ -488,6 +539,11 @@ void Scene::draw() const {
 	Camera * camera = cameras.at(activeCamera);
 	renderer->SetCameraTransform(camera->getInverseTransform(), camera->getTransform());
 	renderer->SetProjection(camera->getProjection());
+
+	// 1.5 Draw the Enviroment if defined
+	if (hasEnviromentTexture) {
+		renderer->DrawEnviroment(&enviromentCube, enviromentTexture);
+	}
 
 	// 2. Tell all models to draw themselves
 	for (MeshModel * model : models) {
