@@ -306,6 +306,9 @@ void Scene::addPrimitive(int id)
 
 	try {
 		switch (id) {
+		case 0:
+			model = new CylinderMeshModel();
+			break;
 		case 4:
 			model = new PrimMeshModel();
 			break;

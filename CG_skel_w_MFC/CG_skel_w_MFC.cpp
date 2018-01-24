@@ -89,6 +89,7 @@ PrimMeshModels:
 #define FOG_DISABLE 5
 
 #define ADD_CAMERA 1
+#define ADD_CANONICAL 2
 
 // main menu
 #define MAIN_DEMO 1
@@ -165,7 +166,7 @@ void keyboard(unsigned char key, int x, int y)
 	bool should_redraw = false;
 	switch (key) {
 	case 'q':
-	case 033:
+	//case 033:	//disable the ESC key
 		exit(EXIT_SUCCESS);
 		break;
 	case 'a': // secret conf
@@ -288,6 +289,7 @@ void keyboard(unsigned char key, int x, int y)
 		}
 		break;
 
+	case '0':
 	case '4':
 		scene->addPrimitive(key - '0');
 		cout << "added primitive object " << key << " with model id #" << scene->getNumberOfModels() << endl;
@@ -504,8 +506,6 @@ void modelMenu(int id)
 					break;
 				}
 				scene->getActiveModel()->setTextures(
-					tdlg.GetAmbientColor(),
-					tdlg.GetSpecularColor(),
 					(LPCTSTR)tdlg.GetTexturePath(),
 					tdlg.GetShininess());
 				cout << "loaded texture file" << endl;
@@ -641,12 +641,27 @@ void fileMenu(int id)
 {
 	bool should_redraw = false;
 	CLightDialog ldlg;
+	CTextureDialog tdlg;
 
 	switch (id) {
 		case ADD_CAMERA:
 			scene->addCamera();
 			cout << "camera was added with ID #" << scene->getNumberOfCameras() - 1 << endl;
 			should_redraw = true;
+			break;
+		case ADD_CANONICAL:
+			if (tdlg.DoModal() == IDOK) {
+				if (tdlg.GetShininess() < 0) {
+					cout << "model properties error: shininess must be non-negative." << endl;
+					break;
+				}
+				scene->addPrimitive(0);
+				scene->getActiveModel()->setTextures(
+					(LPCTSTR)tdlg.GetTexturePath(),
+					tdlg.GetShininess());
+				cout << "added canonical model" << endl;
+				should_redraw = true;
+			}
 			break;
 	}
 	redraw(should_redraw);
@@ -657,6 +672,7 @@ void settingMenu(int id)
 	CValueDialog dlg("Anti-Aliasing Setting", "Factor", 1);
 	CColorDialog cdlg;
 	CCubeTexturesDialog ctdlg;
+	CFolderPickerDialog fpdlg;
 	switch (id) {
 	case SETTING_SCALING:
 		set_scale_vector();
@@ -689,17 +705,14 @@ void settingMenu(int id)
 		}
 		break;
 	case SETTING_ADD_SKYBOX:
-		if (ctdlg.DoModal() == IDOK) {
+		if (fpdlg.DoModal() == IDOK) {
 			scene->loadSkyBox(
-				"d:\\School\\Semester E\\Graphics\\obj_examples\\posy.png",
-				"d:\\School\\Semester E\\Graphics\\obj_examples\\negy.png",
-				"d:\\School\\Semester E\\Graphics\\obj_examples\\posx.png",
-				"d:\\School\\Semester E\\Graphics\\obj_examples\\negx.png",
-				"d:\\School\\Semester E\\Graphics\\obj_examples\\negz.png",
-				"d:\\School\\Semester E\\Graphics\\obj_examples\\posz.png");
-				//ctdlg.GetTopPath(), ctdlg.GetBottomPath(),
-				//ctdlg.GetLeftPath(), ctdlg.GetRightPath(),
-				//ctdlg.GetFrontPath(), ctdlg.GetBackPath());
+				fpdlg.GetFolderPath() + "\\ypos.png",
+				fpdlg.GetFolderPath() + "\\yneg.png",
+				fpdlg.GetFolderPath() + "\\xpos.png",
+				fpdlg.GetFolderPath() + "\\xneg.png",
+				fpdlg.GetFolderPath() + "\\zneg.png",
+				fpdlg.GetFolderPath() + "\\zpos.png");
 			redraw();
 		}
 		break;
@@ -766,6 +779,7 @@ void initMenu()
 	int menuFile = glutCreateMenu(fileMenu);
 	glutAddSubMenu("Model", menuModel);
 	glutAddMenuEntry("Camera", ADD_CAMERA);
+	//glutAddMenuEntry("Canonical", ADD_CANONICAL);
 	glutAddSubMenu("Shader", menuShader);
 	glutAddSubMenu("Light", menuLight);
 
