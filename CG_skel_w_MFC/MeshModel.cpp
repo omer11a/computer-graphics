@@ -1,7 +1,7 @@
 #include "vec.h"
 #include "StdAfx.h"
 #include "MeshModel.h"
-#include "lodepng.h"
+#include "lodepng_wrapper.h"
 //#define cimg_use_magick
 //#define cimg_use_png
 //#include "CImg.h"
@@ -193,39 +193,6 @@ void MeshModel::clearTexture()
 	hasTexture = false;
 }
 
-bool MeshModel::readPng(
-	const string fileName,
-	int element_size,
-	unsigned int * width,
-	unsigned int * height,
-	unsigned char ** pixel_array,
-	bool containsNormals
-) {
-	vector<unsigned char> pixels;
-	LodePNGColorType colorType = containsNormals ? LCT_RGB : LCT_RGBA;
-	unsigned error = lodepng::decode(pixels, *width, *height, fileName, colorType);
-
-	// If there's an error, display it.
-	if (error != 0) {
-		std::cout << "error " << error << ": " << lodepng_error_text(error) << std::endl;
-		return false;
-	}
-	*pixel_array = new unsigned char[pixels.size()];
-
-	int wInc = (*width) * element_size;//width in char
-	for (int i = 0; i < (*height) / 2; i++) {
-		int top = i*wInc;
-		int bot = (*height - i - 1) * wInc;
-		for (int j = 0; j < wInc; j++) {
-			// Swap the chars around.
-			(*pixel_array)[top + j] = pixels[bot + j];
-			(*pixel_array)[bot + j] = pixels[top + j];
-		}
-	}
-
-	return true;
-}
-
 void MeshModel::computeBoundingBox() {
 	minValues = maxValues = vertexPositions.at(0);
 	for (unsigned int i = 1; i < vertexPositions.size(); ++i) {
@@ -403,7 +370,7 @@ void MeshModel::setTextures(const vec3& ambient, const vec3& specular, const str
 {
 	unsigned int width, height;
 	unsigned char * pixel_array;
-	if (!readPng(fileName, 4, &width, &height, &pixel_array)) {
+	if (!readPng(fileName, &width, &height, &pixel_array)) {
 		return;
 	}
 
@@ -442,7 +409,7 @@ void MeshModel::enableNormalMap(const string fileName)
 		return;
 	}
 
-	if (!readPng(fileName, 4, &width, &height, &pixel_array, false)) {
+	if (!readPng(fileName, &width, &height, &pixel_array, false)) {
 		return;
 	}
 

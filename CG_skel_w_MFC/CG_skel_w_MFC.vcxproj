@@ -125,6 +125,7 @@
     <ClInclude Include="CG_skel_w_MFC.h" />
     <ClInclude Include="CImg.h" />
     <ClInclude Include="lodepng.h" />
+    <ClInclude Include="lodepng_wrapper.h" />
     <ClInclude Include="ShaderProgram.h" />
     <ClInclude Include="InitShader.h" />
     <ClInclude Include="InputDialog.h" />

@@ -68,7 +68,10 @@ class Scene {
 	vector<Camera *> cameras;
 	AmbientLight ambientLight;
 	vector<DirectionalLightSource *> lights;
+	GLuint enviromentTexture;
+	bool hasEnviromentTexture;
 
+	bool loadEnviromentSideTexture(GLenum side, CString filePath);
 public:
 	Scene() = delete;
 	explicit Scene(
@@ -98,6 +101,10 @@ public:
 	void removeActiveCamera();
 	void removeActiveLight();
 	void clear();
+	void Scene::loadEnviromentTexture(
+		const CString topPath, const CString bottomPath,
+		const CString leftPath, const CString rightPath,
+		const CString frontPath, const CString backPath);
 	void draw() const;
 	void drawDemo() const;
 };

@@ -171,6 +171,20 @@ void Camera::draw(Renderer * renderer) const {
 	}
 }
 
+bool Scene::loadEnviromentSideTexture(GLenum side, CString filePath)
+{
+	unsigned int width, height;
+	unsigned char * pixel_array;
+
+	if (!readPng(filePath, &width, &height, &pixel_array)) {
+		return false;
+	}
+	glBindTexture(GL_TEXTURE_CUBE_MAP, texture);
+	glTexImage2D(side, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, pixel_array);
+	delete[] pixel_array;
+	return true;
+}
+
 Scene::Scene(
 	Renderer * renderer,
 	const vec3& eye,
@@ -178,7 +192,8 @@ Scene::Scene(
 ) :
 	activeModel(-1), activeLight(-1), activeCamera(-1),
 	renderer(renderer),
-	ambientLight(ambientLight)
+	ambientLight(ambientLight),
+	hasEnviromentTexture(false)
 {
 	if (renderer == NULL) {
 		throw invalid_argument("Renderer is null");
@@ -210,6 +225,10 @@ Scene::~Scene() {
 		Camera * camera = cameras.back();
 		cameras.pop_back();
 		delete camera;
+	}
+
+	if (hasEnviromentTexture) {
+		glDeleteTextures(1, &enviromentTexture);
 	}
 }
 
@@ -431,6 +450,30 @@ void Scene::clear() {
 
 	activeModel = -1;
 	activeCamera = 0;
+}
+
+void Scene::loadEnviromentTexture(
+	const CString topPath, const CString bottomPath,
+	const CString leftPath, const CString rightPath,
+	const CString frontPath, const CString backPath) {
+
+	glActiveTexture(GL_TEXTURE0);
+	glGenTextures(1, &enviromentTexture);
+	hasEnviromentTexture = true;
+
+	// load each image and copy into a side of the cube-map texture
+	loadEnviromentSideTexture(GL_TEXTURE_CUBE_MAP_POSITIVE_Y, topPath);
+	loadEnviromentSideTexture(GL_TEXTURE_CUBE_MAP_NEGATIVE_Y, bottomPath);
+	loadEnviromentSideTexture(GL_TEXTURE_CUBE_MAP_NEGATIVE_X, leftPath);
+	loadEnviromentSideTexture(GL_TEXTURE_CUBE_MAP_POSITIVE_X, rightPath);
+	loadEnviromentSideTexture(GL_TEXTURE_CUBE_MAP_NEGATIVE_Z, frontPath);
+	loadEnviromentSideTexture(GL_TEXTURE_CUBE_MAP_POSITIVE_Z, backPath);
+	// format cube map texture
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 }
 
 void Scene::draw() const {

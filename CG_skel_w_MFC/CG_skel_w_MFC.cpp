@@ -666,7 +666,10 @@ void settingMenu(int id)
 		break;
 	case SETTING_ENVIROMENT:
 		if (ctdlg.DoModal() == IDOK) {
-			//scene->SetBackgroundColor(ColorToVec(cdlg.GetColor()));
+			scene->loadEnviromentTexture(
+				(LPCTSTR)ctdlg.GetTopPath(), (LPCTSTR)ctdlg.GetBottomPath(),
+				(LPCTSTR)ctdlg.GetLeftPath(), (LPCTSTR)ctdlg.GetRightPath(),
+				(LPCTSTR)ctdlg.GetFrontPath(), (LPCTSTR)ctdlg.GetBackPath());
 			redraw();
 		}
 		break;
