@@ -414,3 +414,35 @@ protected:
 	DECLARE_MESSAGE_MAP()
 
 };
+
+// ----------------------
+//    Class CCubeTexturesDialog
+// ----------------------
+class CCubeTexturesDialog : public CInputDialog {
+public:
+	CCubeTexturesDialog(const CString title = "Select Cube Textures");
+	virtual ~CCubeTexturesDialog();
+
+	CString GetTopPath() const;
+	CString GetBottomPath() const;
+	CString GetLeftPath() const;
+	CString GetRightPath() const;
+	CString GetFrontPath() const;
+	CString GetBackPath() const;
+protected:
+	CString top_path, bottom_path, left_path, right_path, front_path, back_path;
+	CButton topEdit, bottomEdit, leftEdit, rightEdit, frontEdit, backEdit;
+
+	CString get_path();
+	afx_msg void set_top();
+	afx_msg void set_bottom();
+	afx_msg void set_left();
+	afx_msg void set_right();
+	afx_msg void set_front();
+	afx_msg void set_back();
+	virtual void DoDataExchange(CDataExchange* pDX);
+
+	afx_msg int OnCreate(LPCREATESTRUCT lpcs);
+	afx_msg void OnPaint();
+	DECLARE_MESSAGE_MAP()
+};

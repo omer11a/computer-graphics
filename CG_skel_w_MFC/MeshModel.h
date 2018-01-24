@@ -34,8 +34,9 @@ protected:
 	vector<vec2> textureCenters;
 	vector<vec3> faceNormals;
 	vector<vec3> tangents;
-	//vector<vec3> bitangents;
-	vector<Material> materials;
+	vector<vec3> ambients, diffuses, speculars;
+	vector<float> shininess;
+
 	GLuint textureID, normalMapID;
 	bool hasTexture, hasNormalMap, hasColorAnimation, hasVertexAnimation, hasToonShading, hasWoodTexture;
 	int colorAnimationRepresentation, colorAnimationDirection, vertexAnimationDirection;

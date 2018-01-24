@@ -70,7 +70,10 @@ void Renderer::DrawToonShadow(
 
 void Renderer::DrawTriangles(
 	const vector<vec3>* vertices,
-	const vector<Material>* materials,
+	const vector<vec3>* ambients,
+	const vector<vec3>* diffuses,
+	const vector<vec3>* speculars,
+	const vector<float>* shininess,
 	const vector<vec3>* centerPositions,
 	const bool hasTexture,
 	const GLuint textureID,
@@ -147,16 +150,6 @@ void Renderer::DrawTriangles(
 		SetBaseShader(ShaderType::Gouraud);
 	}
 
-	// split material parameters
-	vector<vec3> ambients, diffuses, speculars;
-	vector<float> shininess;
-	for (auto i = materials->begin(); i != materials->end(); ++i) {
-		ambients.push_back((*i).ambientReflectance);
-		diffuses.push_back((*i).diffuseReflectance);
-		speculars.push_back((*i).specularReflectance);
-		shininess.push_back((*i).shininess);
-	}
-
 	vector<GLuint> buffers;
 	buffers.push_back(objectsProgram.SetInParameter(*vertices, 0 , 3));				//in vec3 vertexPosition;
 	buffers.push_back(objectsProgram.SetInParameter(*centerPositions, 1 , 3));		//in vec3 centerPosition;
@@ -164,10 +157,10 @@ void Renderer::DrawTriangles(
 		buffers.push_back(objectsProgram.SetInParameter(*vertexNormals, 2, 3));			//in vec3 vertexNormal;
 	}
 	buffers.push_back(objectsProgram.SetInParameter(*faceNormals, 3, 3));			//in vec3 faceNormal;
-	buffers.push_back(objectsProgram.SetInParameter(ambients, 4, 3));				//in vec3 ambientReflectance;
-	buffers.push_back(objectsProgram.SetInParameter(speculars, 5, 3));				//in vec3 specularReflectance;
-	buffers.push_back(objectsProgram.SetInParameter(diffuses, 6, 3));				//in vec3 diffuseReflectance;
-	buffers.push_back(objectsProgram.SetInParameter(shininess, 7, 1));				//in float shininess;
+	buffers.push_back(objectsProgram.SetInParameter(*ambients, 4, 3));				//in vec3 ambientReflectance;
+	buffers.push_back(objectsProgram.SetInParameter(*speculars, 5, 3));				//in vec3 specularReflectance;
+	buffers.push_back(objectsProgram.SetInParameter(*diffuses, 6, 3));				//in vec3 diffuseReflectance;
+	buffers.push_back(objectsProgram.SetInParameter(*shininess, 7, 1));				//in float shininess;
 	
 	if (hasTexture) {
 		buffers.push_back(objectsProgram.SetInParameter(*textureCoordinates, 8, 2));	//in vec2 uv;

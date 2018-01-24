@@ -76,7 +76,6 @@ PrimMeshModels:
 #define ADD_WOOD_TEXTURE 12
 #define DEL_WOOD_TEXTURE 13
 
-
 // light extra menu
 #define AMBIENT 3
 
@@ -101,6 +100,7 @@ PrimMeshModels:
 #define SETTING_ZOOM		4
 #define SETTING_AA			5
 #define SETTING_BG_COLOR	6
+#define SETTING_ENVIROMENT	7
 
 #define MODEL_OBJECT	'm'
 #define MODEL_WORLD		'w'
@@ -631,6 +631,8 @@ void fileMenu(int id)
 void settingMenu(int id)
 {
 	CValueDialog dlg("Anti-Aliasing Setting", "Factor", 1);
+	CColorDialog cdlg;
+	CCubeTexturesDialog ctdlg;
 	switch (id) {
 	case SETTING_SCALING:
 		set_scale_vector();
@@ -657,13 +659,16 @@ void settingMenu(int id)
 		//}
 		break;
 	case SETTING_BG_COLOR:
-	{
-		CColorDialog cdlg;
 		if (cdlg.DoModal() == IDOK) {
 			renderer->SetBackgroundColor(ColorToVec(cdlg.GetColor()));
 			redraw();
 		}
-	}
+		break;
+	case SETTING_ENVIROMENT:
+		if (ctdlg.DoModal() == IDOK) {
+			//scene->SetBackgroundColor(ColorToVec(cdlg.GetColor()));
+			redraw();
+		}
 		break;
 	}
 }
@@ -732,6 +737,7 @@ void initMenu()
 	glutAddMenuEntry("Zoom...", SETTING_ZOOM);
 	glutAddMenuEntry("Anti-Aliasing...", SETTING_AA);
 	glutAddMenuEntry("Background Color...", SETTING_BG_COLOR);
+	glutAddMenuEntry("Enviroment Texture...", SETTING_ENVIROMENT);
 
 	glutCreateMenu(mainMenu);
 	glutAddSubMenu("Add/Set", menuFile);

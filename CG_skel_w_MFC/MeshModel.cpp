@@ -287,7 +287,7 @@ void MeshModel::computeTangents() {
 
 MeshModel::MeshModel() :
 	vertexPositions(), vertexNormals(), smoothVertexNormals(), textureCoordinates(), textureCenters(),
-	faceNormals(), materials(),
+	faceNormals(), ambients(), diffuses(), speculars(), shininess(),
 	worldTransform(1), modelTransform(1), normalModelTransform(1), normalWorldTransform(1),
 	allowVertexNormals(false), allowFaceNormals(false), allowBoundingBox(false),
 	textureID(0), hasTexture(false), normalMapID(0), hasNormalMap(false),
@@ -299,7 +299,7 @@ MeshModel::MeshModel() :
 
 MeshModel::MeshModel(string fileName) :
 	vertexPositions(), vertexNormals(), smoothVertexNormals(), textureCoordinates(), textureCenters(),
-	faceNormals(), materials(),
+	faceNormals(), ambients(), diffuses(), speculars(), shininess(),
 	worldTransform(1), modelTransform(1), normalModelTransform(1), normalWorldTransform(1),
 	allowVertexNormals(false), allowFaceNormals(false), allowBoundingBox(false),
 	textureID(0), hasTexture(false), normalMapID(0), hasNormalMap(false),
@@ -369,9 +369,15 @@ void MeshModel::switchBoundingBoxVisibility() {
 }
 
 void MeshModel::setUniformMaterial(Material material) {
-	materials.clear();
+	ambients.clear();
+	speculars.clear();
+	diffuses.clear();
+	shininess.clear();
 	for (int i = 0; i < vertexPositions.size(); ++i) {
-		materials.push_back(material);
+		ambients.push_back(material.ambientReflectance);
+		speculars.push_back(material.specularReflectance);
+		diffuses.push_back(material.diffuseReflectance);
+		shininess.push_back(material.shininess);
 	}
 	clearTexture();
 }
@@ -381,14 +387,15 @@ void MeshModel::setRandomMaterial() {
 	mt19937 rng(rd());
 	uniform_int_distribution<int> uni(0, 255);
 
-	materials.clear();
+	ambients.clear();
+	speculars.clear();
+	diffuses.clear();
+	shininess.clear();
 	for (int i = 0; i < vertexPositions.size(); ++i) {
-		materials.push_back({
-			vec3(uni(rng), uni(rng), uni(rng)) / 255,
-			vec3(uni(rng), uni(rng), uni(rng)) / 255,
-			vec3(uni(rng), uni(rng), uni(rng)) / 255,
-			(float) uni(rng)
-		});
+		ambients.push_back(vec3(uni(rng), uni(rng), uni(rng)) / 255);
+		speculars.push_back(vec3(uni(rng), uni(rng), uni(rng)) / 255);
+		diffuses.push_back(vec3(uni(rng), uni(rng), uni(rng)) / 255);
+		shininess.push_back((float)uni(rng));
 	}
 	clearTexture();
 }
@@ -418,16 +425,13 @@ void MeshModel::setTextures(const vec3& ambient, const vec3& specular, const str
 	}
 	delete[] pixel_array;
 
-	materials.clear();
 	Material m = {
 		ambient,
 		specular,
 		vec3(0),
 		shininess
 	};
-	for (int i = 0; i < vertexPositions.size(); ++i) {
-		materials.push_back(m);
-	}
+	setUniformMaterial(m);
 }
 
 void MeshModel::enableNormalMap(const string fileName)
@@ -572,7 +576,7 @@ void MeshModel::draw(BaseRenderer * renderer) const {
 		renderer->DrawToonShadow(&vertexPositions, &smoothVertexNormals, silhouetteThickness, silhouetteColor);
 	}
 	vec2 modelResolution(maxValues.x - minValues.x, maxValues.y - minValues.y);
-	renderer->DrawTriangles(&vertexPositions, &materials, &centerPositions, hasTexture, textureID, hasNormalMap, normalMapID,
+	renderer->DrawTriangles(&vertexPositions, &ambients, &diffuses, &speculars, &shininess, &centerPositions, hasTexture, textureID, hasNormalMap, normalMapID,
 		&textureCoordinates, &textureCenters, &tangents, 
 		hasColorAnimation, colorAnimationRepresentation, colorAnimationProgress * colorAnimationSpeed,
 		hasVertexAnimation, vertexAnimationProgress * vertexAnimationSpeed, hasToonShading, colorQuantizationCoefficient,

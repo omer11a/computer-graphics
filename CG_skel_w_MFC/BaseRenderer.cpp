@@ -30,7 +30,10 @@ void BaseRenderer::DrawToonShadow(
 
 void BaseRenderer::DrawTriangles(
 	const vector<vec3>* vertices,
-	const vector<Material>* materials,
+	const vector<vec3>* ambients,
+	const vector<vec3>* diffuses,
+	const vector<vec3>* speculars,
+	const vector<float>* shininess,
 	const vector<vec3>* centerPositions,
 	const bool hasTexture,
 	const GLuint textureID,
