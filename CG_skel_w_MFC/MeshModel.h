@@ -76,7 +76,7 @@ public:
 	void switchBoundingBoxVisibility();
 	void setUniformMaterial(Material material);
 	void setRandomMaterial();
-	void setTextures(const vec3& ambient, const vec3& specular, const string fileName, const float shininess);
+	void setTextures(const string fileName, const float shininess);
 	void enableNormalMap(const string fileName);
 	void disableNormalMap();
 	void startColorAnimation(const int animationType, const float speed, const float duration);
@@ -98,4 +98,16 @@ class PrimMeshModel : public MeshModel
 {
 public:
 	PrimMeshModel();
+};
+
+class PlaneMeshModel : public MeshModel
+{
+public:
+	PlaneMeshModel();
+};
+
+class CylinderMeshModel : public MeshModel
+{
+public:
+	CylinderMeshModel();
 };
