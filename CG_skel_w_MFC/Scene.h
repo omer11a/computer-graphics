@@ -69,11 +69,11 @@ class Scene {
 	AmbientLight ambientLight;
 	vector<DirectionalLightSource *> lights;
 	vector<vec3> enviromentCube;
-	GLuint enviromentTexture;
-	bool hasEnviromentTexture;
+	GLuint skyCubeTexture;
+	bool hasSkyBox;
 
 	bool loadEnviromentSideTexture(GLenum side, CString filePath);
-	void computeEnviromentCube();
+	void computeSkyCube();
 public:
 	Scene() = delete;
 	explicit Scene(
@@ -103,10 +103,11 @@ public:
 	void removeActiveCamera();
 	void removeActiveLight();
 	void clear();
-	void Scene::loadEnviromentTexture(
+	void Scene::loadSkyBox(
 		const CString topPath, const CString bottomPath,
 		const CString leftPath, const CString rightPath,
 		const CString frontPath, const CString backPath);
+	void unloadSkyBox();
 	void draw() const;
 	void drawDemo() const;
 };

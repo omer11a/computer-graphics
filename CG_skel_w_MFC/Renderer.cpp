@@ -39,7 +39,7 @@ void Renderer::UpdateBuffers(int width, int height)
 	CreateOpenGLBuffer(); //Do not remove this line.
 }
 
-void Renderer::DrawEnviroment(const vector<vec3>* vertices, const GLuint texture)
+void Renderer::DrawSkyBox(const vector<vec3>* vertices)
 {
 	// disable zBuffer
 	glDepthMask(GL_FALSE);
@@ -55,7 +55,7 @@ void Renderer::DrawEnviroment(const vector<vec3>* vertices, const GLuint texture
 	enviromentProgram.Activate();
 	enviromentProgram.SetUniformParameter(env_vp, "viewProjectionMatrix");
 	glActiveTexture(GL_TEXTURE0);
-	glBindTexture(GL_TEXTURE_CUBE_MAP, texture);
+	glBindTexture(GL_TEXTURE_CUBE_MAP, cubeSampler);
 	enviromentProgram.SetUniformParameter(0, "cubeSampler");
 
 	GLuint buffer = enviromentProgram.SetInParameter(*vertices, 0, 3);
@@ -123,6 +123,8 @@ void Renderer::DrawTriangles(
 	const vec3& woodTextureColor1,
 	const vec3& woodTextureColor2,
 	const vec2& modelResolution,
+	const bool hasEnvironmentMapping,
+	const float refractionRatio,
 	const vector<vec3>* vertexNormals,
 	const vector<vec3>* faceNormals)
 {
@@ -164,6 +166,12 @@ void Renderer::DrawTriangles(
 		objectsProgram.SetUniformParameter(woodTextureColor1, "woodTextureColor1");
 		objectsProgram.SetUniformParameter(woodTextureColor2, "woodTextureColor2");
 		objectsProgram.SetUniformParameter(modelResolution, "modelResolution");
+	}
+	objectsProgram.SetUniformParameter(int(hasSkyBox), "hasSkyBox");
+	objectsProgram.SetUniformParameter(int(hasEnvironmentMapping), "hasEnvironmentMapping");
+	if ((hasSkyBox) && (hasEnvironmentMapping)) {
+		objectsProgram.SetUniformParameter(cubeSampler, "cubeSampler");
+		objectsProgram.SetUniformParameter(refractionRatio, "refractionRatio");
 	}
 
 	objectsProgram.SetUniformParameter(m_oTransform, "modelMatrix");
@@ -418,6 +426,17 @@ void Renderer::SetObjectMatrices(const mat4 & oTransform, const mat3 & nTransfor
 	m_nTransform = nTransform;
 	mv = m_cTransform * m_oTransform;
 	mvp = m_projection * mv;
+}
+
+void Renderer::EnableSkyBox(const GLuint sc)
+{
+	cubeSampler = sc;
+	hasSkyBox = true;
+}
+
+void Renderer::DisableSkyBox()
+{
+	hasSkyBox = false;
 }
 
 void Renderer::SetDemoBuffer()

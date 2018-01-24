@@ -14,6 +14,14 @@ BaseRenderer::BaseRenderer(int width, int height) : m_width(width), m_height(hei
 
 void BaseRenderer::SetObjectMatrices(const mat4 & oTransform, const mat3 & nTransform) { }
 
+void BaseRenderer::EnableSkyBox(const GLuint skyBox)
+{
+}
+
+void BaseRenderer::DisableSkyBox()
+{
+}
+
 void BaseRenderer::UpdateBuffers(int width, int height) { }
 
 void BaseRenderer::SwapBuffers() { }
@@ -22,9 +30,7 @@ void BaseRenderer::ClearColorBuffer() { }
 
 void BaseRenderer::SetDemoBuffer() { }
 
-void BaseRenderer::DrawEnviroment(
-	const vector<vec3>* vertices,
-	const GLuint texture) { }
+void BaseRenderer::DrawSkyBox(const vector<vec3>* vertices) { }
 
 void BaseRenderer::DrawToonShadow(
 	const vector<vec3>* vertices, 
@@ -57,6 +63,8 @@ void BaseRenderer::DrawTriangles(
 	const vec3& woodTextureColor1,
 	const vec3& woodTextureColor2,
 	const vec2& modelResolution,
+	const bool hasEnvironmentMapping,
+	const float refractionRatio,
 	const vector<vec3>* vertexNormals,
 	const vector<vec3>* faceNormals) { }
 

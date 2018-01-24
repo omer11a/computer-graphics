@@ -15,9 +15,7 @@ public:
 	explicit BaseRenderer();
 	explicit BaseRenderer(int width, int height);
 	
-	virtual void DrawEnviroment(
-		const vector<vec3>* vertices,
-		const GLuint texture);
+	virtual void DrawSkyBox(const vector<vec3>* vertices);
 	virtual void DrawToonShadow(
 		const vector<vec3>* vertices,
 		const vector<vec3>* vertexNormals,
@@ -48,6 +46,8 @@ public:
 		const vec3& woodTextureColor1,
 		const vec3& woodTextureColor2,
 		const vec2& modelResolution,
+		const bool hasEnvironmentMapping,
+		const float refractionRatio,
 		const vector<vec3>* vertexNormals = NULL,
 		const vector<vec3>* faceNormals = NULL);
 	virtual void DrawModelNormals(
@@ -63,6 +63,8 @@ public:
 	virtual void SetProjection(const mat4& projection);
 	virtual void SetZRange(float zNear, float zFar);
 	virtual void SetObjectMatrices(const mat4& oTransform, const mat3& nTransform = mat3());
+	virtual void EnableSkyBox(const GLuint skyBox);
+	virtual void DisableSkyBox();
 
 	virtual void UpdateBuffers(int width, int height);
 	virtual void SwapBuffers();

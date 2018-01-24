@@ -180,13 +180,13 @@ bool Scene::loadEnviromentSideTexture(GLenum side, CString filePath)
 	if (!readPng((LPCTSTR)filePath, &width, &height, &pixel_array)) {
 		return false;
 	}
-	glBindTexture(GL_TEXTURE_CUBE_MAP, enviromentTexture);
+	glBindTexture(GL_TEXTURE_CUBE_MAP, skyCubeTexture);
 	glTexImage2D(side, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, pixel_array);
 	delete[] pixel_array;
 	return true;
 }
 
-void Scene::computeEnviromentCube()
+void Scene::computeSkyCube()
 {
 	// back
 	enviromentCube.push_back(vec3(-10.0f, 10.0f, -10.0f));
@@ -240,7 +240,7 @@ Scene::Scene(
 	activeModel(-1), activeLight(-1), activeCamera(-1),
 	renderer(renderer),
 	ambientLight(ambientLight),
-	hasEnviromentTexture(false),
+	hasSkyBox(false),
 	enviromentCube()
 {
 	if (renderer == NULL) {
@@ -275,8 +275,8 @@ Scene::~Scene() {
 		delete camera;
 	}
 
-	if (hasEnviromentTexture) {
-		glDeleteTextures(1, &enviromentTexture);
+	if (hasSkyBox) {
+		glDeleteTextures(1, &skyCubeTexture);
 	}
 }
 
@@ -500,17 +500,17 @@ void Scene::clear() {
 	activeCamera = 0;
 }
 
-void Scene::loadEnviromentTexture(
-	const CString negativeX, const CString positiveX,
-	const CString negativeY, const CString positiveY,
-	const CString negativeZ, const CString positiveZ) {
+void Scene::loadSkyBox(
+	const CString topPath, const CString bottomPath,
+	const CString leftPath, const CString rightPath,
+	const CString frontPath, const CString backPath) {
 	if (enviromentCube.size() == 0) {
-		computeEnviromentCube();
+		computeSkyCube();
 	}
 
 	glActiveTexture(GL_TEXTURE0);
-	glGenTextures(1, &enviromentTexture);
-	hasEnviromentTexture = true;
+	glGenTextures(1, &skyCubeTexture);
+	hasSkyBox = true;
 
 	// load each image and copy into a side of the cube-map texture
 	loadEnviromentSideTexture(GL_TEXTURE_CUBE_MAP_NEGATIVE_X, negativeX);
@@ -527,6 +527,11 @@ void Scene::loadEnviromentTexture(
 	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 }
 
+void Scene::unloadSkyBox()
+{
+	hasSkyBox = false;
+}
+
 void Scene::draw() const {
 	if (activeCamera < 0) {
 		throw invalid_argument("No active camera");
@@ -541,8 +546,9 @@ void Scene::draw() const {
 	renderer->SetProjection(camera->getProjection());
 
 	// 1.5 Draw the Enviroment if defined
-	if (hasEnviromentTexture) {
-		renderer->DrawEnviroment(&enviromentCube, enviromentTexture);
+	if (hasSkyBox) {
+		renderer->EnableSkyBox(skyCubeTexture);
+		renderer->DrawSkyBox(&enviromentCube);
 	}
 
 	// 2. Tell all models to draw themselves

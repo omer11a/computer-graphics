@@ -75,6 +75,8 @@ PrimMeshModels:
 #define DEL_TOON_SHADING 11
 #define ADD_WOOD_TEXTURE 12
 #define DEL_WOOD_TEXTURE 13
+#define ADD_ENV_MAP 14
+#define DEL_ENV_MAP 15
 
 // light extra menu
 #define AMBIENT 3
@@ -100,7 +102,8 @@ PrimMeshModels:
 #define SETTING_ZOOM		4
 #define SETTING_AA			5
 #define SETTING_BG_COLOR	6
-#define SETTING_SKYBOX	7
+#define SETTING_ADD_SKYBOX	7
+#define SETTING_DEL_SKYBOX	8
 
 #define MODEL_OBJECT	'm'
 #define MODEL_WORLD		'w'
@@ -457,7 +460,7 @@ void modelMenu(int id)
 {
 	bool should_redraw = false;
 	CFileDialog fdlg(TRUE, _T(".obj"), NULL, NULL, _T("*.obj|*.*"));
-
+	
 	switch (id) {
 	case NEW_ITEM:
 		if (fdlg.DoModal() == IDOK) {
@@ -609,6 +612,27 @@ void modelMenu(int id)
 			should_redraw = true;
 		}
 		break;
+	case ADD_ENV_MAP:
+		if (scene->getNumberOfModels() > 0) {
+			CValueDialog vdlg("Enviroment Mapping", "Refraction Ratio:", 1);
+			if (vdlg.DoModal() == IDOK) {
+				float rr = vdlg.GetValue();
+				if (rr < 0) {
+					cout << "ratio must be non-negative" << endl;
+				} else {
+					scene->getActiveModel()->enableEnviromentMapping(rr);
+					should_redraw = true;
+				}
+			}
+		}
+		break;
+	case DEL_ENV_MAP:
+		if (scene->getNumberOfModels() > 0) {
+			scene->getActiveModel()->disableEnviromentMapping();
+			cout << "disabled enviroment mapping" << endl;
+			should_redraw = true;
+		}
+		break;
 	}
 	redraw(should_redraw);
 }
@@ -664,9 +688,9 @@ void settingMenu(int id)
 			redraw();
 		}
 		break;
-	case SETTING_SKYBOX:
+	case SETTING_ADD_SKYBOX:
 		if (ctdlg.DoModal() == IDOK) {
-			scene->loadEnviromentTexture(
+			scene->loadSkyBox(
 				"C:\\Users\\omer\\Documents\\university\\7\\computer graphics\\hw\\skybox\\xneg.png",
 				"C:\\Users\\omer\\Documents\\university\\7\\computer graphics\\hw\\skybox\\xpos.png",
 				"C:\\Users\\omer\\Documents\\university\\7\\computer graphics\\hw\\skybox\\ypos.png",
@@ -678,6 +702,10 @@ void settingMenu(int id)
 				//ctdlg.GetFrontPath(), ctdlg.GetBackPath());
 			redraw();
 		}
+		break;
+	case SETTING_DEL_SKYBOX:
+		scene->unloadSkyBox();
+		redraw();
 		break;
 	}
 }
@@ -716,6 +744,9 @@ void initMenu()
 	glutAddMenuEntry("Disable Toon Shading", DEL_TOON_SHADING);
 	glutAddMenuEntry("Enable Wood Texture", ADD_WOOD_TEXTURE);
 	glutAddMenuEntry("Disable Wood Texture", DEL_WOOD_TEXTURE);
+	glutAddMenuEntry("Enable Environment Mapping", ADD_ENV_MAP);
+	glutAddMenuEntry("Disable Environment Mapping", DEL_ENV_MAP);
+
 
 	// light sub menu
 	int menuLight = glutCreateMenu(lightMenu);
@@ -746,7 +777,8 @@ void initMenu()
 	glutAddMenuEntry("Zoom...", SETTING_ZOOM);
 	glutAddMenuEntry("Anti-Aliasing...", SETTING_AA);
 	glutAddMenuEntry("Background Color...", SETTING_BG_COLOR);
-	glutAddMenuEntry("Enviroment Texture...", SETTING_SKYBOX);
+	glutAddMenuEntry("Add Sky Box...", SETTING_ADD_SKYBOX);
+	glutAddMenuEntry("Remove Sky Box...", SETTING_DEL_SKYBOX);
 
 	glutCreateMenu(mainMenu);
 	glutAddSubMenu("Add/Set", menuFile);
@@ -1209,7 +1241,7 @@ int my_main( int argc, char **argv )
 	glutMouseFunc( mouse );
 	glutMotionFunc ( motion );
 	glutReshapeFunc( reshape );
-	//glutIdleFunc( animation );
+	glutIdleFunc( animation );
 	initMenu();
 	
 

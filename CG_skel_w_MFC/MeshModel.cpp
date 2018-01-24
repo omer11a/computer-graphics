@@ -261,7 +261,7 @@ MeshModel::MeshModel() :
 	hasColorAnimation(false), colorAnimationRepresentation(0), colorAnimationSpeed(0), colorAnimationDuration(0), colorAnimationProgress(0),
 	hasVertexAnimation(false), vertexAnimationSpeed(0), vertexAnimationDuration(0), vertexAnimationProgress(0),
 	colorAnimationDirection(0), vertexAnimationDirection(0), hasToonShading(false), colorQuantizationCoefficient(0), silhouetteThickness(0), silhouetteColor(0),
-	hasWoodTexture(false), woodTextureColor1(0), woodTextureColor2(0)
+	hasWoodTexture(false), woodTextureColor1(0), woodTextureColor2(0), hasEnvironmentMapping(false), refractionRatio()
 { }
 
 MeshModel::MeshModel(string fileName) :
@@ -273,7 +273,7 @@ MeshModel::MeshModel(string fileName) :
 	hasColorAnimation(false), colorAnimationRepresentation(0), colorAnimationSpeed(0), colorAnimationDuration(0), colorAnimationProgress(0),
 	hasVertexAnimation(false), vertexAnimationSpeed(0), vertexAnimationDuration(0), vertexAnimationProgress(0),
 	colorAnimationDirection(0), vertexAnimationDirection(0), hasToonShading(false), colorQuantizationCoefficient(0), silhouetteThickness(0), silhouetteColor(0),
-	hasWoodTexture(false), woodTextureColor1(0), woodTextureColor2(0)
+	hasWoodTexture(false), woodTextureColor1(0), woodTextureColor2(0), hasEnvironmentMapping(false), refractionRatio()
 {
 	loadFile(fileName);
 	setUniformMaterial({ vec3(1), vec3(1), vec3(1), 1 });
@@ -534,6 +534,17 @@ void MeshModel::disableWoodTexture()
 	hasWoodTexture = false;
 }
 
+void MeshModel::enableEnviromentMapping(const float refRatio)
+{
+	hasEnvironmentMapping = true;
+	refractionRatio = refRatio;
+}
+
+void MeshModel::disableEnviromentMapping()
+{
+	hasEnvironmentMapping = false;
+}
+
 void MeshModel::draw(BaseRenderer * renderer) const {
 	if (renderer == NULL) {
 		throw invalid_argument("Renderer is null");
@@ -547,7 +558,7 @@ void MeshModel::draw(BaseRenderer * renderer) const {
 		&textureCoordinates, &textureCenters, &tangents, 
 		hasColorAnimation, colorAnimationRepresentation, colorAnimationProgress * colorAnimationSpeed,
 		hasVertexAnimation, vertexAnimationProgress * vertexAnimationSpeed, hasToonShading, colorQuantizationCoefficient,
-		hasWoodTexture, woodTextureColor1, woodTextureColor2, modelResolution,
+		hasWoodTexture, woodTextureColor1, woodTextureColor2, modelResolution, hasEnvironmentMapping, refractionRatio,
 		(hasVertexAnimation) ? &smoothVertexNormals : &vertexNormals, &faceNormals);
 
 	if (allowBoundingBox) {

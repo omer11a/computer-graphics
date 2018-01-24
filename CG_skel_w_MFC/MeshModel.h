@@ -38,14 +38,13 @@ protected:
 	vector<float> shininess;
 
 	GLuint textureID, normalMapID;
-	bool hasTexture, hasNormalMap, hasColorAnimation, hasVertexAnimation, hasToonShading, hasWoodTexture;
+	bool hasTexture, hasNormalMap, hasColorAnimation, hasVertexAnimation, hasToonShading, hasWoodTexture, hasEnvironmentMapping;
 	int colorAnimationRepresentation, colorAnimationDirection, vertexAnimationDirection;
 	float colorAnimationSpeed, colorAnimationDuration, colorAnimationProgress;
 	float vertexAnimationSpeed, vertexAnimationDuration, vertexAnimationProgress;
 	int colorQuantizationCoefficient;
-	float silhouetteThickness;
+	float silhouetteThickness, refractionRatio;
 	vec3 silhouetteColor, woodTextureColor1, woodTextureColor2;
-
 
 	template<class T>
 	T & getVecByIndex(vector<T> & vecs, int i)
@@ -89,6 +88,8 @@ public:
 	void disableToonShading();
 	void enableWoodTexture(const vec3& color1, const vec3& color2);
 	void disableWoodTexture();
+	void enableEnviromentMapping(const float refRatio);
+	void disableEnviromentMapping();
 	void draw(BaseRenderer * renderer) const;
 	void drawNormals(BaseRenderer * renderer) const;
 };
