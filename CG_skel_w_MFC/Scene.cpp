@@ -188,20 +188,13 @@ bool Scene::loadEnviromentSideTexture(GLenum side, CString filePath)
 
 void Scene::computeEnviromentCube()
 {
-	// top
+	// back
 	enviromentCube.push_back(vec3(-10.0f, 10.0f, -10.0f));
-	enviromentCube.push_back(vec3(10.0f, 10.0f, -10.0f));
-	enviromentCube.push_back(vec3(10.0f, 10.0f, 10.0f));
-	enviromentCube.push_back(vec3(10.0f, 10.0f, 10.0f));
-	enviromentCube.push_back(vec3(-10.0f, 10.0f, 10.0f));
-	enviromentCube.push_back(vec3(-10.0f, 10.0f, -10.0f));
-	// bottom
 	enviromentCube.push_back(vec3(-10.0f, -10.0f, -10.0f));
-	enviromentCube.push_back(vec3(-10.0f, -10.0f, 10.0f));
 	enviromentCube.push_back(vec3(10.0f, -10.0f, -10.0f));
 	enviromentCube.push_back(vec3(10.0f, -10.0f, -10.0f));
-	enviromentCube.push_back(vec3(-10.0f, -10.0f, 10.0f));
-	enviromentCube.push_back(vec3(10.0f, -10.0f, 10.0f));
+	enviromentCube.push_back(vec3(10.0f, 10.0f, -10.0f));
+	enviromentCube.push_back(vec3(-10.0f, 10.0f, -10.0f));
 	// left
 	enviromentCube.push_back(vec3(-10.0f, -10.0f, 10.0f));
 	enviromentCube.push_back(vec3(-10.0f, -10.0f, -10.0f));
@@ -223,13 +216,20 @@ void Scene::computeEnviromentCube()
 	enviromentCube.push_back(vec3(10.0f, 10.0f, 10.0f));
 	enviromentCube.push_back(vec3(10.0f, -10.0f, 10.0f));
 	enviromentCube.push_back(vec3(-10.0f, -10.0f, 10.0f));
-	// back
+	// top
 	enviromentCube.push_back(vec3(-10.0f, 10.0f, -10.0f));
-	enviromentCube.push_back(vec3(-10.0f, -10.0f, -10.0f));
-	enviromentCube.push_back(vec3(10.0f, -10.0f, -10.0f));
-	enviromentCube.push_back(vec3(10.0f, -10.0f, -10.0f));
 	enviromentCube.push_back(vec3(10.0f, 10.0f, -10.0f));
+	enviromentCube.push_back(vec3(10.0f, 10.0f, 10.0f));
+	enviromentCube.push_back(vec3(10.0f, 10.0f, 10.0f));
+	enviromentCube.push_back(vec3(-10.0f, 10.0f, 10.0f));
 	enviromentCube.push_back(vec3(-10.0f, 10.0f, -10.0f));
+	// bottom
+	enviromentCube.push_back(vec3(-10.0f, -10.0f, -10.0f));
+	enviromentCube.push_back(vec3(-10.0f, -10.0f, 10.0f));
+	enviromentCube.push_back(vec3(10.0f, -10.0f, -10.0f));
+	enviromentCube.push_back(vec3(10.0f, -10.0f, -10.0f));
+	enviromentCube.push_back(vec3(-10.0f, -10.0f, 10.0f));
+	enviromentCube.push_back(vec3(10.0f, -10.0f, 10.0f));
 }
 
 Scene::Scene(
@@ -501,9 +501,9 @@ void Scene::clear() {
 }
 
 void Scene::loadEnviromentTexture(
-	const CString topPath, const CString bottomPath,
-	const CString leftPath, const CString rightPath,
-	const CString frontPath, const CString backPath) {
+	const CString negativeX, const CString positiveX,
+	const CString negativeY, const CString positiveY,
+	const CString negativeZ, const CString positiveZ) {
 	if (enviromentCube.size() == 0) {
 		computeEnviromentCube();
 	}
@@ -513,12 +513,12 @@ void Scene::loadEnviromentTexture(
 	hasEnviromentTexture = true;
 
 	// load each image and copy into a side of the cube-map texture
-	loadEnviromentSideTexture(GL_TEXTURE_CUBE_MAP_POSITIVE_Y, topPath);
-	loadEnviromentSideTexture(GL_TEXTURE_CUBE_MAP_NEGATIVE_Y, bottomPath);
-	loadEnviromentSideTexture(GL_TEXTURE_CUBE_MAP_NEGATIVE_X, leftPath);
-	loadEnviromentSideTexture(GL_TEXTURE_CUBE_MAP_POSITIVE_X, rightPath);
-	loadEnviromentSideTexture(GL_TEXTURE_CUBE_MAP_NEGATIVE_Z, frontPath);
-	loadEnviromentSideTexture(GL_TEXTURE_CUBE_MAP_POSITIVE_Z, backPath);
+	loadEnviromentSideTexture(GL_TEXTURE_CUBE_MAP_NEGATIVE_X, negativeX);
+	loadEnviromentSideTexture(GL_TEXTURE_CUBE_MAP_POSITIVE_X, positiveX);
+	loadEnviromentSideTexture(GL_TEXTURE_CUBE_MAP_NEGATIVE_Y, negativeY);
+	loadEnviromentSideTexture(GL_TEXTURE_CUBE_MAP_POSITIVE_Y, positiveY);
+	loadEnviromentSideTexture(GL_TEXTURE_CUBE_MAP_NEGATIVE_Z, negativeZ);
+	loadEnviromentSideTexture(GL_TEXTURE_CUBE_MAP_POSITIVE_Z, positiveZ);
 	// format cube map texture
 	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR);

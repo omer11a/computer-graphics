@@ -667,12 +667,12 @@ void settingMenu(int id)
 	case SETTING_SKYBOX:
 		if (ctdlg.DoModal() == IDOK) {
 			scene->loadEnviromentTexture(
-				"d:\\School\\Semester E\\Graphics\\obj_examples\\posy.png",
-				"d:\\School\\Semester E\\Graphics\\obj_examples\\negy.png",
-				"d:\\School\\Semester E\\Graphics\\obj_examples\\posx.png",
-				"d:\\School\\Semester E\\Graphics\\obj_examples\\negx.png",
-				"d:\\School\\Semester E\\Graphics\\obj_examples\\negz.png",
-				"d:\\School\\Semester E\\Graphics\\obj_examples\\posz.png");
+				"C:\\Users\\omer\\Documents\\university\\7\\computer graphics\\hw\\skybox\\xneg.png",
+				"C:\\Users\\omer\\Documents\\university\\7\\computer graphics\\hw\\skybox\\xpos.png",
+				"C:\\Users\\omer\\Documents\\university\\7\\computer graphics\\hw\\skybox\\ypos.png",
+				"C:\\Users\\omer\\Documents\\university\\7\\computer graphics\\hw\\skybox\\yneg.png",
+				"C:\\Users\\omer\\Documents\\university\\7\\computer graphics\\hw\\skybox\\zneg.png",
+				"C:\\Users\\omer\\Documents\\university\\7\\computer graphics\\hw\\skybox\\zpos.png");
 				//ctdlg.GetTopPath(), ctdlg.GetBottomPath(),
 				//ctdlg.GetLeftPath(), ctdlg.GetRightPath(),
 				//ctdlg.GetFrontPath(), ctdlg.GetBackPath());
@@ -1209,7 +1209,7 @@ int my_main( int argc, char **argv )
 	glutMouseFunc( mouse );
 	glutMotionFunc ( motion );
 	glutReshapeFunc( reshape );
-	glutIdleFunc( animation );
+	//glutIdleFunc( animation );
 	initMenu();
 	
 
