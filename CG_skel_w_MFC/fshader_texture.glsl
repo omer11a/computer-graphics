@@ -168,7 +168,7 @@ void main() {
 			if (shouldRefract) {
 				reflected = refract(-modelToCamera, normal, refractionRatio);
 			} else {
-				reflected = reflect(-modelTocamera, normal);
+				reflected = reflect(-modelToCamera, normal);
 			}
 
 			specularColor = texture(cubeSampler, reflected).rgb;
