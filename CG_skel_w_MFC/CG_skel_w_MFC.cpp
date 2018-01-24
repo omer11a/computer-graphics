@@ -707,10 +707,10 @@ void settingMenu(int id)
 	case SETTING_ADD_SKYBOX:
 		if (fpdlg.DoModal() == IDOK) {
 			scene->loadSkyBox(
-				fpdlg.GetFolderPath() + "\\ypos.png",
-				fpdlg.GetFolderPath() + "\\yneg.png",
-				fpdlg.GetFolderPath() + "\\xpos.png",
 				fpdlg.GetFolderPath() + "\\xneg.png",
+				fpdlg.GetFolderPath() + "\\xpos.png",
+				fpdlg.GetFolderPath() + "\\yneg.png",
+				fpdlg.GetFolderPath() + "\\ypos.png",
 				fpdlg.GetFolderPath() + "\\zneg.png",
 				fpdlg.GetFolderPath() + "\\zpos.png");
 			redraw();
