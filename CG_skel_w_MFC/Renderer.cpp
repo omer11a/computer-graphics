@@ -41,10 +41,12 @@ void Renderer::UpdateBuffers(int width, int height)
 
 void Renderer::DrawSkyBox(const vector<vec3>* vertices)
 {
+	if (is_wire_mode) {
+		return;
+	}
 	// disable zBuffer
 	glDepthMask(GL_FALSE);
 	glDisable(GL_DEPTH_TEST);
-	//glDepthFunc(GL_LESS);
 
 	mat4 env_v = m_cTransform;
 	env_v[3][0] = 0;
@@ -490,7 +492,6 @@ void Renderer::SetAntiAliasing()
 	} else {
 		glDisable(GL_MULTISAMPLE);
 	}
-	//UpdateBuffers(m_screen_width, m_screen_height);
 }
 
 void Renderer::SetBaseShader(Renderer::ShaderType s) {
@@ -561,17 +562,6 @@ void Renderer::CreateOpenGLBuffer()
 void Renderer::SwapBuffers()
 {
 	int a = glGetError();
-	//glActiveTexture(GL_TEXTURE0);
-	//glBindTexture(GL_TEXTURE_2D, gScreenTex);
-	//a = glGetError();
-	//glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, m_screen_width, m_screen_height, GL_RGB, GL_FLOAT, m_screenBuffer);
-	//glGenerateMipmap(GL_TEXTURE_2D);
-	//a = glGetError();
-
-	//glBindVertexArray(gScreenVtc);
-	//a = glGetError();
-	//glDrawArrays(GL_TRIANGLES, 0, 6);
-	//a = glGetError();
 	glutSwapBuffers();
 	a = glGetError();
 }

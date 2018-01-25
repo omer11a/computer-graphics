@@ -132,35 +132,11 @@
     </ResourceCompile>
   </ItemGroup>
   <ItemGroup>
-    <None Include="fshader.glsl">
-      <Filter>Shaders</Filter>
-    </None>
-    <None Include="vshader.glsl">
-      <Filter>Shaders</Filter>
-    </None>
     <None Include="ReadMe.txt" />
     <None Include="fshader_basic.glsl">
       <Filter>Shaders</Filter>
     </None>
     <None Include="vshader_basic.glsl">
-      <Filter>Shaders</Filter>
-    </None>
-    <None Include="vshader_transform.glsl">
-      <Filter>Shaders</Filter>
-    </None>
-    <None Include="fshader_transform.glsl">
-      <Filter>Shaders</Filter>
-    </None>
-    <None Include="vshader_shading.glsl">
-      <Filter>Shaders</Filter>
-    </None>
-    <None Include="fshader_shading.glsl">
-      <Filter>Shaders</Filter>
-    </None>
-    <None Include="fshader_fog.glsl">
-      <Filter>Shaders</Filter>
-    </None>
-    <None Include="vshader_fog.glsl">
       <Filter>Shaders</Filter>
     </None>
     <None Include="fshader_normal.glsl">

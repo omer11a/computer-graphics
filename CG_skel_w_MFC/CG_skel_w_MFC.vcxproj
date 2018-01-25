@@ -147,24 +147,16 @@
     <ResourceCompile Include="CG_skel_w_MFC.rc" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="fshader.glsl" />
     <None Include="fshader_basic.glsl" />
-    <None Include="fshader_fog.glsl" />
     <None Include="fshader_normal.glsl" />
-    <None Include="fshader_shading.glsl" />
     <None Include="fshader_silhouette.glsl" />
     <None Include="fshader_skybox.glsl" />
     <None Include="fshader_texture.glsl" />
-    <None Include="fshader_transform.glsl" />
-    <None Include="vshader.glsl" />
     <None Include="ReadMe.txt" />
     <None Include="vshader_basic.glsl" />
-    <None Include="vshader_fog.glsl" />
-    <None Include="vshader_shading.glsl" />
     <None Include="vshader_silhouette.glsl" />
     <None Include="vshader_skybox.glsl" />
     <None Include="vshader_texture.glsl" />
-    <None Include="vshader_transform.glsl" />
     <None Include="‏‏vshader_normal.glsl" />
   </ItemGroup>
   <ItemGroup>
