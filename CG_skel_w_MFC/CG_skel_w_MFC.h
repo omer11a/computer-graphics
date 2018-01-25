@@ -11,6 +11,7 @@ void lightMenu(int id);
 void shaderMenu(int id);
 void modelMenu(int id);
 void fileMenu(int id);
+void canonicalMenu(int id);
 void settingMenu(int id);
 void mainMenu(int id);
 void initMenu();

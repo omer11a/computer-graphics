@@ -309,9 +309,6 @@ void Scene::addPrimitive(int id)
 		case 0:
 			model = new PlaneMeshModel();
 			break;
-		case 1:
-			model = new CylinderMeshModel();
-			break;
 		case 4:
 			model = new PrimMeshModel();
 			break;

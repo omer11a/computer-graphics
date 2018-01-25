@@ -105,9 +105,3 @@ class PlaneMeshModel : public MeshModel
 public:
 	PlaneMeshModel();
 };
-
-class CylinderMeshModel : public MeshModel
-{
-public:
-	CylinderMeshModel();
-};

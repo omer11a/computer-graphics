@@ -89,7 +89,10 @@ PrimMeshModels:
 #define FOG_DISABLE 5
 
 #define ADD_CAMERA 1
-#define ADD_CANONICAL 2
+
+// canonical menu
+#define CAN_PLANE 1
+#define CAN_CUBE 2
 
 // main menu
 #define MAIN_DEMO 1
@@ -641,7 +644,6 @@ void fileMenu(int id)
 {
 	bool should_redraw = false;
 	CLightDialog ldlg;
-	CTextureDialog tdlg;
 
 	switch (id) {
 		case ADD_CAMERA:
@@ -649,22 +651,32 @@ void fileMenu(int id)
 			cout << "camera was added with ID #" << scene->getNumberOfCameras() - 1 << endl;
 			should_redraw = true;
 			break;
-		case ADD_CANONICAL:
-			if (tdlg.DoModal() == IDOK) {
-				if (tdlg.GetShininess() < 0) {
-					cout << "model properties error: shininess must be non-negative." << endl;
-					break;
-				}
-				scene->addPrimitive(0);
-				scene->getActiveModel()->setTextures(
-					(LPCTSTR)tdlg.GetTexturePath(),
-					tdlg.GetShininess());
-				cout << "added canonical model" << endl;
-				should_redraw = true;
-			}
-			break;
 	}
 	redraw(should_redraw);
+}
+
+void canonicalMenu(int id)
+{
+	CTextureDialog tdlg;
+	if (tdlg.DoModal() == IDOK) {
+		if (tdlg.GetShininess() < 0) {
+			cout << "model properties error: shininess must be non-negative." << endl;
+			return;
+		}
+		switch (id) {
+		case CAN_PLANE:
+			scene->addPrimitive(0);
+			break;
+		case CAN_CUBE:
+			scene->addPrimitive(4);
+			break;
+		}
+		scene->getActiveModel()->setTextures(
+			(LPCTSTR)tdlg.GetTexturePath(),
+			tdlg.GetShininess());
+		cout << "added canonical model" << endl;
+		redraw();
+	}
 }
 
 void settingMenu(int id)
@@ -774,11 +786,15 @@ void initMenu()
 	glutAddMenuEntry("Fog", FOG);
 	glutAddMenuEntry("Disable Fog", FOG_DISABLE);
 	
+	int menuCanonical = glutCreateMenu(canonicalMenu);
+	glutAddMenuEntry("Plane", CAN_PLANE);
+	glutAddMenuEntry("Cube", CAN_CUBE);
+
 	// file sub menu
 	int menuFile = glutCreateMenu(fileMenu);
 	glutAddSubMenu("Model", menuModel);
 	glutAddMenuEntry("Camera", ADD_CAMERA);
-	glutAddMenuEntry("Canonical", ADD_CANONICAL);
+	glutAddSubMenu("Canonical", menuCanonical);
 	glutAddSubMenu("Shader", menuShader);
 	glutAddSubMenu("Light", menuLight);
 
