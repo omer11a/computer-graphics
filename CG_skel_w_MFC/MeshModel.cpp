@@ -258,7 +258,7 @@ MeshModel::MeshModel() :
 	hasColorAnimation(false), colorAnimationRepresentation(0), colorAnimationSpeed(0), colorAnimationDuration(0), colorAnimationProgress(0),
 	hasVertexAnimation(false), vertexAnimationSpeed(0), vertexAnimationDuration(0), vertexAnimationProgress(0),
 	colorAnimationDirection(0), vertexAnimationDirection(0), hasToonShading(false), colorQuantizationCoefficient(0), silhouetteThickness(0), silhouetteColor(0),
-	hasWoodTexture(false), woodTextureColor1(0), woodTextureColor2(0), hasEnvironmentMapping(false), refractionRatio()
+	hasWoodTexture(false), woodTextureColor1(0), woodTextureColor2(0), hasEnvironmentMapping(false), shouldRefract(false), refractionRatio()
 { }
 
 MeshModel::MeshModel(string fileName) :
@@ -270,7 +270,7 @@ MeshModel::MeshModel(string fileName) :
 	hasColorAnimation(false), colorAnimationRepresentation(0), colorAnimationSpeed(0), colorAnimationDuration(0), colorAnimationProgress(0),
 	hasVertexAnimation(false), vertexAnimationSpeed(0), vertexAnimationDuration(0), vertexAnimationProgress(0),
 	colorAnimationDirection(0), vertexAnimationDirection(0), hasToonShading(false), colorQuantizationCoefficient(0), silhouetteThickness(0), silhouetteColor(0),
-	hasWoodTexture(false), woodTextureColor1(0), woodTextureColor2(0), hasEnvironmentMapping(false), refractionRatio()
+	hasWoodTexture(false), woodTextureColor1(0), woodTextureColor2(0), hasEnvironmentMapping(false), shouldRefract(false), refractionRatio()
 {
 	loadFile(fileName);
 	setUniformMaterial({ vec3(1), vec3(1), vec3(1), 1 });
@@ -528,13 +528,14 @@ void MeshModel::disableWoodTexture()
 	hasWoodTexture = false;
 }
 
-void MeshModel::enableEnviromentMapping(const float refRatio)
+void MeshModel::enableEnvironmentMapping(const bool shouldRef, const float refRatio)
 {
 	hasEnvironmentMapping = true;
+	shouldRefract = shouldRef;
 	refractionRatio = refRatio;
 }
 
-void MeshModel::disableEnviromentMapping()
+void MeshModel::disableEnvironmentMapping()
 {
 	hasEnvironmentMapping = false;
 }
@@ -552,7 +553,7 @@ void MeshModel::draw(BaseRenderer * renderer) const {
 		&textureCoordinates, &textureCenters, &tangents, 
 		hasColorAnimation, colorAnimationRepresentation, colorAnimationProgress * colorAnimationSpeed,
 		hasVertexAnimation, vertexAnimationProgress * vertexAnimationSpeed, hasToonShading, colorQuantizationCoefficient,
-		hasWoodTexture, woodTextureColor1, woodTextureColor2, modelResolution, hasEnvironmentMapping, refractionRatio,
+		hasWoodTexture, woodTextureColor1, woodTextureColor2, modelResolution, hasEnvironmentMapping, shouldRefract, refractionRatio,
 		(hasVertexAnimation) ? &smoothVertexNormals : &vertexNormals, &faceNormals);
 
 	if (allowBoundingBox) {

@@ -617,13 +617,13 @@ void modelMenu(int id)
 		break;
 	case ADD_ENV_MAP:
 		if (scene->getNumberOfModels() > 0) {
-			CValueDialog vdlg("Enviroment Mapping", "Refraction Ratio:", 1);
-			if (vdlg.DoModal() == IDOK) {
-				float rr = vdlg.GetValue();
+			CB1V1Dialog bvdlg("Enviroment Mapping", "Should Refract", "Refraction Ratio:", true, 1);
+			if (bvdlg.DoModal() == IDOK) {
+				float rr = bvdlg.GetValue();
 				if (rr < 0) {
 					cout << "ratio must be non-negative" << endl;
 				} else {
-					scene->getActiveModel()->enableEnviromentMapping(rr);
+					scene->getActiveModel()->enableEnvironmentMapping(bvdlg.GetBoolValue(), rr);
 					should_redraw = true;
 				}
 			}
@@ -631,7 +631,7 @@ void modelMenu(int id)
 		break;
 	case DEL_ENV_MAP:
 		if (scene->getNumberOfModels() > 0) {
-			scene->getActiveModel()->disableEnviromentMapping();
+			scene->getActiveModel()->disableEnvironmentMapping();
 			cout << "disabled enviroment mapping" << endl;
 			should_redraw = true;
 		}
@@ -701,14 +701,6 @@ void settingMenu(int id)
 	case SETTING_AA:
 		renderer->SetAntiAliasing();
 		redraw();
-		//if (dlg.DoModal() == IDOK) {
-		//	int factor = dlg.GetValue();
-		//	if (factor >= 1) {
-		//		renderer->SetAntiAliasing(factor);
-		//		cout << "set anti aliasing with factor " << factor << endl;
-		//		redraw();
-		//	}
-		//}
 		break;
 	case SETTING_BG_COLOR:
 		if (cdlg.DoModal() == IDOK) {

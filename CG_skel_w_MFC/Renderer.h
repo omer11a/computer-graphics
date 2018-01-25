@@ -71,6 +71,7 @@ public:
 		const vec3& woodTextureColor2,
 		const vec2& modelResolution,
 		const bool hasEnvironmentMapping,
+		const bool shouldRefract,
 		const float refractionRatio,
 		const vector<vec3>* vertexNormals = NULL,
 		const vector<vec3>* faceNormals = NULL) override;

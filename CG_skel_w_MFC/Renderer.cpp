@@ -31,8 +31,8 @@ Renderer::~Renderer(void)
 
 void Renderer::UpdateBuffers(int width, int height)
 {
-	m_width = (anti_factor ? 2 : 1) * width;
-	m_height = (anti_factor ? 2 : 1) * height;
+	m_width = width;
+	m_height = height;
 	m_screen_width = width;
 	m_screen_height = height;
 	min_size = min(m_width, m_height) / 2;
@@ -126,6 +126,7 @@ void Renderer::DrawTriangles(
 	const vec3& woodTextureColor2,
 	const vec2& modelResolution,
 	const bool hasEnvironmentMapping,
+	const bool shouldRefract,
 	const float refractionRatio,
 	const vector<vec3>* vertexNormals,
 	const vector<vec3>* faceNormals)
@@ -176,6 +177,7 @@ void Renderer::DrawTriangles(
 		glBindTexture(GL_TEXTURE_CUBE_MAP, cubeSampler);
 		objectsProgram.SetUniformParameter(2, "cubeSampler");
 		objectsProgram.SetUniformParameter(refractionRatio, "refractionRatio");
+		objectsProgram.SetUniformParameter(int(shouldRefract), "shouldRefract");
 	}
 
 	objectsProgram.SetUniformParameter(m_oTransform, "modelMatrix");
@@ -352,7 +354,7 @@ void Renderer::DrawCamera()
 	basicProgram.SetUniformParameter(color, "color");
 
 	vector<vec3> plus;
-	GLfloat offset = 5.0f * (anti_factor ? 2 : 1) / min_size;
+	GLfloat offset = 5.0f / min_size;
 	plus.push_back(camera_location + vec3(0, -offset, 0)); // |
 	plus.push_back(camera_location + vec3(0, offset, 0));
 	plus.push_back(camera_location + vec3(-offset, 0, 0)); // -
@@ -374,7 +376,7 @@ void Renderer::DrawLight(const vec3& color, const vec3& position)
 	basicProgram.SetUniformParameter(color, "color");
 
 	vector<vec3> star;
-	GLfloat offset = 5.0f * (anti_factor ? 2 : 1) / min_size;
+	GLfloat offset = 5.0f / min_size;
 	star.push_back(light_location + vec3(-offset, -offset, 0)); // \ 
 	star.push_back(light_location + vec3(offset, offset, 0));
 	star.push_back(light_location + vec3(offset, -offset, 0)); // /

@@ -941,8 +941,6 @@ GLfloat CAnimationDialog::GetSpeed() const
 	return speed;
 }
 
-
-
 void CAnimationDialog::DoDataExchange(CDataExchange* pDX)
 {
 	CInputDialog::DoDataExchange(pDX);
@@ -1211,4 +1209,66 @@ void CCubeTexturesDialog::OnPaint()
 	right_rect.top += 40;
 	dc.DrawText("Front Texture:", -1, &left_rect, DT_SINGLELINE);
 	dc.DrawText("Back Texture:", -1, &right_rect, DT_SINGLELINE);
+}
+
+// ----------------------
+//    Class CB1V1Dialog
+// ----------------------
+
+CB1V1Dialog::CB1V1Dialog(const CString title, const CString b_title, const CString v_title, const bool def_b, const float def_v)
+	: CInputDialog(title), bool_title(b_title), value_title(v_title), b(def_b), v(def_v)
+{ }
+
+CB1V1Dialog::~CB1V1Dialog()
+{ }
+
+bool CB1V1Dialog::GetBoolValue() const
+{
+	return b;
+}
+
+float CB1V1Dialog::GetValue() const
+{
+	return v;
+}
+
+void CB1V1Dialog::checkbox_status()
+{
+	b = bEdit.GetCheck();
+}
+
+void CB1V1Dialog::DoDataExchange(CDataExchange* pDX)
+{
+	CInputDialog::DoDataExchange(pDX);
+	DDX_Text(pDX, IDC_VALUE_EDIT, v);
+}
+
+// CB1V1Dialog message handlers
+BEGIN_MESSAGE_MAP(CB1V1Dialog, CInputDialog)
+	ON_WM_CREATE()
+	ON_WM_PAINT()
+	ON_BN_CLICKED(IDC_COLOR_EDIT, checkbox_status)
+END_MESSAGE_MAP()
+
+int CB1V1Dialog::OnCreate(LPCREATESTRUCT lpcs)
+{
+	bEdit.Create(bool_title, BS_AUTOCHECKBOX | WS_CHILD | WS_VISIBLE | WS_TABSTOP, 
+		CRect(200, 100, 400, 120), this, IDC_COLOR_EDIT);
+	bEdit.SetCheck(b);
+
+	vEdit.Create(ES_MULTILINE | WS_CHILD | WS_VISIBLE | WS_TABSTOP | WS_BORDER,
+		CRect(200, 140, 400, 160), this, IDC_VALUE_EDIT);
+
+	return 0;
+}
+
+void CB1V1Dialog::OnPaint()
+{
+	CPaintDC dc(this);
+	dc.SetBkMode(TRANSPARENT);
+
+	CRect value_rect(0, 142, 190, 160);
+	dc.DrawText(value_title, -1, &value_rect, DT_SINGLELINE | DT_RIGHT);
+
+	vEdit.SetFocus();
 }

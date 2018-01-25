@@ -440,3 +440,32 @@ protected:
 	afx_msg void OnPaint();
 	DECLARE_MESSAGE_MAP()
 };
+
+// ----------------------
+//    Class CB1V1Dialog
+// ----------------------
+class CB1V1Dialog : public CInputDialog {
+public:
+	CB1V1Dialog(const CString title = "Edit", const CString b_title = "bool:", const CString v_title = "value:", const bool def_b=true, const float def_v=1);
+	virtual ~CB1V1Dialog();
+
+	bool GetBoolValue() const;
+	float GetValue() const;
+protected:
+
+	CString bool_title;
+	CString value_title;
+	bool b;
+	float v;
+
+	CButton bEdit;
+	CEdit vEdit;
+
+	afx_msg void checkbox_status();
+	virtual void DoDataExchange(CDataExchange* pDX);
+
+	afx_msg int OnCreate(LPCREATESTRUCT lpcs);
+	afx_msg void OnPaint();
+	DECLARE_MESSAGE_MAP()
+
+};

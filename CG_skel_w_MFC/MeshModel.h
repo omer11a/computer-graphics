@@ -39,6 +39,7 @@ protected:
 
 	GLuint textureID, normalMapID;
 	bool hasTexture, hasNormalMap, hasColorAnimation, hasVertexAnimation, hasToonShading, hasWoodTexture, hasEnvironmentMapping;
+	bool shouldRefract;
 	int colorAnimationRepresentation, colorAnimationDirection, vertexAnimationDirection;
 	float colorAnimationSpeed, colorAnimationDuration, colorAnimationProgress;
 	float vertexAnimationSpeed, vertexAnimationDuration, vertexAnimationProgress;
@@ -88,8 +89,8 @@ public:
 	void disableToonShading();
 	void enableWoodTexture(const vec3& color1, const vec3& color2);
 	void disableWoodTexture();
-	void enableEnviromentMapping(const float refRatio);
-	void disableEnviromentMapping();
+	void enableEnvironmentMapping(const bool shouldRef, const float refRatio);
+	void disableEnvironmentMapping();
 	void draw(BaseRenderer * renderer) const;
 	void drawNormals(BaseRenderer * renderer) const;
 };
