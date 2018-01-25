@@ -407,7 +407,7 @@ void MeshModel::enableNormalMap(const string fileName)
 		return;
 	}
 
-	if (!readPng(fileName, &width, &height, &pixel_array, false)) {
+	if (!readPng(fileName, &width, &height, &pixel_array)) {
 		return;
 	}
 

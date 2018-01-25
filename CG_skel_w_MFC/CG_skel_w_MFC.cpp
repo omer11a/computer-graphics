@@ -1241,7 +1241,7 @@ int my_main( int argc, char **argv )
 	//----------------------------------------------------------------------------
 	// Initialize window
 	glutInit( &argc, argv );
-	glutInitDisplayMode( GLUT_RGBA| GLUT_DOUBLE);
+	glutInitDisplayMode( GLUT_RGBA| GLUT_DOUBLE | GLUT_MULTISAMPLE);
 	glutInitWindowSize( 512, 512 );
 	glutInitContextVersion( 3, 2 );
 	glutInitContextProfile( GLUT_CORE_PROFILE );
@@ -1257,7 +1257,7 @@ int my_main( int argc, char **argv )
 	}
 	fprintf(stdout, "Status: Using GLEW %s\n", glewGetString(GLEW_VERSION));
 
-	
+	glDisable(GL_MULTISAMPLE);
 	renderer = new Renderer(512, 512);
 	scene = new Scene(renderer, vec3(0, 5, 15));
 	config = { 0, vec3(1), vec3(), vec3(), 1, false};

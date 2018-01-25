@@ -486,9 +486,9 @@ void Renderer::SetAntiAliasing()
 {
 	anti_factor = !anti_factor;
 	if (anti_factor) {
-		glEnable(GL_MULTISAMPLE_BIT);
+		glEnable(GL_MULTISAMPLE);
 	} else {
-		glDisable(GL_MULTISAMPLE_BIT);
+		glDisable(GL_MULTISAMPLE);
 	}
 	//UpdateBuffers(m_screen_width, m_screen_height);
 }
